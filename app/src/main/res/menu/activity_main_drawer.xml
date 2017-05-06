@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_map_black_24dp"
+            android:title="Home" />
+        <item
+            android:id="@+id/nav_search"
+            android:icon="@drawable/ic_search_black_24dp"
+            android:title="Search" />
+        <item
+            android:id="@+id/nav_jobs"
+            android:icon="@drawable/ic_view_list_black_24dp"
+            android:title="Jobs" />
+        <item
+            android:id="@+id/nav_completed_jobs"
+            android:icon="@drawable/ic_beenhere_black_24dp"
+            android:title="Completed Jobs" />
+    </group>
+
+    <item android:title="Communicate">
+        <menu>
+            <item
+                android:id="@+id/nav_sync_sms_inbox"
+                android:icon="@drawable/ic_autorenew_black_24dp"
+                android:title="Sync SMS Inbox" />
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_settings_black_24dp"
+                android:title="Settings" />
+            <item
+                android:id="@+id/nav_Test_BD_ADD"
+                android:icon="@drawable/ic_cloud_download"
+                android:title="Add Test Breadowns" />
+            <item
+                android:id="@+id/about"
+                android:icon="@drawable/ic_report_black_24dp"
+                android:title="About" />
+        </menu>
+    </item>
+
+</menu>

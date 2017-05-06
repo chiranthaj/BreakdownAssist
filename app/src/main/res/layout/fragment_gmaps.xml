@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        android:name="com.google.android.gms.maps.MapFragment"
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/directions"
+        android:padding="2dp"
+        android:background="@android:color/darker_gray"
+        android:layout_marginEnd="70dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:visibility="invisible">
+
+        <Button
+            android:text="CLR"
+            android:layout_width="56dp"
+            android:layout_height="35dp"
+            android:id="@+id/buttonCLR" />
+
+        <TextView
+            android:text="Distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvDistance"
+            android:layout_weight="1"
+            android:textStyle="normal|bold"
+            android:textSize="18sp" />
+
+        <TextView
+            android:text="Duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvDuration"
+            android:layout_weight="1"
+            android:textStyle="normal|bold"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <Button
+        android:text="Resume"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonRestoreMap"
+        android:layout_gravity="bottom|left"
+        android:layout_margin="20dp"
+        android:visibility="invisible" />
+
+
+    <!--    <fragment android:id="@+id/map"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            class="com.google.android.gms.maps.MapFragment"></fragment>-->
+</FrameLayout>

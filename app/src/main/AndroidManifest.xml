@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="lk.steps.breakdownassist">
+
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Needed only if your app targets Android 5.0 (API level 21) or higher. -->
+    <uses-feature android:name="android.hardware.location.gps" />
+    <uses-feature android:name="android.hardware.location.network" />
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        android:name="lk.steps.breakdownassist.BreakDownMate"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name="lk.steps.breakdownassist.MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBaj0WI-4h1fm70i-iPaDziec3x6PhfM8c" />
+
+        <receiver
+            android:name="lk.steps.breakdownassist.SmsBroadcastReceiver"
+            android:exported="true">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name="lk.steps.breakdownassist.JobListViewActivity" />
+        <activity
+            android:name="lk.steps.breakdownassist.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName="lk.steps.breakdownassist.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="lk.steps.breakdownassist.MainActivity" />
+        </activity>
+        <activity
+            android:name="lk.steps.breakdownassist.FileExplorer.FileChooser"
+            android:label="Choose File"
+            android:theme="@android:style/Theme.Holo">
+            <action android:name="com.example.fileexplorer.FileChooser" />
+
+            <category android:name="android.intent.category.DEFAULT" />
+        </activity>
+
+    </application>
+
+</manifest>

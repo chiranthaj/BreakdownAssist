@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="1"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/dialog_job">
+
+    <TextView
+        android:text="JobNo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/jobno"
+        android:textSize="18sp"
+        android:layout_marginTop="10dp"
+        android:textAlignment="center"
+        android:textStyle="normal" />
+
+    <TextView
+        android:text="AcctNum, Premises ID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/acctnum"
+        android:layout_marginTop="10dp"
+        android:textAlignment="center"
+        android:textStyle="normal|bold" />
+
+    <TextView
+        android:text="Name Address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/name"
+        android:layout_marginTop="10dp"
+        android:textAlignment="center"
+        android:textStyle="normal|bold"
+        android:maxLines="3"
+        android:layout_weight="0.25" />
+
+
+
+    <TextView
+        android:text="Phone No"
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/phoneno"
+        android:textAlignment="center" />
+
+    <TextView
+        android:id="@+id/fulldescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Full Description"
+        android:textAlignment="center" />
+
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinner"
+        android:layout_marginTop="10dp"
+        android:entries="@array/dialog_job_breakdown_course_list_titles"
+        android:entryValues="@array/dialog_job_breakdown_course_list_values"
+        android:title="Job Description"/>
+
+
+    <TimePicker
+        android:id="@+id/timePicker2"
+        android:layout_width="match_parent"
+        android:layout_height="161dp"
+        android:layout_marginTop="10dp"
+        android:timePickerMode="spinner" />
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="81dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <Button
+                android:id="@+id/dialogButtonNavigate"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:text="Nav" />
+
+            <Button
+                android:id="@+id/dialogButtonForward"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:text="FWD" />
+
+            <Button
+                android:id="@+id/dialogButtonVisited"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:text="Visited" />
+
+            <Button
+                android:id="@+id/dialogButtonCompleted"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:text="COMLTD" />
+        </TableRow>
+
+    </TableLayout>
+
+</LinearLayout>
+

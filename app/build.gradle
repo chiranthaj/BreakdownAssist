@@ -1,0 +1,59 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        signedkey {
+            keyAlias 'breakdownassist'
+            keyPassword 'abc@123'
+            storeFile file('D:/My Documents/AndroidStudioProjects/chirantha_keystore.jks')
+            storePassword 'abc@123'
+        }
+    }
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
+    defaultConfig {
+        applicationId "lk.steps.breakdownassist"
+        minSdkVersion 21
+        targetSdkVersion 25
+        multiDexEnabled true
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.signedkey
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.signedkey
+        }
+        debug {
+            signingConfig signingConfigs.signedkey
+        }
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.jakewharton:butterknife:8.5.1'
+    /*compile 'com.github.arimorty:floatingsearchview:2.0.3'*/
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    /*9.8.00*/
+    /*9.2.1*/
+    /*9.6.1*/
+    /*Using older version for Emulator compatibility*/
+    compile 'com.facebook.stetho:stetho:1.4.1'
+    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:support-v4:25.0.1'
+    compile 'com.android.support:design:25.0.1'
+    compile 'com.google.android.gms:play-services:9.6.1'
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.android.support:recyclerview-v7:25.0.1'
+    testCompile 'junit:junit:4.12'
+    compile 'org.jetbrains:annotations-java5:15.0'
+}
