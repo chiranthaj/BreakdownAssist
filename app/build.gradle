@@ -5,7 +5,7 @@ android {
         signedkey {
             keyAlias 'breakdownassist'
             keyPassword 'abc@123'
-            storeFile file('E:/AndroidProjects/chirantha_keystore.jks')
+            storeFile file('/chirantha_keystore.jks')
             storePassword 'abc@123'
         }
     }
