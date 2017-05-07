@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:weightSum="1"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginBottom="10dp">
+
+    <TextView
+        android:id="@+id/jobno"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Completed Time"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="25sp"
+        android:textStyle="normal" />
+
+        <TimePicker
+        android:id="@+id/timePicker2"
+        android:layout_width="match_parent"
+        android:layout_height="161dp"
+        android:layout_marginTop="10dp"
+        android:timePickerMode="spinner" />
+
+    <TextView
+        android:id="@+id/text1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Reason for the Breakdown"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="25sp"
+        android:textStyle="normal" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinner"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:entries="@array/dialog_job_breakdown_course_list_titles"
+        android:entryValues="@array/dialog_job_breakdown_course_list_values"
+        android:title="Job Description"/>
+
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+
+            <ImageButton
+                android:id="@+id/btnCancel"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_cancel"
+                android:layout_weight="0.5"
+                android:text="Visited" />
+
+            <ImageButton
+                android:id="@+id/dialogButtonCompleted"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:src="@drawable/ic_done"
+                android:text="COMLTD" />
+        </TableRow>
+
+    </TableLayout>
+
+</LinearLayout>
+    </ScrollView>
+

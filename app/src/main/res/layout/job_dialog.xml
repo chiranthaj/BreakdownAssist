@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView android:layout_width="match_parent"
+<ScrollView
+    android:layout_width="800dp"
     android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -57,17 +56,36 @@
         android:maxLines="3"
         android:layout_weight="0.25" />
 
-
-
-    <TextView
-        android:text="Phone No"
-        android:layout_marginTop="10dp"
+    <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="25sp"
-        android:id="@+id/phoneno"
-        android:textAlignment="center" />
+        android:layout_marginTop="10dp"
+        android:gravity="center">
 
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/phoneno"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+
+                android:text="Phone No"
+                android:textSize="25sp" />
+
+            <ImageButton
+                android:id="@+id/btnMakeCall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:src="@android:drawable/sym_action_call"
+                android:text="COMLTD" />
+        </TableRow>
+
+    </TableLayout>
     <TextView
         android:id="@+id/fulldescription"
         android:layout_width="match_parent"
@@ -78,25 +96,6 @@
         android:textColor="@color/wallet_link_text_light"
         android:textSize="25sp"
         android:textStyle="italic" />
-
-
-    <TimePicker
-        android:id="@+id/timePicker2"
-        android:layout_width="match_parent"
-        android:layout_height="161dp"
-        android:layout_marginTop="10dp"
-        android:timePickerMode="spinner" />
-
-    <Spinner
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/spinner"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:entries="@array/dialog_job_breakdown_course_list_titles"
-        android:entryValues="@array/dialog_job_breakdown_course_list_values"
-        android:title="Job Description"/>
-
 
     <TableLayout
         android:layout_width="match_parent"

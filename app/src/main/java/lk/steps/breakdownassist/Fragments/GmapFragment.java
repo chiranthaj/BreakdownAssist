@@ -7,9 +7,11 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -524,10 +526,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
         TextView txtFullDescription = (TextView) dialog.findViewById(R.id.fulldescription);
         txtFullDescription.setText(selectedBreakdown.get_Full_Description().trim());
-        //Spinner
-        ArrayAdapter adapter = ArrayAdapter.createFromResource(getActivity(), R.array.dialog_job_breakdown_course_list_titles, R.layout.spinner_row );
-        Spinner s = (Spinner) dialog.findViewById(R.id.spinner);
-        s.setAdapter(adapter);
 
 
 
@@ -536,7 +534,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_DONE);
+                BreakdownFeedbackDialog(selectedMarker);
+               // UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_DONE);
                 //TODO : Use an Undo option
                 dialog.dismiss();
             }
@@ -559,7 +558,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 selectedMarker.hideInfoWindow();
 
                 Location currentLocation=getLastLocation();
-
                 if (currentLocation!=null){
                     getDirections(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()),selectedMarker.getPosition() );
                 }else{
@@ -569,8 +567,56 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 dialog.dismiss();
             }
         });
+
+        ImageButton btnCall = (ImageButton) dialog.findViewById(R.id.btnMakeCall);
+        // if button is clicked, close the job_dialog dialog
+        btnCall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:"+selectedBreakdown.get_Contact_No().trim()));
+                startActivity(intent);
+            }
+        });
+
+
         dialog.show();
         return true;
+    }
+
+    public void BreakdownFeedbackDialog(final Marker marker){
+        final Marker selectedMarker = marker;  //to access in Override Methods
+        final Breakdown selectedBreakdown=(Breakdown) mBreakdown.get(selectedMarker); //Calling from Harshmap by giving the Marker Ref
+
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.job_feedback_dialog);
+//TODO : Use date time picker
+        //Spinner
+        ArrayAdapter adapter = ArrayAdapter.createFromResource(getActivity(), R.array.dialog_job_breakdown_course_list_titles, R.layout.spinner_row );
+        Spinner s = (Spinner) dialog.findViewById(R.id.spinner);
+        s.setAdapter(adapter);
+
+        ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
+        // if button is clicked, close the job_dialog dialog
+        dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_DONE);
+                //TODO : Use an Undo option
+                dialog.dismiss();
+            }
+        });
+        ImageButton dialogButton_visited = (ImageButton) dialog.findViewById(R.id.btnCancel);
+        // if button is clicked, close the job_dialog dialog
+        dialogButton_visited.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO : Use an Undo option
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
 
