@@ -106,7 +106,7 @@ public class MyDBHandler extends SQLiteOpenHelper
     {
         int iResult=-1;
         Date callDayTime = new Date( System.currentTimeMillis());
-        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy:MM:d h:m:s a");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
         String time = timeFormat.format(callDayTime);
         String sNextID =ReadSMS.getNextID(context);
         String sAcct_num=breakdown.get_Acct_Num();

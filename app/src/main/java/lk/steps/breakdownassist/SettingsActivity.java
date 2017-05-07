@@ -269,11 +269,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         @Override
         public boolean onPreferenceClick(Preference preference) {
             if (preference.getKey().equals("Import_Customer_Data")){
-                Intent intent1 = new Intent(BreakDownMate.getAppContext(), FileChooser.class);
+                Intent intent1 = new Intent(BreakdownAssist.getAppContext(), FileChooser.class);
                 intent1.putExtra("fileTypeFilter",".db");
                 getPrefActivity(preference).startActivityForResult(intent1,READ_REQUEST_CODE_CUSTOMER_DATA);
             }else if(preference.getKey().equals("Import_PremisesID_Data")){
-                Intent intent1 = new Intent(BreakDownMate.getAppContext(), FileChooser.class);
+                Intent intent1 = new Intent(BreakdownAssist.getAppContext(), FileChooser.class);
                 intent1.putExtra("fileTypeFilter",".db");
                 getPrefActivity(preference).startActivityForResult(intent1,READ_REQUEST_CODE_PREMISES_DATA);
             }
