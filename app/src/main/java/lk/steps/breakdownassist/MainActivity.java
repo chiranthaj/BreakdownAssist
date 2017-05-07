@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity
 
         fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
 
-        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownmate.NewBreakdownBroadcast"));
         /* This code together with the one in onDestroy()
          * will make the screen be always on until this Activity gets destroyed. */
 
@@ -251,7 +251,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(i);
         }
         else if (id == R.id.nav_completed_jobs) {
-
+            Intent i=new Intent(getBaseContext(),CompletedJobListViewActivity.class);
+            startActivity(i);
         }else if (id == R.id.nav_Test_BD_ADD) {
             fm.beginTransaction().replace(R.id.content_frame, new GmapAddBreakdownFragment(),MAP_ADDBREAKDOWN_FRAGMENT_TAG).commit();
         } else if (id == R.id.nav_sync_sms_inbox) {

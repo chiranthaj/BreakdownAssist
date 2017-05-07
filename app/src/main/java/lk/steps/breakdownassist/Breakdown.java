@@ -14,6 +14,7 @@ public class Breakdown {
 
 
     private String _id;
+    private String _Received_Time;
     private String _Acct_Num;
     private String _Name;
     private String _ADDRESS;
@@ -83,6 +84,13 @@ public class Breakdown {
 
     public void set_Acct_Num(String _Acct_Num) {
         this._Acct_Num = _Acct_Num;
+    }
+    public String get_Received_Time() {
+        return _Received_Time;
+    }
+
+    public void set_Received_Time(String _Received_Time) {
+        this._Received_Time = _Received_Time;
     }
     public String get_ECSC() {
         return _ECSC;

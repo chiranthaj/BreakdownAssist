@@ -1,32 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:weightSum="1"
     android:layout_marginTop="10dp"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp"
-    android:layout_marginBottom="10dp"
-    android:background="@drawable/dialog_job">
+    android:layout_marginBottom="10dp">
 
     <TextView
         android:text="JobNo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/jobno"
-        android:textSize="18sp"
+        android:textSize="35sp"
         android:layout_marginTop="10dp"
         android:textAlignment="center"
         android:textStyle="normal" />
 
     <TextView
+        android:id="@+id/received_date_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Received Time"
+        android:textAlignment="center"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="25sp"
+        android:textStyle="normal|bold" />
+    <TextView
         android:text="AcctNum, Premises ID"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/acctnum"
+        android:textSize="30sp"
         android:layout_marginTop="10dp"
         android:textAlignment="center"
         android:textStyle="normal|bold" />
@@ -36,6 +50,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/name"
+        android:textSize="30sp"
         android:layout_marginTop="10dp"
         android:textAlignment="center"
         android:textStyle="normal|bold"
@@ -49,6 +64,7 @@
         android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textSize="25sp"
         android:id="@+id/phoneno"
         android:textAlignment="center" />
 
@@ -58,17 +74,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:text="Full Description"
-        android:textAlignment="center" />
-
-
-    <Spinner
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/spinner"
-        android:layout_marginTop="10dp"
-        android:entries="@array/dialog_job_breakdown_course_list_titles"
-        android:entryValues="@array/dialog_job_breakdown_course_list_values"
-        android:title="Job Description"/>
+        android:textAlignment="center"
+        android:textColor="@color/wallet_link_text_light"
+        android:textSize="25sp"
+        android:textStyle="italic" />
 
 
     <TimePicker
@@ -78,49 +87,65 @@
         android:layout_marginTop="10dp"
         android:timePickerMode="spinner" />
 
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinner"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:entries="@array/dialog_job_breakdown_course_list_titles"
+        android:entryValues="@array/dialog_job_breakdown_course_list_values"
+        android:title="Job Description"/>
+
+
     <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="81dp">
+        android:layout_height="wrap_content">
 
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <Button
+            <ImageButton
                 android:id="@+id/dialogButtonNavigate"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.25"
+                android:src="@drawable/ic_navigation"
                 android:text="Nav" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/dialogButtonForward"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="0.25"
+                android:src="@drawable/ic_forward"
                 android:text="FWD" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/dialogButtonVisited"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_av_timer"
                 android:layout_weight="0.25"
                 android:text="Visited" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/dialogButtonCompleted"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="0.25"
+                android:src="@drawable/ic_done"
                 android:text="COMLTD" />
         </TableRow>
 
     </TableLayout>
 
 </LinearLayout>
+    </ScrollView>
 

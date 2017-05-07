@@ -1,12 +1,14 @@
 package lk.steps.breakdownassist;
 
 
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
 import android.content.Context;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteStatement;
+import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -242,12 +244,12 @@ public class MyDBHandler extends SQLiteOpenHelper
                 " C.`LATITUDE` as `LATITUDE`, `B`.`_Status` as `Status`, " +
                 " `B`.`_Acct_Num` as `_Acct_Num`,`C`.`ADDRESS` as `ADDRESS`,   " +
                 " `B`.`_Description` as `Description`, `B`.`_Job_Num` as `_Job_Num`, `B`.`_Contact_Num` as  `_Contact_Num`,  " +
-                " `P`.`PremisesID` as `PremisesID` " +
+                " `P`.`PremisesID` as `PremisesID` , `B`.`DateTime` as `DateTime1`, `B`.`completed_timestamp` as `DateTime2` " +
                 " FROM `BreakdownRecords` `B` " +
                     " LEFT JOIN `Customers` `C` ON `C`.`ACCT_NUM` = `B`.`_Acct_Num` " +
                     " LEFT JOIN `PremisesID` `P` ON `P`.`ACCT_NUM` = `B`.`_Acct_Num` " +
                 " WHERE 1 " + statusQuery  +
-                " ;";
+                " ORDER BY DateTime DESC;";
 
         Cursor c = db.rawQuery(query, null);
 
@@ -274,6 +276,7 @@ public class MyDBHandler extends SQLiteOpenHelper
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 newBreakdown.set_Status(c.getShort(c.getColumnIndex("Status")));
                 newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
+                newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
                 newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
                 newBreakdown.set_Job_No(c.getString(c.getColumnIndex("_Job_Num")));
