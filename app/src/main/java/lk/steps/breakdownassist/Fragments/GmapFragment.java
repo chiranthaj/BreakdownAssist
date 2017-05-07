@@ -18,12 +18,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -42,7 +44,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -52,7 +53,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.Globals;
 import lk.steps.breakdownassist.ManagePermissions;
@@ -63,7 +63,7 @@ import lk.steps.breakdownassist.MyDBHandler;
 import lk.steps.breakdownassist.R;
 
 public class GmapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener,
+        GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener,
         LocationListener, GoogleMap.OnCameraMoveStartedListener, DirectionFinderListener {
 
     private GoogleMap mMap;
@@ -283,11 +283,10 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
         mMap.setOnCameraMoveStartedListener(this);
         mMap.setOnMarkerClickListener(this);
-        mMap.setOnInfoWindowClickListener(this);
+       // mMap.setOnInfoWindowClickListener(this);
         ShowPendingJobsFromDB();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastlocation));
-        mMap.setInfoWindowAdapter(new MyInfoWindowAdapter(getActivity().getLayoutInflater()));
-
+       // mMap.setInfoWindowAdapter(new MyInfoWindowAdapter(getActivity().getLayoutInflater()));
     }
 
     public void AddCustomerLocationToMap(String Account_Num) {
@@ -489,7 +488,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     }
 
-    @Override
+    /*@Override
     public boolean onMarkerClick(Marker marker) {
         //TODO : Create a Marker object and assign a Tag using setTag, then when removing getTag and remove it from db
         //send to main activity to update the status after the user confirmation
@@ -497,10 +496,12 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         marker.showInfoWindow();
         return true;
-    }
+    }*/
 
     @Override
-    public void onInfoWindowClick(Marker marker) {
+    public boolean onMarkerClick(final Marker marker) {
+    //@Override
+    //public void onInfoWindowClick(Marker marker) {
         final Marker selectedMarker =marker;  //to access in Override Methods
         final Breakdown selectedBreakdown=(Breakdown) mBreakdown.get(selectedMarker); //Calling from Harshmap by giving the Marker Ref
 
@@ -510,19 +511,27 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         //dialog.setTitle("Job Details");
 
         TextView txtJobno = (TextView) dialog.findViewById(R.id.jobno);
-        txtJobno.setText(selectedBreakdown.get_Job_No());
+        txtJobno.setText(selectedBreakdown.get_Job_No().trim());
+        TextView txtRecTime = (TextView) dialog.findViewById(R.id.received_date_time);
+        txtRecTime.setText(selectedBreakdown.get_Received_Time().trim());
         TextView txtAcctNum = (TextView) dialog.findViewById(R.id.acctnum);
-        txtAcctNum.setText(selectedBreakdown.get_Acct_Num());
+        txtAcctNum.setText(selectedBreakdown.get_Acct_Num().trim());
         TextView txtName = (TextView) dialog.findViewById(R.id.name);
-        txtName.setText(selectedBreakdown.get_Name() + " " + selectedBreakdown.get_ADDRESS());
+        txtName.setText(selectedBreakdown.get_Name().trim() + "\n" + selectedBreakdown.get_ADDRESS().trim());
 
         TextView txtPhoneNo = (TextView) dialog.findViewById(R.id.phoneno);
-        txtPhoneNo.setText(selectedBreakdown.get_Contact_No());
+        txtPhoneNo.setText(selectedBreakdown.get_Contact_No().trim());
 
         TextView txtFullDescription = (TextView) dialog.findViewById(R.id.fulldescription);
-        txtFullDescription.setText(selectedBreakdown.get_Contact_No());
+        txtFullDescription.setText(selectedBreakdown.get_Full_Description().trim());
+        //Spinner
+        ArrayAdapter adapter = ArrayAdapter.createFromResource(getActivity(), R.array.dialog_job_breakdown_course_list_titles, R.layout.spinner_row );
+        Spinner s = (Spinner) dialog.findViewById(R.id.spinner);
+        s.setAdapter(adapter);
 
-        Button dialogButton_Complete = (Button) dialog.findViewById(R.id.dialogButtonCompleted);
+
+
+        ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
         // if button is clicked, close the job_dialog dialog
         dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -532,7 +541,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 dialog.dismiss();
             }
         });
-        Button dialogButton_visited = (Button) dialog.findViewById(R.id.dialogButtonVisited);
+        ImageButton dialogButton_visited = (ImageButton) dialog.findViewById(R.id.dialogButtonVisited);
         // if button is clicked, close the job_dialog dialog
         dialogButton_visited.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -542,7 +551,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 dialog.dismiss();
             }
         });
-        Button dialogButton_navigate = (Button) dialog.findViewById(R.id.dialogButtonNavigate);
+        ImageButton dialogButton_navigate = (ImageButton) dialog.findViewById(R.id.dialogButtonNavigate);
         // if button is clicked, close the job_dialog dialog
         dialogButton_navigate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -561,7 +570,9 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             }
         });
         dialog.show();
+        return true;
     }
+
 
     public void UpdateBreakDown(Breakdown selectedBreakdown,int iStatus) {
         dbHandler.UpdateBreakdownStatus(selectedBreakdown,iStatus);

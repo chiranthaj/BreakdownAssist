@@ -3,10 +3,8 @@ package lk.steps.breakdownassist.Fragments;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
-
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
-
 import lk.steps.breakdownassist.R;
 
 /**
@@ -44,7 +42,8 @@ public class MyInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
         TextView tvTitle = ((TextView)myContentsView.findViewById(R.id.title));
         tvTitle.setText(marker.getTitle());
         TextView tvSnippet = ((TextView)myContentsView.findViewById(R.id.snippet));
-        tvSnippet.setText(marker.getSnippet());
+        tvSnippet.setText(marker.getSnippet().trim());
+       // tvSnippet.setText("seret5rg 5656frw3ef exbgwhgu we8rt xhhqegxu wdtir ywehrxg afwrc wxuirir");
 //TODO : Pass a bundle with more data
         return myContentsView;
     }

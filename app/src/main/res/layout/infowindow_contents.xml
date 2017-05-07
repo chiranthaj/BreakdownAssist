@@ -2,42 +2,39 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:background="@drawable/info_window">
+    android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:layout_weight="100">
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/title"
-                    android:text="title"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="#ff000000"
-                    android:textSize="18dp"
-                    android:textStyle="bold"
                     android:layout_marginBottom="10dp"
-                    android:textAlignment="center" />
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:text="title"
+                    android:textAlignment="center"
+                    android:textColor="#ff000000"
+                    android:textSize="40sp"
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:text="snippet"
                     android:id="@+id/snippet"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#353535"
-                    android:textSize="18dp"
-                    android:maxLines="6"
                     android:layout_marginBottom="10dp"
-                    android:textAlignment="center" />
+                    android:text="snippet"
+                    android:textAlignment="center"
+                    android:textColor="#353535"
+                    android:textSize="35sp" />
         </LinearLayout>
 
 </LinearLayout>

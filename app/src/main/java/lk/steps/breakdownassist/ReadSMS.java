@@ -5,6 +5,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -87,28 +89,33 @@ public class ReadSMS
         String sAccountNo="";
         String ProbableAreaCodesMask ="";
 
-        if (Globals.NoOfAreaCodes==1 && Globals.AreaCode1.length()==2) //detect only area code 41
-        {
-            ProbableAreaCodesMask ="(" + Globals.AreaCode1 + "\\d\\d\\d\\d\\d\\d\\d\\d" + ")" ;
-        }
-        else if (Globals.NoOfAreaCodes==2 && Globals.AreaCode1.length()==2 && Globals.AreaCode2.length()==2)//detect both area codes 41,42
-        {
-            ProbableAreaCodesMask ="(" + Globals.AreaCode1 + "\\d\\d\\d\\d\\d\\d\\d\\d" +  "|"
-                    + Globals.AreaCode2 + "\\d\\d\\d\\d\\d\\d\\d\\d" + ")" ;
-        }
-        else if (Globals.NoOfAreaCodes==3 && Globals.AreaCode1.length()==2
-                && Globals.AreaCode2.length()==2 && Globals.AreaCode3.length()==2)//detect all the area codes 41,42,71
-        {
-            ProbableAreaCodesMask ="(" + Globals.AreaCode1 + "\\d\\d\\d\\d\\d\\d\\d\\d" + "|"
-                    + Globals.AreaCode2 + "\\d\\d\\d\\d\\d\\d\\d\\d" + "|" + Globals.AreaCode3 + "\\d\\d\\d\\d\\d\\d\\d\\d" + ")" ;
-        }
+        try{
+            if (Globals.NoOfAreaCodes==1 && Globals.AreaCode1.length()==2) //detect only area code 41
+            {
+                ProbableAreaCodesMask ="(" + Globals.AreaCode1 + "\\d\\d\\d\\d\\d\\d\\d\\d" + ")" ;
+            }
+            else if (Globals.NoOfAreaCodes==2 && Globals.AreaCode1.length()==2 && Globals.AreaCode2.length()==2)//detect both area codes 41,42
+            {
+                ProbableAreaCodesMask ="(" + Globals.AreaCode1 + "\\d\\d\\d\\d\\d\\d\\d\\d" +  "|"
+                        + Globals.AreaCode2 + "\\d\\d\\d\\d\\d\\d\\d\\d" + ")" ;
+            }
+            else if (Globals.NoOfAreaCodes==3 && Globals.AreaCode1.length()==2
+                    && Globals.AreaCode2.length()==2 && Globals.AreaCode3.length()==2)//detect all the area codes 41,42,71
+            {
+                ProbableAreaCodesMask ="(" + Globals.AreaCode1 + "\\d\\d\\d\\d\\d\\d\\d\\d" + "|"
+                        + Globals.AreaCode2 + "\\d\\d\\d\\d\\d\\d\\d\\d" + "|" + Globals.AreaCode3 + "\\d\\d\\d\\d\\d\\d\\d\\d" + ")" ;
+            }
 
-        String patternString=  ProbableAreaCodesMask;
-        Matcher m = Pattern.compile(patternString).matcher(sInputText);
+            String patternString=  ProbableAreaCodesMask;
+            Matcher m = Pattern.compile(patternString).matcher(sInputText);
 
-        if(m.find())
-        {
-            sAccountNo = m.group(1);
+            if(m.find())
+            {
+                sAccountNo = m.group(1);
+            }
+        }catch(Exception e){
+            Log.e("extractAccountNo",e.getMessage());
+            sAccountNo="0000000000";
         }
         return sAccountNo;
     }
@@ -125,7 +132,7 @@ public class ReadSMS
     {
         String sJobNo="";
         String ProbableAreaCodesMask ="";
-
+        try{
         if (Globals.NoOfAreaCodes==1 && Globals.AreaCode1.length()==2) //detect only area code 41
         {
             ProbableAreaCodesMask ="(J" + "(" + Globals.AreaCode1 + ")" + "/[A-Z]/2\\d\\d\\d/\\d\\d/\\d\\d/\\d*\\.\\d*)";
@@ -147,6 +154,10 @@ public class ReadSMS
         if(m.find())
         {
             sJobNo = m.group(1);
+        }
+        }catch(Exception e){
+            Log.e("extractJobNo",e.getMessage());
+            sJobNo="0000000000";
         }
         return sJobNo;
     }

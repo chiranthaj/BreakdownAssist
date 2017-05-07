@@ -8,6 +8,8 @@ import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
@@ -21,7 +23,7 @@ public class JobListViewActivity extends AppCompatActivity {
         setContentView(R.layout.job_listview);
 
         dbHandler = new MyDBHandler(this,null,null,1); //TODO : Close on exit
-        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownmate.NewBreakdownBroadcast"));
         displayListView();
     }
 
@@ -40,10 +42,10 @@ public class JobListViewActivity extends AppCompatActivity {
     private void displayListView() {
 
         //TODO : Add a listner to show the new SMSs
-        Cursor cursor = dbHandler.ReadBreakdownsToCursor(-1);
+        Cursor cursor = dbHandler.ReadBreakdownsToCursor(0);
 
         // The desired columns to be bound
-        String[] columns2 = new String[] {"_Acct_Num","NAME","ADDRESS","Description","Status","_Job_Num"}; /*TODO : "Status" May be in a color of the row or dot*/
+        String[] columns2 = new String[] {"_Acct_Num","NAME","ADDRESS","Description","Status","_Job_Num","DateTime1","DateTime2"}; /*TODO : "Status" May be in a color of the row or dot*/
         // the XML defined views which the data will be bound to
         int[] to = new int[] {
                 R.id.acct_num,
@@ -51,8 +53,9 @@ public class JobListViewActivity extends AppCompatActivity {
                 R.id.address,
                 R.id.description,
                 R.id.status,
-                R.id.job_no
-
+                R.id.job_no,
+                R.id.received_date_time,
+                R.id.completed_date_time
         };
 
         // create the adapter using the cursor pointing to the desired data
@@ -64,9 +67,19 @@ public class JobListViewActivity extends AppCompatActivity {
                 to,
                 0);
 
+
+
         ListView listView = (ListView) findViewById(R.id.listView1);
         // Assign adapter to ListView
         listView.setAdapter(dataAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                //TODO : Focus to selected breackdown on the map
+
+            }
+        });
     }
 
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {

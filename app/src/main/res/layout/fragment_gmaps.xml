@@ -25,10 +25,10 @@
         android:visibility="invisible">
 
         <Button
-            android:text="CLR"
-            android:layout_width="56dp"
+            android:id="@+id/buttonCLR"
+            android:layout_width="wrap_content"
             android:layout_height="35dp"
-            android:id="@+id/buttonCLR" />
+            android:text="Clear" />
 
         <TextView
             android:text="Distance"
