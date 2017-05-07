@@ -4,19 +4,20 @@ import android.app.Application;
 import android.content.Context;
 
 /**
- * Created by Chirantha on 4/9/2017.
+ * Created by Chirantha on 4/9/2017. 
+ * BreakDownMate -> BreakdownAssist
  */
 
-public class BreakDownMate extends Application {
+public class BreakdownAssist extends Application {
 
     private static Context context;
 
     public void onCreate() {
         super.onCreate();
-        BreakDownMate.context = getApplicationContext();
+        BreakdownAssist.context = getApplicationContext();
     }
 
     public static Context getAppContext() {
-        return BreakDownMate.context;
+        return BreakdownAssist.context;
     }
 }
