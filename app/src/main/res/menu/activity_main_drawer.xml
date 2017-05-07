@@ -13,7 +13,7 @@
         <item
             android:id="@+id/nav_jobs"
             android:icon="@drawable/ic_view_list_black_24dp"
-            android:title="Jobs" />
+            android:title="Unattained Jobs" />
         <item
             android:id="@+id/nav_completed_jobs"
             android:icon="@drawable/ic_beenhere_black_24dp"
