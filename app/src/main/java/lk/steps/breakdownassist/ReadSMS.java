@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
  */
 public class ReadSMS
 {
-
     /* TODO : Handle the empty inbox case when a new SMS receive error*/
 
     public static String getNextID(Context context)
