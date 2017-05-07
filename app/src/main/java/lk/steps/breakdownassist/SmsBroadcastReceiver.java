@@ -40,7 +40,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                 String address = smsMessage.getOriginatingAddress();
 
                 Date callDayTime = new Date( smsMessage.getTimestampMillis());
-                SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
+                SimpleDateFormat timeFormat =  new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
                 String time = timeFormat.format(callDayTime);
                 String sNextID =ReadSMS.getNextID(context);
                 String sAcct_num=ReadSMS.extractAccountNo(smsBody);
