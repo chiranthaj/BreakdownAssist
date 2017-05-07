@@ -60,7 +60,7 @@ public class ReadSMS
                 String sAddress = cursor.getString(1);
                 String sFullMessage=cursor.getString(3);
                 Date callDayTime = new Date(Long.parseLong( cursor.getString(2)));
-                SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy:MM:d h:m:s a");
+                SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
                 String time = timeFormat.format(callDayTime);
 //                //String sNextID =getNextID(context);
                 String sAcct_num=extractAccountNo(sFullMessage);
