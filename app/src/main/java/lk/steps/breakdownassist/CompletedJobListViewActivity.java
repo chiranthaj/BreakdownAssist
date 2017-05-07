@@ -41,6 +41,7 @@ public class CompletedJobListViewActivity extends AppCompatActivity {
 
     private void displayListView() {
 
+
         //TODO : Add a listner to show the new SMSs
         Cursor cursor = dbHandler.ReadBreakdownsToCursor(1);
 
