@@ -5,9 +5,11 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -25,7 +27,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -113,6 +114,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         dbHandler = new MyDBHandler(getActivity().getApplicationContext(), null, null, 1);
 
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(),
@@ -158,8 +160,17 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 }
         );
     }
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
 
+            String sID=intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
+            //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
+            RefreshPendingJobsFromDB();
+        }
+    };
     public void ReStoreMap(){
+
         bRestoreMap = true;
         buttonRestoreMap.setVisibility(View.INVISIBLE);
 
@@ -287,7 +298,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.setOnCameraMoveStartedListener(this);
         mMap.setOnMarkerClickListener(this);
        // mMap.setOnInfoWindowClickListener(this);
-        ShowPendingJobsFromDB();
+        RefreshPendingJobsFromDB();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastlocation));
        // mMap.setInfoWindowAdapter(new MyInfoWindowAdapter(getActivity().getLayoutInflater()));
     }
@@ -345,15 +356,15 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         selectedMarker.remove();
     }
 
-    public void ShowPendingJobsFromDB() {
+    public void RefreshPendingJobsFromDB() {
         AddBreakDownListToMap(dbHandler.ReadPendingBreakdowns());
     }
 
-    public void ShowCompletedJobsFromDB() {
+    public void RefreshCompletedJobsFromDB() {
         AddBreakDownListToMap(dbHandler.ReadPendingBreakdowns());
     }
 
-    public void ShowAllJobsFromDB() {
+    public void RefreshAllJobsFromDB() {
         AddBreakDownListToMap(dbHandler.ReadPendingBreakdowns());
     }
 
@@ -401,6 +412,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onResume() {
         super.onResume();
+        mContext.registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
         // Resuming the periodic location updates
         if (mGoogleApiClient != null &&  mGoogleApiClient.isConnected() ) {
             startLocationUpdates();
@@ -418,6 +430,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onPause() {
         super.onPause();
+        mContext.unregisterReceiver(broadcastReceiver);
         stopLocationUpdates();
     }
 

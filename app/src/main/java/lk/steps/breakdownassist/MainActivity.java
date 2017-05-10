@@ -132,31 +132,10 @@ public class MainActivity extends AppCompatActivity
 
             String sID=intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
             //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
-            AddBreakdownToHome(sID);
+
         }
     };
 
-    private boolean AddBreakdownToHome(String sID){//Rather Add to my Basket,//Breakdown ID, not ID in Customer Table or the SMS inbox ID
-        boolean bReturnVal=false;
-        Breakdown mybd =null;
-        mybd=dbHandler.ReadBreakdown_by_ID(sID);
-        if (mybd!= null){
-            //TODO : Check the accuracy field of the GPS location and proceed only if it is less than 50m
-            Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
-            if (currentFragment instanceof GmapFragment) {
-                GmapFragment GmapFrag= (GmapFragment) currentFragment;
-                GmapFrag.AddBreakDownToMap(mybd);
-                bReturnVal= true;
-            }
-        }
-        else{
-            //Toast.makeText(this,"No records",Toast.LENGTH_SHORT).show();
-            //SMS list fragment ....
-            bReturnVal= false;
-            //TODO :  Add to Not in GPS Database list,Breakdown list (full SMS list) and increase the number of breakdowns icon on the map
-        }
-        return bReturnVal;
-    }
 
     @Override
     protected void onDestroy() {
