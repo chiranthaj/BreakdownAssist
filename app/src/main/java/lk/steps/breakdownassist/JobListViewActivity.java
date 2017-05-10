@@ -12,7 +12,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-
+//TODO :  move JobListViewActivity and CompletedJobListViewActivity to fragments, so that it will be able to show with the side bar
 public class JobListViewActivity extends AppCompatActivity {
 
     private SimpleCursorAdapter dataAdapter;
@@ -23,17 +23,30 @@ public class JobListViewActivity extends AppCompatActivity {
         setContentView(R.layout.job_listview);
 
         dbHandler = new MyDBHandler(this,null,null,1); //TODO : Close on exit
-        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
+
         displayListView();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         unregisterReceiver(broadcastReceiver);
     }
-    @Override
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        //TODO : Select the Home in Drawer
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
@@ -86,18 +99,9 @@ public class JobListViewActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
-            Breakdown mybd =null;
-            mybd=dbHandler.ReadBreakdown_by_ID(intent.getExtras().getString("_id")); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
-            if (mybd!= null){
                 //Add to list view
                 displayListView();
-            }
-            else{
-                //Toast.makeText(this,"No records",Toast.LENGTH_SHORT).show();
-                //SMS list fragment ....
-                //TODO :  Add to Not in GPS Database list,Breakdown list (full SMS list) and increase the number of breakdowns icon on the map
-                //TODO : Get other data by the INTENT bundle
-            }
+
         }
     };
 }

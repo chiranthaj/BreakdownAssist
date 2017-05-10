@@ -6,13 +6,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-
+//TODO :  move JobListViewActivity and CompletedJobListViewActivity to fragments, so that it will be able to show with the side bar
 public class CompletedJobListViewActivity extends AppCompatActivity {
 
     private SimpleCursorAdapter dataAdapter;
@@ -23,15 +25,29 @@ public class CompletedJobListViewActivity extends AppCompatActivity {
         setContentView(R.layout.job_listview);
 
         dbHandler = new MyDBHandler(this,null,null,1); //TODO : Close on exit
-        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
+
         displayListView();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         unregisterReceiver(broadcastReceiver);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        //TODO : Select the Home in Drawer
+    }
+
     @Override
 
     public boolean onCreateOptionsMenu(Menu menu) {
