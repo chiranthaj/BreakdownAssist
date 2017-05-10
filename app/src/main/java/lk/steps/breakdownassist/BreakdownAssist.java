@@ -5,7 +5,7 @@ import android.content.Context;
 
 /**
  * Created by Chirantha on 4/9/2017. 
- * BreakDownMate -> BreakdownAssist
+ * BreakdownAssist
  */
 
 public class BreakdownAssist extends Application {

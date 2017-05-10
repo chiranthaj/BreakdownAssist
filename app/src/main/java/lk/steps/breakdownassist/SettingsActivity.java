@@ -106,7 +106,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         super.onHeaderClick(header, position);
         if (header.id == R.id.Database_update) {
             Toast.makeText(this,"Database_update",Toast.LENGTH_LONG).show();
-            Intent intent1 = new Intent(BreakDownMate.getAppContext(), FileChooser.class);
+            Intent intent1 = new Intent(BreakDownAssist.getAppContext(), FileChooser.class);
             intent1.putExtra("fileTypeFilter",".db");
             startActivityForResult(intent1,READ_REQUEST_CODE_CUSTOMER_DATA);
         }

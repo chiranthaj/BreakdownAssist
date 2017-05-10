@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity
 
         fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
 
-        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownmate.NewBreakdownBroadcast"));
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
         /* This code together with the one in onDestroy()
          * will make the screen be always on until this Activity gets destroyed. */
 

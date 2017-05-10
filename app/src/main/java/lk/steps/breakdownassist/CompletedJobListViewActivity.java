@@ -23,7 +23,7 @@ public class CompletedJobListViewActivity extends AppCompatActivity {
         setContentView(R.layout.job_listview);
 
         dbHandler = new MyDBHandler(this,null,null,1); //TODO : Close on exit
-        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownmate.NewBreakdownBroadcast"));
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
         displayListView();
     }
 
