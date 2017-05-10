@@ -11,7 +11,6 @@
     <!-- Needed only if your app targets Android 5.0 (API level 21) or higher. -->
     <uses-feature android:name="android.hardware.location.gps" />
     <uses-feature android:name="android.hardware.location.network" />
-
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
@@ -48,6 +47,7 @@
         </receiver>
         <activity android:name="lk.steps.breakdownassist.CompletedJobListViewActivity" />
         <activity android:name="lk.steps.breakdownassist.JobListViewActivity" />
+        <activity android:name="lk.steps.breakdownassist.AboutActivity" />
         <activity
             android:name="lk.steps.breakdownassist.SettingsActivity"
             android:label="@string/title_activity_settings"

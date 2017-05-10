@@ -1,90 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:layout_height="wrap_content">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:weightSum="1"
-    android:layout_marginTop="10dp"
-    android:layout_marginLeft="10dp"
-    android:layout_marginRight="10dp"
-    android:layout_marginBottom="10dp">
-
-    <TextView
-        android:id="@+id/jobno"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
-        android:text="Completed Time"
-        android:textAlignment="center"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="25sp"
-        android:textStyle="normal" />
+        android:orientation="vertical"
+        android:weightSum="1">
 
-        <TimePicker
-        android:id="@+id/timePicker2"
-        android:layout_width="match_parent"
-        android:layout_height="161dp"
-        android:layout_marginTop="10dp"
-        android:timePickerMode="spinner" />
+        <TextView
+            android:id="@+id/jobno"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Completed Date and Time"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="25sp"
+            android:textStyle="normal" />
 
-    <TextView
-        android:id="@+id/text1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Reason for the Breakdown"
-        android:textAlignment="center"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="25sp"
-        android:textStyle="normal" />
-
-    <Spinner
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/spinner"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:entries="@array/dialog_job_breakdown_course_list_titles"
-        android:entryValues="@array/dialog_job_breakdown_course_list_values"
-        android:title="Job Description"/>
-
-
-    <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
 
         <TableRow
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:gravity="center"
+            android:weightSum="1">
 
-
-            <ImageButton
-                android:id="@+id/btnCancel"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_cancel"
+            <DatePicker
+                android:id="@+id/datePicker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="0.5"
-                android:text="Visited" />
+                android:timePickerMode="spinner" />
 
-            <ImageButton
-                android:id="@+id/dialogButtonCompleted"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+            <TimePicker
+                android:id="@+id/timePicker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="0.5"
-                android:src="@drawable/ic_done"
-                android:text="COMLTD" />
+                android:timePickerMode="spinner" />
         </TableRow>
 
-    </TableLayout>
 
-</LinearLayout>
-    </ScrollView>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/text1"
+                    android:layout_height="match_parent"
+                    android:text="Failure Type :"
+                    android:layout_width="300dp"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="25sp"
+                    android:textStyle="normal" />
+
+                <Spinner
+                    android:id="@+id/spinner1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:entries="@array/failure_type"
+                    android:entryValues="@array/failure_type_index"
+                    android:gravity="left"
+                    android:title="Job Description" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/text2"
+                    android:layout_width="300dp"
+                    android:layout_height="match_parent"
+                    android:text="Failure Nature :"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="25sp"
+                    android:textStyle="normal" />
+
+                <Spinner
+                    android:id="@+id/spinner2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:entries="@array/failure_nature"
+                    android:entryValues="@array/failure_nature_index"
+                    android:gravity="left"
+                    android:title="Job Description" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/text3"
+                    android:layout_width="300dp"
+                    android:layout_height="match_parent"
+                    android:text="Failure Cause :"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="25sp"
+                    android:textStyle="normal" />
+
+                <Spinner
+                    android:id="@+id/spinner3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:entries="@array/failure_cause"
+                    android:entryValues="@array/failure_cause_index"
+                    android:gravity="left"
+                    android:title="Job Description" />
+            </TableRow>
+
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:weightSum="1">
+
+                <ImageButton
+                    android:id="@+id/btnCancel"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="50dp"
+                    android:layout_marginStart="50dp"
+                    android:src="@drawable/ic_cancel"
+                    android:layout_weight="0.5"
+                    android:text="Visited" />
+
+                <ImageButton
+                    android:id="@+id/dialogButtonCompleted"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="50dp"
+                    android:layout_marginStart="50dp"
+                    android:layout_weight="0.5"
+                    android:src="@drawable/ic_done"
+                    android:text="COMLTD" />
+            </TableRow>
+
+    </LinearLayout>
+</ScrollView>
 
