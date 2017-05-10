@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -515,9 +516,9 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         TextView txtJobno = (TextView) dialog.findViewById(R.id.jobno);
         txtJobno.setText(selectedBreakdown.get_Job_No().trim());
         TextView txtRecTime = (TextView) dialog.findViewById(R.id.received_date_time);
-        txtRecTime.setText(selectedBreakdown.get_Received_Time().trim());
+        txtRecTime.setText("Received time : " + selectedBreakdown.get_Received_Time().trim());
         TextView txtAcctNum = (TextView) dialog.findViewById(R.id.acctnum);
-        txtAcctNum.setText(selectedBreakdown.get_Acct_Num().trim());
+        txtAcctNum.setText("Acc. No. : "+selectedBreakdown.get_Acct_Num().trim());
         TextView txtName = (TextView) dialog.findViewById(R.id.name);
         txtName.setText(selectedBreakdown.get_Name().trim() + "\n" + selectedBreakdown.get_ADDRESS().trim());
 
@@ -525,9 +526,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         txtPhoneNo.setText(selectedBreakdown.get_Contact_No().trim());
 
         TextView txtFullDescription = (TextView) dialog.findViewById(R.id.fulldescription);
-        txtFullDescription.setText(selectedBreakdown.get_Full_Description().trim());
-
-
+        //txtFullDescription.setText(selectedBreakdown.get_Full_Description().trim());
+        txtFullDescription.setText("");
 
         ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
         // if button is clicked, close the job_dialog dialog
@@ -591,20 +591,62 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_feedback_dialog);
-//TODO : Use date time picker
+        //TODO : Use date time picker
         //Spinner
-        ArrayAdapter adapter = ArrayAdapter.createFromResource(getActivity(), R.array.dialog_job_breakdown_course_list_titles, R.layout.spinner_row );
-        Spinner s = (Spinner) dialog.findViewById(R.id.spinner);
-        s.setAdapter(adapter);
+        ArrayAdapter adapter1 = ArrayAdapter.createFromResource(getActivity(), R.array.failure_type, R.layout.spinner_row );
+        final Spinner spinner1 = (Spinner) dialog.findViewById(R.id.spinner1);
+        spinner1.setAdapter(adapter1);
+        ArrayAdapter adapter2 = ArrayAdapter.createFromResource(getActivity(), R.array.failure_nature, R.layout.spinner_row );
+        final Spinner spinner2 = (Spinner) dialog.findViewById(R.id.spinner2);
+        spinner2.setAdapter(adapter2);
+        ArrayAdapter adapter3 = ArrayAdapter.createFromResource(getActivity(), R.array.failure_cause, R.layout.spinner_row );
+        final Spinner spinner3 = (Spinner) dialog.findViewById(R.id.spinner3);
+        spinner3.setAdapter(adapter3);
 
         ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
         // if button is clicked, close the job_dialog dialog
         dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_DONE);
+                if(spinner1.getSelectedItemPosition() == 0){
+                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                    alertDialog.setTitle("Please select a Failure type");
+                    //alertDialog.setMessage("message");
+                    //alertDialog.setIcon(R.drawable.welcome);
+                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            alertDialog.dismiss();
+                        }
+                    });
+                    alertDialog.show();
+                }else if(spinner2.getSelectedItemPosition() == 0){
+                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                    alertDialog.setTitle("Please select a Failure nature");
+                    //alertDialog.setMessage("message");
+                    //alertDialog.setIcon(R.drawable.welcome);
+                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            alertDialog.dismiss();
+                        }
+                    });
+                    alertDialog.show();
+                }else if(spinner3.getSelectedItemPosition() == 0){
+                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+                    alertDialog.setTitle("Please select a Failure cause");
+                    //alertDialog.setMessage("message");
+                    //alertDialog.setIcon(R.drawable.welcome);
+                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            alertDialog.dismiss();
+                        }
+                    });
+                    alertDialog.show();
+                }else{
+                    UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_DONE);
+                    Log.d("Reason ",spinner1.getSelectedItem().toString());
+                    dialog.dismiss();
+                }
                 //TODO : Use an Undo option
-                dialog.dismiss();
             }
         });
         ImageButton dialogButton_visited = (ImageButton) dialog.findViewById(R.id.btnCancel);
