@@ -9,5 +9,5 @@ A large screen TAB is used to run this app in the breakdown vehicle and the brea
 
 The main reason is the availability of the service. SMSs can be received even in very weak mobile signal level, which will definitely increase the availability of the communication.
 
-The next reason is, SMS being the only way to keep the connectivity with the software used in the Contact Center. :)
+The next reason is, SMS being the only way to keep the connectivity with the software which is used in the Contact Center. :)
 
