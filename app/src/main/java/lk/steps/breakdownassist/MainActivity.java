@@ -232,6 +232,8 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -261,6 +263,9 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, "Synced !!" , Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        }else if (id == R.id.about) {
+            Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);
         }
 
