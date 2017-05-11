@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity
             search.setSearchableInfo(manager.getSearchableInfo(getComponentName()));
 
             search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-//TODO : Move these to designated fragments and localize them
+            //TODO : Move these to designated fragments and localize them
                 @Override
                 public boolean onQueryTextSubmit(String s) {
                     //Log.d("TEST", "onQueryTextSubmit ");

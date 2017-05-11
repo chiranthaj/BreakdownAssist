@@ -349,8 +349,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public void AddCustomerLocationToMap(String Account_Num) {
         Breakdown newBreakdown = dbHandler.ReadCustomer_by_ACCT_NUM(Account_Num);
         if (newBreakdown!=null){
-            Marker CreatedMarker=AddBreakDownToMap(newBreakdown,
-                    BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            Marker CreatedMarker = AddBreakDownToMap(newBreakdown,R.drawable.factory);
             if (CreatedMarker!=null){
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(CreatedMarker.getPosition()));
                 CreatedMarker.showInfoWindow();
@@ -359,7 +358,15 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         else
             Toast.makeText(getActivity().getApplicationContext(),"Search Failed, Try again",Toast.LENGTH_SHORT);
     }
+
     public Marker AddBreakDownToMap(Breakdown breakdown){
+//TODO : Check this later @Jagath
+        /*int icon = R.drawable.factory;
+        if(breakdown.get_TARIFF_COD()=="11"){
+            icon = R.drawable.factory;
+        }
+        return AddBreakDownToMap(breakdown,icon);*/
+
         BitmapDescriptor MarkerICON;//TODO : Depending on the priority,and current status mark the colour  and the shape
         if (breakdown.get_Status()==Breakdown.Status_JOB_COMPLETED){
             MarkerICON=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
@@ -368,8 +375,10 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         }
 
         return AddBreakDownToMap(breakdown,MarkerICON);
+
     }
-    public Marker AddBreakDownToMap(Breakdown breakdown, BitmapDescriptor MarkerICON) {
+
+    public Marker AddBreakDownToMap(Breakdown breakdown, int icon) {
         Marker CreatedMarker=null;//For Return
 
         listBreakdownsOnMap.put(breakdown.get_id(), breakdown);
@@ -380,7 +389,12 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 bdMarker = mMap.addMarker(new MarkerOptions()
                         .position(breakdown.getLocation())
                         .title(breakdown.get_Job_No() + " - " + breakdown.get_Acct_Num())
+
+                        //.icon(MarkerICON) //TODO : Depending on the priority mark the color
+                        //.icon(BitmapDescriptorFactory.fromResource(icon))
+
                         .icon(MarkerICON)
+
                         .snippet(breakdown.get_Name() + "\n" + breakdown.get_ADDRESS() + "\n\n" + breakdown.get_Full_Description()));
 
                 mMarker.put(breakdown, bdMarker); //Adding to Harshmap
@@ -552,7 +566,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public boolean onMarkerClick(final Marker marker) {
     //@Override
     //public void onInfoWindowClick(Marker marker) {
-        final Marker selectedMarker =marker;  //to access in Override Methods
+        final Marker selectedMarker = marker;  //to access in Override Methods
         final Breakdown selectedBreakdown=(Breakdown) mBreakdown.get(selectedMarker); //Calling from Harshmap by giving the Marker Ref
 
         final Dialog dialog = new Dialog(getActivity());
