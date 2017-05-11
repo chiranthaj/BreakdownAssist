@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.support.design.widget.FloatingActionButton;
 
@@ -34,8 +35,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import lk.steps.breakdownassist.Fragments.CompletedJobsFragment;
+import lk.steps.breakdownassist.Fragments.DashBoardFragment;
 import lk.steps.breakdownassist.Fragments.GmapAddBreakdownFragment;
 import lk.steps.breakdownassist.Fragments.GmapFragment;
+import lk.steps.breakdownassist.Fragments.SearchViewFragment;
 import lk.steps.breakdownassist.Fragments.UnattainedJobsFragment;
 
 public class MainActivity extends AppCompatActivity
@@ -50,6 +53,8 @@ public class MainActivity extends AppCompatActivity
     public static final String MAP_ADDBREAKDOWN_FRAGMENT_TAG = "TagMapAddBreakdownFragment";
 
     private static Context context;
+
+    boolean doubleBackToExitPressedOnce = false;
 
     Timer timer;
     MyTimerTask myTimerTask;
@@ -81,9 +86,9 @@ public class MainActivity extends AppCompatActivity
         ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(),this);
         fm = getFragmentManager();
 
-        fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
+        fm.beginTransaction().replace(R.id.content_frame, new DashBoardFragment()).commit();
+       // fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
 
-        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
         /* This code together with the one in onDestroy()
          * will make the screen be always on until this Activity gets destroyed. */
 
@@ -103,6 +108,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        unregisterReceiver(broadcastReceiver);
         if (this.mWakeLock.isHeld())
             this.mWakeLock.release();
     }
@@ -110,6 +116,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
         if (!this.mWakeLock.isHeld())
             this.mWakeLock.acquire();
     }
@@ -141,26 +148,37 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(broadcastReceiver);
         dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
         super.onDestroy();
     }
 
-    /*@Override
+    @Override
     public void onBackPressed() {
-        if (fm.getBackStackEntryCount() > 0) {
-            fm.popBackStack();
-        } else {
+        if (doubleBackToExitPressedOnce) {
             super.onBackPressed();
+            return;
         }
-    }*/
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        //TODO : Check if this works on previous versions
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        //getMenuInflater().inflate(R.menu.search_menu, menu);
+        getMenuInflater().inflate(R.menu.search_menu, menu);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             SearchManager manager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -223,16 +241,19 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.nav_home) {
+        if (id == R.id.nav_map_view) {
             //TODO : If current fragment is NOT Map fragment only replace the fragment
             fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
-        } else if (id == R.id.nav_search) {
-
+        }else if (id == R.id.nav_dashboard) {
+            fm.beginTransaction().replace(R.id.content_frame, new DashBoardFragment()).commit();
+        }
+        else if (id == R.id.nav_search) {
+            fm.beginTransaction().replace(R.id.content_frame, new SearchViewFragment()).commit();
         } else if (id == R.id.nav_unattained_jobs) {
-            fm.beginTransaction().replace(R.id.content_frame, new CompletedJobsFragment()).commit();
+            fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
         }
         else if (id == R.id.nav_completed_jobs) {
-            fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
+            fm.beginTransaction().replace(R.id.content_frame, new CompletedJobsFragment()).commit();
         }else if (id == R.id.nav_Test_BD_ADD) {
             fm.beginTransaction().replace(R.id.content_frame, new GmapAddBreakdownFragment(),MAP_ADDBREAKDOWN_FRAGMENT_TAG).addToBackStack("GmapAddBreakdownFragment").commit();
         } else if (id == R.id.nav_sync_sms_inbox) {
@@ -255,7 +276,7 @@ public class MainActivity extends AppCompatActivity
         return MainActivity.context;
     }
 
-    @Override
+    @Override  ///Floating action  Button
     public void onClick(View view) {
 
     }
