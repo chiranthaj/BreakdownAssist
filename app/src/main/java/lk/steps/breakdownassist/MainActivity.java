@@ -15,8 +15,8 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.support.design.widget.FloatingActionButton;
 
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -36,13 +36,13 @@ import java.util.TimerTask;
 
 import lk.steps.breakdownassist.Fragments.CompletedJobsFragment;
 import lk.steps.breakdownassist.Fragments.DashBoardFragment;
-import lk.steps.breakdownassist.Fragments.GmapAddBreakdownFragment;
+import lk.steps.breakdownassist.Fragments.GmapAddTestBreakdownFragment;
 import lk.steps.breakdownassist.Fragments.GmapFragment;
 import lk.steps.breakdownassist.Fragments.SearchViewFragment;
 import lk.steps.breakdownassist.Fragments.UnattainedJobsFragment;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,View.OnClickListener {
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     MyDBHandler dbHandler;
     FragmentManager fm;
@@ -70,7 +70,13 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Not implemented", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -89,11 +95,8 @@ public class MainActivity extends AppCompatActivity
         fm.beginTransaction().replace(R.id.content_frame, new DashBoardFragment()).commit();
        // fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
 
-        /* This code together with the one in onDestroy()
-         * will make the screen be always on until this Activity gets destroyed. */
-
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
-        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "My Tag");//TODO : Deprecated method remove
+        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "My Tag");
         this.mWakeLock.acquire();
 
         timer = new Timer();
@@ -138,10 +141,8 @@ public class MainActivity extends AppCompatActivity
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
             String sID=intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
             //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
-
         }
     };
 
@@ -155,22 +156,27 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed();
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        //TODO : Check if this works on previous versions
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce=false;
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
+                return;
             }
-        }, 2000);
+
+            this.doubleBackToExitPressedOnce = true;
+            Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+            //TODO : Check if this works on previous versions
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    doubleBackToExitPressedOnce=false;
+                }
+            }, 2000);
+        }
 
     }
 
@@ -179,6 +185,7 @@ public class MainActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         getMenuInflater().inflate(R.menu.search_menu, menu);
+
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             SearchManager manager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -255,7 +262,7 @@ public class MainActivity extends AppCompatActivity
         else if (id == R.id.nav_completed_jobs) {
             fm.beginTransaction().replace(R.id.content_frame, new CompletedJobsFragment()).commit();
         }else if (id == R.id.nav_Test_BD_ADD) {
-            fm.beginTransaction().replace(R.id.content_frame, new GmapAddBreakdownFragment(),MAP_ADDBREAKDOWN_FRAGMENT_TAG).addToBackStack("GmapAddBreakdownFragment").commit();
+            fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),MAP_ADDBREAKDOWN_FRAGMENT_TAG).addToBackStack("GmapAddTestBreakdownFragment").commit();
         } else if (id == R.id.nav_sync_sms_inbox) {
             Toast.makeText(this, "Please wait.. This will take some time to complete" , Toast.LENGTH_LONG).show();
             ReadSMS.SyncSMSInbox(this);
@@ -274,11 +281,6 @@ public class MainActivity extends AppCompatActivity
     }
     public static Context getAppContext() {
         return MainActivity.context;
-    }
-
-    @Override  ///Floating action  Button
-    public void onClick(View view) {
-
     }
 
     class MyTimerTask extends TimerTask {

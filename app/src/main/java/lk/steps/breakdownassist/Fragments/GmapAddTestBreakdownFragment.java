@@ -36,7 +36,7 @@ import lk.steps.breakdownassist.ManagePermissions;
 import lk.steps.breakdownassist.MyDBHandler;
 import lk.steps.breakdownassist.R;
 
-public class GmapAddBreakdownFragment extends Fragment implements OnMapReadyCallback ,
+public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReadyCallback ,
         GoogleMap.OnMarkerClickListener,GoogleMap.OnInfoWindowClickListener{
 
     private GoogleMap mMap;
