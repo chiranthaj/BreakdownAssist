@@ -96,7 +96,7 @@ public class CompletedJobsFragment extends Fragment {
 
     private void displayListView() {
 
-        final ArrayList<Breakdown> dbList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(Status_JOB_COMPLETED));
+        final ArrayList<Breakdown> dbList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(Breakdown.Status_JOB_COMPLETED));
 
         RecyclerView mRecyclerView = (RecyclerView)mView.findViewById(R.id.recycleview);
 
