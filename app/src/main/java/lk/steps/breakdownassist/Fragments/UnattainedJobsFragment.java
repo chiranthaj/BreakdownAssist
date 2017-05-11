@@ -51,10 +51,11 @@ public class UnattainedJobsFragment extends Fragment {
 
     private void displayListView() {
         //TODO : Add a listner to show the new SMSs
-        Cursor cursor = dbHandler.ReadBreakdownsToCursor(1);
+        Cursor cursor = dbHandler.ReadBreakdownsToCursor(0);
 
         // The desired columns to be bound
-        String[] columns2 = new String[] {"_Acct_Num","NAME","ADDRESS","Description","Status","_Job_Num","DateTime1","DateTime2"}; /*TODO : "Status" May be in a color of the row or dot*/
+        String[] columns2 = new String[] {"_Acct_Num","NAME","ADDRESS",
+                "Description","Status","_Job_Num","DateTime1","DateTime2"}; /*TODO : "Status" May be in a color of the row or dot*/
         // the XML defined views which the data will be bound to
         int[] to = new int[] {
                 R.id.acct_num,
@@ -83,7 +84,7 @@ public class UnattainedJobsFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                //TODO : Focus to selected breackdown on the map
+                //TODO : Focus to selected breakdown on the map
 
             }
         });
@@ -92,19 +93,9 @@ public class UnattainedJobsFragment extends Fragment {
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
-            Breakdown mybd =null;
-            mybd=dbHandler.ReadBreakdown_by_ID(intent.getExtras().getString("_id")); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
-            if (mybd!= null){
-                //Add to list view
-                displayListView();
-            }
-            else{
-                //Toast.makeText(this,"No records",Toast.LENGTH_SHORT).show();
-                //SMS list fragment ....
-                //TODO :  Add to Not in GPS Database list,Breakdown list (full SMS list) and increase the number of breakdowns icon on the map
-                //TODO : Get other data by the INTENT bundle
-            }
+            //Add to list view
+            displayListView();
+
         }
     };
 }

@@ -229,10 +229,10 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_search) {
 
         } else if (id == R.id.nav_unattained_jobs) {
-            fm.beginTransaction().replace(R.id.content_frame, new CompletedJobsFragment()).commit();
+            fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
         }
         else if (id == R.id.nav_completed_jobs) {
-            fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
+            fm.beginTransaction().replace(R.id.content_frame, new CompletedJobsFragment()).commit();
         }else if (id == R.id.nav_Test_BD_ADD) {
             fm.beginTransaction().replace(R.id.content_frame, new GmapAddBreakdownFragment(),MAP_ADDBREAKDOWN_FRAGMENT_TAG).addToBackStack("GmapAddBreakdownFragment").commit();
         } else if (id == R.id.nav_sync_sms_inbox) {
