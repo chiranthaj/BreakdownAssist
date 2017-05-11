@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.support.design.widget.FloatingActionButton;
 
@@ -50,6 +51,8 @@ public class MainActivity extends AppCompatActivity
     public static final String MAP_ADDBREAKDOWN_FRAGMENT_TAG = "TagMapAddBreakdownFragment";
 
     private static Context context;
+
+    boolean doubleBackToExitPressedOnce = false;
 
     Timer timer;
     MyTimerTask myTimerTask;
@@ -147,14 +150,31 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
     }
 
-    /*@Override
+    @Override
     public void onBackPressed() {
-        if (fm.getBackStackEntryCount() > 0) {
+/*        if (fm.getBackStackEntryCount() > 0) {
             fm.popBackStack();
         } else {
             super.onBackPressed();
+        }*/
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
         }
-    }*/
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        //TODO : Check if this works on previous versions
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
