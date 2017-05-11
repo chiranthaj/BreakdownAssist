@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package lk.steps.breakdownassist.htmltextview;
+package lk.steps.breakdownassist.HtmlTextView;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;

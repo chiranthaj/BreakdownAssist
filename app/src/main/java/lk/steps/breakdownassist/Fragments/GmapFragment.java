@@ -114,7 +114,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         dbHandler = new MyDBHandler(getActivity().getApplicationContext(), null, null, 1);
 
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(),

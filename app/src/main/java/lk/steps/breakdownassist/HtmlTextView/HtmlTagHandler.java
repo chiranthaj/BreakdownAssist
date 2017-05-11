@@ -17,12 +17,11 @@
  * limitations under the License.
  */
 
-package lk.steps.breakdownassist.htmltextview;
+package lk.steps.breakdownassist.HtmlTextView;
 
 import android.text.Html;
 
 import android.text.Editable;
-import android.text.Html;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;

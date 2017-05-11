@@ -33,8 +33,10 @@ import com.facebook.stetho.Stetho;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import lk.steps.breakdownassist.Fragments.CompletedJobsFragment;
 import lk.steps.breakdownassist.Fragments.GmapAddBreakdownFragment;
 import lk.steps.breakdownassist.Fragments.GmapFragment;
+import lk.steps.breakdownassist.Fragments.UnattainedJobsFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,View.OnClickListener {
@@ -145,15 +147,14 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
     }
 
-    @Override
+    /*@Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+        if (fm.getBackStackEntryCount() > 0) {
+            fm.popBackStack();
         } else {
             super.onBackPressed();
         }
-    }
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -227,15 +228,13 @@ public class MainActivity extends AppCompatActivity
             fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
         } else if (id == R.id.nav_search) {
 
-        } else if (id == R.id.nav_jobs) {
-            Intent i=new Intent(getBaseContext(),JobListViewActivity.class);
-            startActivity(i);
+        } else if (id == R.id.nav_unattained_jobs) {
+            fm.beginTransaction().replace(R.id.content_frame, new CompletedJobsFragment()).commit();
         }
         else if (id == R.id.nav_completed_jobs) {
-            Intent i=new Intent(getBaseContext(),CompletedJobListViewActivity.class);
-            startActivity(i);
+            fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
         }else if (id == R.id.nav_Test_BD_ADD) {
-            fm.beginTransaction().replace(R.id.content_frame, new GmapAddBreakdownFragment(),MAP_ADDBREAKDOWN_FRAGMENT_TAG).commit();
+            fm.beginTransaction().replace(R.id.content_frame, new GmapAddBreakdownFragment(),MAP_ADDBREAKDOWN_FRAGMENT_TAG).addToBackStack("GmapAddBreakdownFragment").commit();
         } else if (id == R.id.nav_sync_sms_inbox) {
             Toast.makeText(this, "Please wait.. This will take some time to complete" , Toast.LENGTH_LONG).show();
             ReadSMS.SyncSMSInbox(this);

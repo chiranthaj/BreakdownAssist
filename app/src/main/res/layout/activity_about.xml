@@ -103,7 +103,7 @@
         android:layout_height="fill_parent"
         android:layout_below="@+id/view">
 
-        <lk.steps.breakdownassist.htmltextview.HtmlTextView
+        <lk.steps.breakdownassist.HtmlTextView.HtmlTextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="text"

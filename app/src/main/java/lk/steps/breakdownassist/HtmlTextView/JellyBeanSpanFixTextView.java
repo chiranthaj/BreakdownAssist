@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package lk.steps.breakdownassist.htmltextview;
+package lk.steps.breakdownassist.HtmlTextView;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -11,7 +11,7 @@
             android:icon="@drawable/ic_search_black_24dp"
             android:title="Search" />
         <item
-            android:id="@+id/nav_jobs"
+            android:id="@+id/nav_unattained_jobs"
             android:icon="@drawable/ic_view_list_black_24dp"
             android:title="Unattained Jobs" />
         <item
