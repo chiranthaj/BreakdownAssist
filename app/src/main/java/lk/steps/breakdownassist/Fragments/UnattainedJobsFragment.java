@@ -70,7 +70,7 @@ public class UnattainedJobsFragment extends Fragment {
         // create the adapter using the cursor pointing to the desired data
         //as well as the layout information
         dataAdapter = new SimpleCursorAdapter(
-                getActivity(), R.layout.breakdowninfo,
+                getActivity(), R.layout.job_listview_row,
                 cursor,
                 columns2,
                 to,
