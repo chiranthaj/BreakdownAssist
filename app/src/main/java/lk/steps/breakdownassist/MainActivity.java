@@ -186,10 +186,10 @@ public class MainActivity extends AppCompatActivity
             search.setSearchableInfo(manager.getSearchableInfo(getComponentName()));
 
             search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-
+//TODO : Move these to designated fragments and localize them
                 @Override
                 public boolean onQueryTextSubmit(String s) {
-                    Log.d("TEST", "onQueryTextSubmit ");
+                    //Log.d("TEST", "onQueryTextSubmit ");
                   /*  cursor=studentRepo.getStudentListByKeyword(s);
                     if (cursor==null){
                         Toast.makeText(MainActivity.this,"No records found!",Toast.LENGTH_LONG).show();
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity
 
                 @Override
                 public boolean onQueryTextChange(String s) {
-                    Log.d("TEST", "onQueryTextChange ");
+                    //Log.d("TEST", "onQueryTextChange ");
                     /*cursor=studentRepo.getStudentListByKeyword(s);
                     if (cursor!=null){
                         customAdapter.swapCursor(cursor);
