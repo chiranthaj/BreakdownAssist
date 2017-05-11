@@ -35,8 +35,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import lk.steps.breakdownassist.Fragments.CompletedJobsFragment;
+import lk.steps.breakdownassist.Fragments.DashBoardFragment;
 import lk.steps.breakdownassist.Fragments.GmapAddBreakdownFragment;
 import lk.steps.breakdownassist.Fragments.GmapFragment;
+import lk.steps.breakdownassist.Fragments.SearchViewFragment;
 import lk.steps.breakdownassist.Fragments.UnattainedJobsFragment;
 
 public class MainActivity extends AppCompatActivity
@@ -84,8 +86,8 @@ public class MainActivity extends AppCompatActivity
         ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(),this);
         fm = getFragmentManager();
 
-        fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
-
+        fm.beginTransaction().replace(R.id.content_frame, new DashBoardFragment()).commit();
+       // fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
 
         /* This code together with the one in onDestroy()
          * will make the screen be always on until this Activity gets destroyed. */
@@ -153,11 +155,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-/*        if (fm.getBackStackEntryCount() > 0) {
-            fm.popBackStack();
-        } else {
-            super.onBackPressed();
-        }*/
         if (doubleBackToExitPressedOnce) {
             super.onBackPressed();
             return;
@@ -181,7 +178,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        //getMenuInflater().inflate(R.menu.search_menu, menu);
+        getMenuInflater().inflate(R.menu.search_menu, menu);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             SearchManager manager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -244,11 +241,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.nav_home) {
+        if (id == R.id.nav_map_view) {
             //TODO : If current fragment is NOT Map fragment only replace the fragment
             fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
-        } else if (id == R.id.nav_search) {
-
+        }else if (id == R.id.nav_dashboard) {
+            fm.beginTransaction().replace(R.id.content_frame, new DashBoardFragment()).commit();
+        }
+        else if (id == R.id.nav_search) {
+            fm.beginTransaction().replace(R.id.content_frame, new SearchViewFragment()).commit();
         } else if (id == R.id.nav_unattained_jobs) {
             fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
         }
