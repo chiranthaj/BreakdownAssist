@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.MyDBHandler;
 import lk.steps.breakdownassist.R;
-import lk.steps.breakdownassist.RecyclerViewCards.CompleteJobsRecyclerAdapter;
 import lk.steps.breakdownassist.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
 import lk.steps.breakdownassist.RecyclerViewCards.UnattainedJobsRecyclerAdapter;
 
@@ -32,7 +31,8 @@ public class UnattainedJobsFragment extends Fragment {
 
     private SimpleCursorAdapter dataAdapter;
     MyDBHandler dbHandler;
-  
+    private int iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +44,7 @@ public class UnattainedJobsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate( R.layout.job_listview,container,false);
         dbHandler = new MyDBHandler(getActivity(),null,null,1); //TODO : Close on exit
-        displayListView();
+        RefreshListView();
         return mView;
     }
     @Override
@@ -61,21 +61,31 @@ public class UnattainedJobsFragment extends Fragment {
         //noinspection SimplifiableIfStatement
         if (id == R.id.menu_jobs_all) {
             if (item.isChecked()) item.setChecked(false);
-            else item.setChecked(true);
+            else {
+                item.setChecked(true);
+                iJobs_to_Display=Breakdown.Status_JOB_ANY;
+                RefreshListView();
+            }
             return true;
         }else if (id == R.id.menu_jobs_completed) {
             if (item.isChecked()) item.setChecked(false);
-            else item.setChecked(true);
+            else {
+                item.setChecked(true);
+                iJobs_to_Display=Breakdown.Status_JOB_COMPLETED;
+                RefreshListView();
+            }
             return true;
         }else if (id == R.id.menu_jobs_unatended) {
             if (item.isChecked()) item.setChecked(false);
-            else item.setChecked(true);
+            else {
+                item.setChecked(true);
+                iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+                RefreshListView();
+            }
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
-
 
 
     @Override
@@ -93,16 +103,16 @@ public class UnattainedJobsFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             //Add to list view
-            displayListView();
+            RefreshListView();
 
         }
     };
 
 
-    private void displayListView() {
+    private void RefreshListView() {
 
         //TODO : Make Sure we are showing all the Breakdown.Status_JOB_NOT_ATTENDED,Status_JOB_VISITED etc
-        final ArrayList<Breakdown> dbList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(Breakdown.Status_JOB_NOT_ATTENDED));
+        final ArrayList<Breakdown> dbList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
 
         RecyclerView mRecyclerView = (RecyclerView)mView.findViewById(R.id.recycleview);
 

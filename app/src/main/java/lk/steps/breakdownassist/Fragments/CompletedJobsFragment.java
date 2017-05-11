@@ -43,7 +43,7 @@ public class CompletedJobsFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
+        Toast.makeText(getActivity().getApplicationContext(),"Disabled, Use Unattended view",Toast.LENGTH_SHORT).show();
         //noinspection SimplifiableIfStatement
         if (id == R.id.menu_jobs_all) {
             if (item.isChecked()) item.setChecked(false);
@@ -65,7 +65,7 @@ public class CompletedJobsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate( R.layout.job_listview,container,false);
         dbHandler = new MyDBHandler(getActivity(),null,null,1); //TODO : Close on exit
-        displayListView();
+        RefreshListView();
         return mView;
     }
 
@@ -88,13 +88,13 @@ public class CompletedJobsFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             //Add to list view
-            displayListView();
+            RefreshListView();
 
         }
     };
 
 
-    private void displayListView() {
+    private void RefreshListView() {
 
         final ArrayList<Breakdown> dbList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(Breakdown.Status_JOB_COMPLETED));
 
