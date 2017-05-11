@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity
 
         fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
 
-        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
+
         /* This code together with the one in onDestroy()
          * will make the screen be always on until this Activity gets destroyed. */
 
@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        unregisterReceiver(broadcastReceiver);
         if (this.mWakeLock.isHeld())
             this.mWakeLock.release();
     }
@@ -113,6 +114,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
         if (!this.mWakeLock.isHeld())
             this.mWakeLock.acquire();
     }
@@ -144,7 +146,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(broadcastReceiver);
         dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
         super.onDestroy();
@@ -275,7 +276,7 @@ public class MainActivity extends AppCompatActivity
         return MainActivity.context;
     }
 
-    @Override
+    @Override  ///Floating action  Button
     public void onClick(View view) {
 
     }
