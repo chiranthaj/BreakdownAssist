@@ -20,6 +20,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -55,6 +56,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 import lk.steps.breakdownassist.Breakdown;
@@ -577,6 +579,30 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                             "Current location is not available, Please try again",Toast.LENGTH_LONG).show();
                 }
                 dialog.dismiss();
+            }
+        });
+        dialogButton_navigate.setOnLongClickListener(new View.OnLongClickListener(){
+            @Override
+            public boolean onLongClick(View v) {
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                        Uri.parse("http://maps.google.com/maps?daddr=" + selectedMarker.getPosition().latitude + "," +
+                                selectedMarker.getPosition().longitude ));
+
+  /*              String uri = String.format(Locale.ENGLISH, "geo:%f,%f", selectedMarker.getPosition().latitude, selectedMarker.getPosition().longitude);
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                getActivity().getApplicationContext().startActivity(intent);*/
+                startActivity(intent);
+                dialog.dismiss();
+                return false;
+            }
+
+        });
+        dialogButton_navigate.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Toast.makeText(getActivity().getApplicationContext(),"Press and Hold for Google Navigation !!",
+                        Toast.LENGTH_SHORT).show();
+                return false;
             }
         });
 
