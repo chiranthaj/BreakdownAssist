@@ -6,19 +6,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-
+import android.widget.Toast;
+import java.util.ArrayList;
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.MyDBHandler;
 import lk.steps.breakdownassist.R;
+import lk.steps.breakdownassist.RecyclerViewCards.CompleteJobsRecyclerAdapter;
+import lk.steps.breakdownassist.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
+import lk.steps.breakdownassist.RecyclerViewCards.UnattainedJobsRecyclerAdapter;
 
 public class UnattainedJobsFragment extends Fragment {
 
@@ -32,10 +35,10 @@ public class UnattainedJobsFragment extends Fragment {
         return mView;
     }
 
-
     private SimpleCursorAdapter dataAdapter;
     MyDBHandler dbHandler;
-    
+
+
     @Override
     public void onPause() {
         super.onPause();
@@ -47,49 +50,6 @@ public class UnattainedJobsFragment extends Fragment {
         super.onResume();
         getActivity().registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
     }
-
-
-    private void displayListView() {
-        //TODO : Add a listner to show the new SMSs
-        Cursor cursor = dbHandler.ReadBreakdownsToCursor(0);
-
-        // The desired columns to be bound
-        String[] columns2 = new String[] {"_Acct_Num","NAME","ADDRESS",
-                "Description","Status","_Job_Num","DateTime1","DateTime2"}; /*TODO : "Status" May be in a color of the row or dot*/
-        // the XML defined views which the data will be bound to
-        int[] to = new int[] {
-                R.id.acct_num,
-                R.id.name,
-                R.id.address,
-                R.id.description,
-                R.id.status,
-                R.id.job_no,
-                R.id.received_date_time,
-                R.id.completed_date_time
-        };
-
-        // create the adapter using the cursor pointing to the desired data
-        //as well as the layout information
-        dataAdapter = new SimpleCursorAdapter(
-                getActivity(), R.layout.job_listview_row,
-                cursor,
-                columns2,
-                to,
-                1);
-
-        ListView listView = (ListView) mView.findViewById(R.id.listView1);
-        // Assign adapter to ListView
-        listView.setAdapter(dataAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                //TODO : Focus to selected breakdown on the map
-
-            }
-        });
-    }
-
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -98,4 +58,122 @@ public class UnattainedJobsFragment extends Fragment {
 
         }
     };
+
+
+    private void displayListView() {
+
+        final ArrayList<Breakdown> dbList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(0));
+
+        RecyclerView mRecyclerView = (RecyclerView)mView.findViewById(R.id.recycleview);
+
+        mRecyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+
+
+        OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
+            @Override
+            public void onCardViewTap(View view, int position) {
+                Toast.makeText(getActivity(), "Tapped " + dbList.get(position), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onButton1Click(View view, int position) {
+                Toast.makeText(getActivity(), "Clicked Button1 in " + dbList.get(position), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onButton2Click(View view, int position) {
+                Toast.makeText(getActivity(), "Clicked Button2 in " + dbList.get(position), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCheckBox1Click(View view, int position) {
+                Toast.makeText(getActivity(), "Clicked onCheckBox1Click in " + dbList.get(position), Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        // specify an adapter (see also next example)
+        final RecyclerView.Adapter mAdapter = new UnattainedJobsRecyclerAdapter(getActivity(),dbList, itemTouchListener);
+        mRecyclerView.setAdapter(mAdapter);
+
+        SwipeableRecyclerViewTouchListener swipeTouchListener =
+                new SwipeableRecyclerViewTouchListener(mRecyclerView,
+                        new SwipeableRecyclerViewTouchListener.SwipeListener() {
+                            @Override
+                            public boolean canSwipeLeft(int position) {
+                                return true;
+                            }
+
+                            @Override
+                            public boolean canSwipeRight(int position) {
+                                return true;
+                            }
+
+                            @Override
+                            public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
+                                for (int position : reverseSortedPositions) {
+//                                    Toast.makeText(MainActivity.this, mItems.get(position) + " swiped left", Toast.LENGTH_SHORT).show();
+                                    dbList.remove(position);
+                                    mAdapter.notifyItemRemoved(position);
+                                }
+                                mAdapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
+                                for (int position : reverseSortedPositions) {
+//                                    Toast.makeText(MainActivity.this, mItems.get(position) + " swiped right", Toast.LENGTH_SHORT).show();
+                                    dbList.remove(position);
+                                    mAdapter.notifyItemRemoved(position);
+                                }
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        });
+
+        mRecyclerView.addOnItemTouchListener(swipeTouchListener);
+    }
+
+
+    /**
+     * Interface for the touch events in each item
+     */
+    public interface OnItemTouchListener {
+        /**
+         * Callback invoked when the user Taps one of the RecyclerView items
+         *
+         * @param view     the CardView touched
+         * @param position the index of the item touched in the RecyclerView
+         */
+        void onCardViewTap(View view, int position);
+
+        /**
+         * Callback invoked when the Button1 of an item is touched
+         *
+         * @param view     the Button touched
+         * @param position the index of the item touched in the RecyclerView
+         */
+        void onButton1Click(View view, int position);
+
+        /**
+         * Callback invoked when the Button2 of an item is touched
+         *
+         * @param view     the Button touched
+         * @param position the index of the item touched in the RecyclerView
+         */
+        void onButton2Click(View view, int position);
+
+        /**
+         * Callback invoked when the Button2 of an item is touched
+         *
+         * @param view     the Button touched
+         * @param position the index of the item touched in the RecyclerView
+         */
+        void onCheckBox1Click(View view, int position);
+    }
+
+
 }

@@ -3,13 +3,9 @@
     android:layout_width="fill_parent" android:layout_height="fill_parent"
     android:orientation="vertical">
 
-<!--    <EditText android:id="@+id/myFilter" android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:ems="10"
-        android:hint="Search by AccNo">
-       &lt;!&ndash; <requestFocus />&ndash;&gt;
-    </EditText>-->
-
-    <ListView android:id="@+id/listView1" android:layout_width="fill_parent"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycleview"
+        android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
 
 </LinearLayout>

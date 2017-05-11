@@ -277,6 +277,7 @@ public class MyDBHandler extends SQLiteOpenHelper
                 newBreakdown.set_Status(c.getShort(c.getColumnIndex("Status")));
                 newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
                 newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
+                newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
                 newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
                 newBreakdown.set_Job_No(c.getString(c.getColumnIndex("_Job_Num")));
