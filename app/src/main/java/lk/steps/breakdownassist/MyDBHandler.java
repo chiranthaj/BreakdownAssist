@@ -1,14 +1,12 @@
 package lk.steps.breakdownassist;
 
 
-import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
 import android.content.Context;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteStatement;
-import android.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -209,19 +207,6 @@ public class MyDBHandler extends SQLiteOpenHelper
         db.close();
     }
 
-    public List<Breakdown> ReadAllBreakdowns()
-    {
-        return ReadBreakdowns(-1);
-    }
-    public List<Breakdown> ReadCompletedBreakdowns()
-    {
-        return ReadBreakdowns(1);
-    }
-    public List<Breakdown> ReadPendingBreakdowns()
-    {
-        return ReadBreakdowns(0);
-    }
-
     public Cursor ReadBreakdownsToCursor(int iStatus)
     {
         List<Breakdown> Breakdownslist = new LinkedList<Breakdown>();
@@ -234,10 +219,12 @@ public class MyDBHandler extends SQLiteOpenHelper
         String statusQuery ="";
         if (iStatus==-1){/*All*/
             statusQuery="";
-        }else if (iStatus==1){/*Completed*/
+        }else if (iStatus==Breakdown.Status_JOB_COMPLETED){/*Completed*/
             statusQuery=" AND `B`.`_Status` =  '1' ";
-        }else if (iStatus==0){/*"pending"*/
+        }else if (iStatus==Breakdown.Status_JOB_NOT_ATTENDED){/*"pending"*/
             statusQuery=" AND (`B`.`_Status` <>  '1' OR  `B`.`_Status` IS NULL)";
+        }else{
+            statusQuery=" AND `B`.`_Status` =  '" + iStatus + "' ";
         }
 
         String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`," +

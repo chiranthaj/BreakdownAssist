@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -24,6 +26,38 @@ import lk.steps.breakdownassist.R;
 public class CompletedJobsFragment extends Fragment {
 
     private View mView;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.jobs_to_display_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.menu_jobs_all) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            return true;
+        }else if (id == R.id.menu_jobs_completed) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            return true;
+        }else if (id == R.id.menu_jobs_unatended) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -51,8 +85,8 @@ public class CompletedJobsFragment extends Fragment {
 
 
     private void displayListView() {
-        //TODO : Add a listner to show the new SMSs
-        Cursor cursor = dbHandler.ReadBreakdownsToCursor(1);
+
+        Cursor cursor = dbHandler.ReadBreakdownsToCursor(Breakdown.Status_JOB_COMPLETED);
 
         // The desired columns to be bound
         String[] columns2 = new String[] {"_Acct_Num","NAME","ADDRESS",

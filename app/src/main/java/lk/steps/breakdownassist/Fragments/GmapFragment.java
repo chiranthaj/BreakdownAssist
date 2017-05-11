@@ -20,7 +20,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -56,7 +58,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 import lk.steps.breakdownassist.Breakdown;
@@ -105,6 +106,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     private Context mContext;
 
+    private int iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -115,7 +118,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setHasOptionsMenu(true);
         dbHandler = new MyDBHandler(getActivity().getApplicationContext(), null, null, 1);
 
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(),
@@ -167,7 +170,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
             String sID=intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
             //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
-            RefreshPendingJobsFromDB();
+            RefreshJobsFromDB();
         }
     };
     public void ReStoreMap(){
@@ -188,6 +191,45 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             //TODO : Try to keep the zoomed values if possible within a given range
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(latLng, zoom, tilt, bearing)));
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.jobs_to_display_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.menu_jobs_all) {
+            if (item.isChecked()) item.setChecked(false);
+            else {
+                item.setChecked(true);
+                iJobs_to_Display=Breakdown.Status_JOB_ANY;
+                RefreshJobsFromDB();
+            }
+            return true;
+        }else if (id == R.id.menu_jobs_completed) {
+            if (item.isChecked()) item.setChecked(false);
+            else {
+                item.setChecked(true);
+                iJobs_to_Display=Breakdown.Status_JOB_COMPLETED;
+                RefreshJobsFromDB();
+            }
+            return true;
+        }else if (id == R.id.menu_jobs_unatended) {
+            if (item.isChecked()) item.setChecked(false);
+            else {
+                item.setChecked(true);
+                iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+                RefreshJobsFromDB();
+            }
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public Location getLastLocation() {
@@ -299,7 +341,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.setOnCameraMoveStartedListener(this);
         mMap.setOnMarkerClickListener(this);
        // mMap.setOnInfoWindowClickListener(this);
-        RefreshPendingJobsFromDB();
+        RefreshJobsFromDB();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastlocation));
        // mMap.setInfoWindowAdapter(new MyInfoWindowAdapter(getActivity().getLayoutInflater()));
     }
@@ -318,7 +360,14 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             Toast.makeText(getActivity().getApplicationContext(),"Search Failed, Try again",Toast.LENGTH_SHORT);
     }
     public Marker AddBreakDownToMap(Breakdown breakdown){
-        return AddBreakDownToMap(breakdown,BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+        BitmapDescriptor MarkerICON;//TODO : Depending on the priority,and current status mark the colour  and the shape
+        if (breakdown.get_Status()==Breakdown.Status_JOB_COMPLETED){
+            MarkerICON=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+        }else{
+            MarkerICON=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE);
+        }
+
+        return AddBreakDownToMap(breakdown,MarkerICON);
     }
     public Marker AddBreakDownToMap(Breakdown breakdown, BitmapDescriptor MarkerICON) {
         Marker CreatedMarker=null;//For Return
@@ -331,7 +380,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 bdMarker = mMap.addMarker(new MarkerOptions()
                         .position(breakdown.getLocation())
                         .title(breakdown.get_Job_No() + " - " + breakdown.get_Acct_Num())
-                        .icon(MarkerICON) //TODO : Depending on the priority mark the color
+                        .icon(MarkerICON)
                         .snippet(breakdown.get_Name() + "\n" + breakdown.get_ADDRESS() + "\n\n" + breakdown.get_Full_Description()));
 
                 mMarker.put(breakdown, bdMarker); //Adding to Harshmap
@@ -357,25 +406,9 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         selectedMarker.remove();
     }
 
-    public void RefreshPendingJobsFromDB() {
-        AddBreakDownListToMap(dbHandler.ReadPendingBreakdowns());
-    }
-
-    public void RefreshCompletedJobsFromDB() {
-        AddBreakDownListToMap(dbHandler.ReadPendingBreakdowns());
-    }
-
-    public void RefreshAllJobsFromDB() {
-        AddBreakDownListToMap(dbHandler.ReadPendingBreakdowns());
-    }
-
-    private void showMessageOKCancel(Context context, String message, DialogInterface.OnClickListener okListener) {
-        new AlertDialog.Builder(context)
-                .setMessage(message)
-                .setPositiveButton("OK", okListener)
-                .setNegativeButton("Cancel", null)
-                .create()
-                .show();
+    public void RefreshJobsFromDB() {
+        if (mMap != null) mMap.clear();  //Clear all the overlays
+        AddBreakDownListToMap(dbHandler.ReadBreakdowns(iJobs_to_Display));
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -549,7 +582,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             @Override
             public void onClick(View v) {
                 BreakdownFeedbackDialog(selectedMarker);
-               // UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_DONE);
+               // UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
                 //TODO : Use an Undo option
                 dialog.dismiss();
             }
@@ -570,7 +603,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             @Override
             public void onClick(View v) {
                 selectedMarker.hideInfoWindow();
-
+                Toast.makeText(getActivity().getApplicationContext(),"Press and Hold for Google Navigation !!",
+                        Toast.LENGTH_SHORT).show();
                 Location currentLocation=getLastLocation();
                 if (currentLocation!=null){
                     getDirections(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()),selectedMarker.getPosition() );
@@ -584,27 +618,18 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         dialogButton_navigate.setOnLongClickListener(new View.OnLongClickListener(){
             @Override
             public boolean onLongClick(View v) {
+                Toast.makeText(getActivity().getApplicationContext(),"Opening Google Navigation...",
+                        Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
                         Uri.parse("http://maps.google.com/maps?daddr=" + selectedMarker.getPosition().latitude + "," +
                                 selectedMarker.getPosition().longitude ));
-
-  /*              String uri = String.format(Locale.ENGLISH, "geo:%f,%f", selectedMarker.getPosition().latitude, selectedMarker.getPosition().longitude);
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                getActivity().getApplicationContext().startActivity(intent);*/
                 startActivity(intent);
                 dialog.dismiss();
-                return false;
+                return true;
             }
 
         });
-        dialogButton_navigate.setOnTouchListener(new View.OnTouchListener(){
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Toast.makeText(getActivity().getApplicationContext(),"Press and Hold for Google Navigation !!",
-                        Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
+
 
         ImageButton btnCall = (ImageButton) dialog.findViewById(R.id.btnMakeCall);
         // if button is clicked, close the job_dialog dialog
@@ -680,7 +705,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                     });
                     alertDialog.show();
                 }else{
-                    UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_DONE);
+                    UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
                     Log.d("Reason ",spinner1.getSelectedItem().toString());
                     dialog.dismiss();
                 }
@@ -702,9 +727,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     public void UpdateBreakDown(Breakdown selectedBreakdown,int iStatus) {
         dbHandler.UpdateBreakdownStatus(selectedBreakdown,iStatus);
-        if (iStatus==Breakdown.Status_JOB_DONE) {
-            remove_breakdown(selectedBreakdown);
-        }
+        RefreshJobsFromDB();
         //TODO : Add methods to handle other status like Visited etc, then change the marker
     }
 
