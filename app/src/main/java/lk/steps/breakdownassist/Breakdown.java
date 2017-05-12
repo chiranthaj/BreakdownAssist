@@ -97,7 +97,7 @@ public class Breakdown {
     public String get_Completed_Time() {
         return _Completed_Time;
     }
-    public void set_Completed_Time(String _Received_Time) {
+    public void set_Completed_Time(String _Completed_Time) {
         this._Completed_Time = _Completed_Time;
     }
     public String get_ECSC() {
