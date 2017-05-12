@@ -227,7 +227,7 @@ public class MyDBHandler extends SQLiteOpenHelper
             statusQuery=" AND `B`.`_Status` =  '" + iStatus + "' ";
         }
 
-        String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`," +
+        String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`,C.`TARIFF_COD` as `TARIFF_COD`," +
                 " C.`LATITUDE` as `LATITUDE`, `B`.`_Status` as `Status`, " +
                 " `B`.`_Acct_Num` as `_Acct_Num`,`C`.`ADDRESS` as `ADDRESS`,   " +
                 " `B`.`_Description` as `Description`, `B`.`_Job_Num` as `_Job_Num`, `B`.`_Contact_Num` as  `_Contact_Num`,  " +
@@ -263,6 +263,7 @@ public class MyDBHandler extends SQLiteOpenHelper
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 newBreakdown.set_Status(c.getShort(c.getColumnIndex("Status")));
                 newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
+                newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                 newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
                 newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
                 newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
@@ -388,7 +389,7 @@ public class MyDBHandler extends SQLiteOpenHelper
         //TODO : Fix Exception
         SQLiteDatabase db = getWritableDatabase();
 
-        String query = "SELECT `_id` as `ID`,`ACCT_NUM` as `_Acct_Num`,`NAME`,`ADDRESS`,`LONGITUDE`,`LATITUDE` " +
+        String query = "SELECT `_id` as `ID`,`ACCT_NUM` as `_Acct_Num`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
                 "FROM `Customers` WHERE `ACCT_NUM`='" + sACCT_NUM +"';";
 
         Cursor c = db.rawQuery(query, null);
@@ -402,6 +403,7 @@ public class MyDBHandler extends SQLiteOpenHelper
                 newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
                 newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
+                newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                 newBreakdown.set_Status(0);
                 newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
                 newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));

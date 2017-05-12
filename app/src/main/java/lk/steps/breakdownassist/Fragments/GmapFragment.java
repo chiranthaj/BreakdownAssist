@@ -360,8 +360,10 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             Toast.makeText(getActivity().getApplicationContext(),"Search Failed, Try again",Toast.LENGTH_SHORT);
     }
 
+
+
     public Marker AddBreakDownToMap(Breakdown breakdown){
-//TODO : Check this later @Jagath
+        //TODO : Check this later @Jagath
         /*int icon = R.drawable.factory;
         if(breakdown.get_TARIFF_COD()=="11"){
             icon = R.drawable.factory;
@@ -370,11 +372,28 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
         BitmapDescriptor MarkerICON;//TODO : Depending on the priority,and current status mark the colour  and the shape
         if (breakdown.get_Status()==Breakdown.Status_JOB_COMPLETED){
-            MarkerICON=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+            if(breakdown.get_TARIFF_COD() == null)
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house2);
+            else if(breakdown.get_TARIFF_COD().equals("11") | breakdown.get_TARIFF_COD().equals("13")) // Domestic
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house2);
+            else if(breakdown.get_TARIFF_COD().equals("21") | breakdown.get_TARIFF_COD().equals("22")) // Industrial
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.factory2);
+            else if(breakdown.get_TARIFF_COD().equals("31") | breakdown.get_TARIFF_COD().equals("32")) // General
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.shop2);
+            else
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house2);
         }else{
-            MarkerICON=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE);
+            if(breakdown.get_TARIFF_COD() == null)
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house);
+            else if(breakdown.get_TARIFF_COD().equals("11") | breakdown.get_TARIFF_COD().equals("13")) // Domestic
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house);
+            else if(breakdown.get_TARIFF_COD().equals("21") | breakdown.get_TARIFF_COD().equals("22")) // Industrial
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.factory);
+            else if(breakdown.get_TARIFF_COD().equals("31") | breakdown.get_TARIFF_COD().equals("32")) // General
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.shop);
+            else
+                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house);
         }
-
         return AddBreakDownToMap(breakdown,MarkerICON);
 
     }
