@@ -11,9 +11,9 @@ import lk.steps.breakdownassist.R;
  * Created by Chirantha on 20/11/2016.
  */
 
-public class MyInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+public class InfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
     private final View myContentsView;
-    public MyInfoWindowAdapter(LayoutInflater layoutInflater){
+    public InfoWindowAdapter(LayoutInflater layoutInflater){
 
         myContentsView =  layoutInflater.inflate(R.layout.infowindow_contents, null);
     }

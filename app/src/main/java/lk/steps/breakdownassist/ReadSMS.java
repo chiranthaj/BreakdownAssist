@@ -66,7 +66,7 @@ public class ReadSMS
                 String sJob_No=extractJobNo(sFullMessage);
                 String sPhone_No=extractPhoneNo(sFullMessage);
 
-                MyDBHandler dbHandler= new MyDBHandler (context,null,null,1);
+                DBHandler dbHandler= new DBHandler(context,null,null,1);
                 dbHandler.addBreakdown(sID,time,sAcct_num,sFullMessage,sJob_No,sPhone_No,sAddress);
 
                 dbHandler.close();

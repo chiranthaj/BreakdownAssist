@@ -4,23 +4,19 @@ package lk.steps.breakdownassist.Fragments;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.eazegraph.lib.charts.BarChart;
 import org.eazegraph.lib.charts.ValueLineChart;
-import org.eazegraph.lib.models.BarModel;
 import org.eazegraph.lib.models.ValueLinePoint;
 import org.eazegraph.lib.models.ValueLineSeries;
 
-import lk.steps.breakdownassist.Breakdown;
-import lk.steps.breakdownassist.MyDBHandler;
+import lk.steps.breakdownassist.DBHandler;
 import lk.steps.breakdownassist.R;
 
-public class NewDashboardFragment extends Fragment {
+public class DashboardFragment extends Fragment {
 
 
     private View mView;
@@ -40,7 +36,7 @@ public class NewDashboardFragment extends Fragment {
     }
 
     private void refreshCounts(){
-        MyDBHandler  dbHandler = new MyDBHandler(getActivity().getApplicationContext(), null, null, 1);
+        DBHandler dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
         int counts[] = dbHandler.getBreakdownCounts();
 
         TextView txtUnattainedCount = (TextView) mView.findViewById(R.id.txtUnattainedCount);
@@ -50,8 +46,8 @@ public class NewDashboardFragment extends Fragment {
     }
 
     private void DrawChart(){
-        MyDBHandler  dbHandler = new MyDBHandler(getActivity().getApplicationContext(), null, null, 1);
-        int counts[][] = dbHandler.getBreakdownStatistics();
+        DBHandler dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
+        String counts[][] = dbHandler.getBreakdownStatistics();
         /*BarChart mBarChart = (BarChart) mView.findViewById(R.id.chart);
         mBarChart.addBar(new BarModel(2.3f, 0xFF123456));
         mBarChart.addBar(new BarModel(2.f,  0xFF343456));
@@ -68,11 +64,9 @@ public class NewDashboardFragment extends Fragment {
         ValueLineSeries series = new ValueLineSeries();
         series.setColor(0xFF56B7F1);
 
-        Log.d("x",counts.length+"=");
-        Log.d("y",counts[0].length+"=");
-        for (int i =0; i<1; i++) {
-            Log.d("DATE,COUNT",counts[0][i] +"," +counts[1][i]);
-            series.addPoint(new ValueLinePoint(String.valueOf(counts[0][i]), counts[1][i]));
+        for (int i =0; i<counts[0].length; i++) {
+            //Log.d("DATE,COUNT",counts[0][i] +"-" +counts[1][i]);
+            series.addPoint(new ValueLinePoint(counts[0][i], Float.valueOf(counts[1][i])));
         }
 
         /*series.addPoint(new ValueLinePoint("Jan", 2.4f));

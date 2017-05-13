@@ -56,7 +56,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -66,7 +65,7 @@ import lk.steps.breakdownassist.ManagePermissions;
 import lk.steps.breakdownassist.Modules.DirectionFinder;
 import lk.steps.breakdownassist.Modules.DirectionFinderListener;
 import lk.steps.breakdownassist.Modules.Route;
-import lk.steps.breakdownassist.MyDBHandler;
+import lk.steps.breakdownassist.DBHandler;
 import lk.steps.breakdownassist.R;
 
 public class GmapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
@@ -85,7 +84,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     Map BD_Id_by_Marker_OnMap = new WeakHashMap<Marker,String>(); //Marker is the key
 
     LatLng lastlocation = new LatLng(7, 80);
-    MyDBHandler dbHandler;
+    DBHandler dbHandler;
 
     final public int MAP_STYLE_NIGHT=1;
     final public int MAP_STYLE_NORMAL =2;
@@ -117,7 +116,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        dbHandler = new MyDBHandler(getActivity().getApplicationContext(), null, null, 1);
+        dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
 
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -293,8 +292,10 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         }
         RefreshJobsFromDB();
         Marker selectedMarker = (Marker) Marker_by_BD_Id_OnMap.get(breakdown.get_id());
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(selectedMarker.getPosition()));
-        selectedMarker.showInfoWindow();
+        if(selectedMarker!=null){
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(selectedMarker.getPosition()));
+            selectedMarker.showInfoWindow();
+        }
     }
     public void ApplyMapDayNightModeAccordingly(){
         //Change only if the AutoMode in ON and apply once if not already applied the Night/Day mode
@@ -347,7 +348,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
        // mMap.setOnInfoWindowClickListener(this);
         RefreshJobsFromDB();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastlocation));
-       // mMap.setInfoWindowAdapter(new MyInfoWindowAdapter(getActivity().getLayoutInflater()));
+       // mMap.setInfoWindowAdapter(new InfoWindowAdapter(getActivity().getLayoutInflater()));
     }
 //TODO: DO not show the normal dialog for marker click
     public void AddCustomerLocationToMap(String Account_Num) {
@@ -697,6 +698,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_feedback_dialog);
         //TODO : Use date time picker
+        TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
+        txtView.setText(selectedBreakdown.get_Name()+"\n"+selectedBreakdown.get_ADDRESS());
         //Spinner
         ArrayAdapter adapter1 = ArrayAdapter.createFromResource(getActivity(), R.array.failure_type, R.layout.spinner_row );
         final Spinner spinner1 = (Spinner) dialog.findViewById(R.id.spinner1);

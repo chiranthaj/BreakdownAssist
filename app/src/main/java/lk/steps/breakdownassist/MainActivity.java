@@ -35,7 +35,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-import lk.steps.breakdownassist.Fragments.NewDashboardFragment;
+import lk.steps.breakdownassist.Fragments.DashboardFragment;
 
 import lk.steps.breakdownassist.Fragments.JobListFragment;
 
@@ -49,7 +49,7 @@ import lk.steps.breakdownassist.Fragments.SearchViewFragment;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    MyDBHandler dbHandler;
+    DBHandler dbHandler;
     FragmentManager fm;
 
     protected PowerManager.WakeLock mWakeLock;
@@ -92,12 +92,12 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        dbHandler = new MyDBHandler(this,null,null,1);
+        dbHandler = new DBHandler(this,null,null,1);
 
         ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(),this);
         fm = getFragmentManager();
 
-        fm.beginTransaction().replace(R.id.content_frame, new NewDashboardFragment()).commit();
+        fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
        // fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
@@ -261,7 +261,7 @@ public class MainActivity extends AppCompatActivity
             //TODO : If current fragment is NOT Map fragment only replace the fragment
             fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
         }else if (id == R.id.nav_dashboard) {
-            fm.beginTransaction().replace(R.id.content_frame, new NewDashboardFragment()).commit();
+            fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
         }
         else if (id == R.id.nav_search) {
             fm.beginTransaction().replace(R.id.content_frame, new SearchViewFragment()).commit();

@@ -24,7 +24,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.MainActivity;
-import lk.steps.breakdownassist.MyDBHandler;
+import lk.steps.breakdownassist.DBHandler;
 import lk.steps.breakdownassist.R;
 import lk.steps.breakdownassist.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
 import lk.steps.breakdownassist.RecyclerViewCards.JobsRecyclerAdapter;
@@ -35,7 +35,7 @@ public class JobListFragment extends Fragment {
     private View mView;
 
     private SimpleCursorAdapter dataAdapter;
-    MyDBHandler dbHandler;
+    DBHandler dbHandler;
     private int iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
     //private int JOB_STATUS;
 
@@ -53,7 +53,7 @@ public class JobListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate( R.layout.job_listview,container,false);
-        dbHandler = new MyDBHandler(getActivity(),null,null,1); //TODO : Close on exit
+        dbHandler = new DBHandler(getActivity(),null,null,1); //TODO : Close on exit
         RefreshListView();
         return mView;
     }

@@ -33,7 +33,7 @@ import java.util.WeakHashMap;
 
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.ManagePermissions;
-import lk.steps.breakdownassist.MyDBHandler;
+import lk.steps.breakdownassist.DBHandler;
 import lk.steps.breakdownassist.R;
 
 public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReadyCallback ,
@@ -47,7 +47,7 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
     ArrayList<Marker> listMarkersOnMap = new ArrayList<Marker>();
 
     LatLng lastlocation= new LatLng(7, 80);
-    MyDBHandler dbHandler;
+    DBHandler dbHandler;
 
     @Nullable
     @Override
@@ -59,7 +59,7 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dbHandler=new MyDBHandler(getActivity().getApplicationContext(),null,null,1);
+        dbHandler=new DBHandler(getActivity().getApplicationContext(),null,null,1);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
         RefreshMarkersFromDB();
         AddMarkers();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastlocation));
-        mMap.setInfoWindowAdapter(new MyInfoWindowAdapter(getActivity().getLayoutInflater()));
+        mMap.setInfoWindowAdapter(new InfoWindowAdapter(getActivity().getLayoutInflater()));
     }
 
     @Override

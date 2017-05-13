@@ -15,12 +15,12 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MyDBHandler extends SQLiteOpenHelper
+public class DBHandler extends SQLiteOpenHelper
 {
     private static final int Database_Version =32;
     private static final String Database_Name = "BreakdownAssist.db";
 
-    public MyDBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
+    public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
     {
         super(context, Database_Name, factory, Database_Version);
     }
@@ -135,26 +135,22 @@ public class MyDBHandler extends SQLiteOpenHelper
         db.close();
         return counts;
     }
-    public int[][] getBreakdownStatistics()
+    public String[][] getBreakdownStatistics()
     {
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT strftime('%d',DateTime) AS DATE, COUNT(*) AS COUNT" +
-                " FROM BreakdownRecords" +
-                " GROUP BY strftime('%d',DateTime) " +
-                " ORDER BY strftime('%d',DateTime);";
-        /*tring query = "SELECT DateTime AS DATE, COUNT(*) AS COUNT" +
-                " FROM BreakdownRecords" +
-                " GROUP BY DateTime " +
-                " ORDER BY DateTime;";*/
+        String query = "SELECT substr(DateTime,0,11) AS DATE, COUNT(*) AS COUNT" +
+                " FROM BreakdownRecords " +
+                "GROUP BY substr(DateTime,0,11) " +
+                "ORDER BY substr(DateTime,0,11)";
+
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
 
-        int[][] counts = new int[2][cursor.getCount()];
-        Log.d("cursor COUNT",cursor.getCount() +"");
+        String[][] counts = new String[2][cursor.getCount()];
         int i =0;
         do{
-            counts[0][i] = cursor.getInt(cursor.getColumnIndex("DATE"));
-            counts[1][i] = cursor.getInt(cursor.getColumnIndex("COUNT"));
+            counts[0][i] = cursor.getString(cursor.getColumnIndex("DATE"));
+            counts[1][i] = cursor.getString(cursor.getColumnIndex("COUNT"));
             i++;
         }while(cursor.moveToNext());
 

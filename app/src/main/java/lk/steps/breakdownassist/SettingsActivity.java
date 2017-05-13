@@ -3,17 +3,11 @@ package lk.steps.breakdownassist;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -21,9 +15,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
 import android.support.v7.view.ContextThemeWrapper;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 import android.widget.Toast;
@@ -272,8 +264,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent resultData) {
-        MyDBHandler dbHandler;
-        dbHandler = new MyDBHandler(this,null,null,1);
+        DBHandler dbHandler;
+        dbHandler = new DBHandler(this,null,null,1);
 
         if (requestCode == READ_REQUEST_CODE_CUSTOMER_DATA && resultCode == Activity.RESULT_OK) {
             String curFileName = resultData.getStringExtra("GetFullPathFileName") ;

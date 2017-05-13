@@ -14,10 +14,20 @@
         android:weightSum="1">
 
         <TextView
-            android:id="@+id/jobno"
+            android:id="@+id/jobInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:layout_marginTop="10dp"
+            android:text="Job info"
+            android:textAlignment="center"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="22sp"
+            android:textStyle="normal" />
+        <TextView
+            android:id="@+id/text23"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:text="Completed Date and Time"
             android:textAlignment="center"

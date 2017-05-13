@@ -47,7 +47,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                 String sJob_No=ReadSMS.extractJobNo(smsBody);
                 String sPhone_No=ReadSMS.extractPhoneNo(smsBody);
 
-                MyDBHandler dbHandler = new MyDBHandler (context,null,null,1);
+                DBHandler dbHandler = new DBHandler(context,null,null,1);
                 dbHandler.addBreakdown(sNextID,time,sAcct_num,smsBody,sJob_No,sPhone_No,address);
                 String sIssuedBreadownID=dbHandler.getLastBreakdownID();
                 dbHandler.close();
