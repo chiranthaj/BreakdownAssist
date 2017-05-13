@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.content.Context;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -131,6 +132,33 @@ public class MyDBHandler extends SQLiteOpenHelper
             counts[1] = c.getInt(c.getColumnIndex("UNATTAINED"));
         }
         c.close();
+        db.close();
+        return counts;
+    }
+    public int[][] getBreakdownStatistics()
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT strftime('%d',DateTime) AS DATE, COUNT(*) AS COUNT" +
+                " FROM BreakdownRecords" +
+                " GROUP BY strftime('%d',DateTime) " +
+                " ORDER BY strftime('%d',DateTime);";
+        /*tring query = "SELECT DateTime AS DATE, COUNT(*) AS COUNT" +
+                " FROM BreakdownRecords" +
+                " GROUP BY DateTime " +
+                " ORDER BY DateTime;";*/
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+        int[][] counts = new int[2][cursor.getCount()];
+        Log.d("cursor COUNT",cursor.getCount() +"");
+        int i =0;
+        do{
+            counts[0][i] = cursor.getInt(cursor.getColumnIndex("DATE"));
+            counts[1][i] = cursor.getInt(cursor.getColumnIndex("COUNT"));
+            i++;
+        }while(cursor.moveToNext());
+
+        cursor.close();
         db.close();
         return counts;
     }
