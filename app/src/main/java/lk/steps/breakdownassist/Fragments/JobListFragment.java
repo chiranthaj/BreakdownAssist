@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,28 +22,36 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
+
 import java.util.ArrayList;
+
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.MainActivity;
 import lk.steps.breakdownassist.MyDBHandler;
 import lk.steps.breakdownassist.R;
-import lk.steps.breakdownassist.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
-import lk.steps.breakdownassist.RecyclerViewCards.UnattainedJobsRecyclerAdapter;
 
-public class UnattainedJobsFragment extends Fragment {
+import lk.steps.breakdownassist.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
+import lk.steps.breakdownassist.RecyclerViewCards.JobsRecyclerAdapter;
+
+public class JobListFragment extends Fragment {
 
     private View mView;
 
     private SimpleCursorAdapter dataAdapter;
     MyDBHandler dbHandler;
     private int iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+    //private int JOB_STATUS;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            iJobs_to_Display = bundle.getInt("JOB_STATUS", -1);
+            Log.d("JOB_STATUS","JOB_STATUS="+iJobs_to_Display);
+        }
     }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,11 +66,10 @@ public class UnattainedJobsFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
+        Toast.makeText(getActivity().getApplicationContext(),"Disabled, Use Unattended view",Toast.LENGTH_SHORT).show();
         //noinspection SimplifiableIfStatement
         if (id == R.id.menu_jobs_all) {
             if (item.isChecked()) item.setChecked(false);
@@ -92,6 +100,7 @@ public class UnattainedJobsFragment extends Fragment {
     }
 
 
+
     @Override
     public void onPause() {
         super.onPause();
@@ -115,7 +124,6 @@ public class UnattainedJobsFragment extends Fragment {
 
     private void RefreshListView() {
 
-        //TODO : Make Sure we are showing all the Breakdown.Status_JOB_NOT_ATTENDED,Status_JOB_VISITED etc
         final ArrayList<Breakdown> BreakdonwList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
 
         RecyclerView mRecyclerView = (RecyclerView)mView.findViewById(R.id.recycleview);
@@ -126,27 +134,10 @@ public class UnattainedJobsFragment extends Fragment {
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-
-
         OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
             @Override
             public void onCardViewTap(View view, int position) {
-                final int listPossition=position;
-                final FragmentManager fm;
-                fm = getFragmentManager();
-                //Toast.makeText(getActivity(), "Tapped " + BreakdonwList.get(position).get_id(), Toast.LENGTH_SHORT).show();
-                fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MainActivity.MAP_FRAGMENT_TAG).commit();
-                Toast.makeText(getActivity(), BreakdonwList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
-                new Handler().postDelayed(new Runnable() {
-                    public void run() {
-                        Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
-                        if (currentFragment instanceof GmapFragment) {
-                            GmapFragment GmapFrag= (GmapFragment) currentFragment;
-                            GmapFrag.FocusBreakdown(BreakdonwList.get(listPossition));
-                        }
-                    }
-                }, 2000);
-
+//Toast.makeText(getActivity(), "Tapped " + BreakdonwList.get(position).get_id(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -166,7 +157,7 @@ public class UnattainedJobsFragment extends Fragment {
         };
 
         // specify an adapter (see also next example)
-        final RecyclerView.Adapter mAdapter = new UnattainedJobsRecyclerAdapter(getActivity(),BreakdonwList, itemTouchListener);
+        final RecyclerView.Adapter mAdapter = new JobsRecyclerAdapter(getActivity(),BreakdonwList, itemTouchListener);
         mRecyclerView.setAdapter(mAdapter);
 
         SwipeableRecyclerViewTouchListener swipeTouchListener =
