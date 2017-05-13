@@ -201,30 +201,23 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.menu_jobs_all) {
             if (item.isChecked()) item.setChecked(false);
-            else {
-                item.setChecked(true);
-                iJobs_to_Display=Breakdown.Status_JOB_ANY;
-                RefreshJobsFromDB();
-            }
+            else item.setChecked(true);
+            iJobs_to_Display=Breakdown.Status_JOB_ANY;
+            RefreshJobsFromDB();
             return true;
         }else if (id == R.id.menu_jobs_completed) {
             if (item.isChecked()) item.setChecked(false);
-            else {
-                item.setChecked(true);
-                iJobs_to_Display=Breakdown.Status_JOB_COMPLETED;
-                RefreshJobsFromDB();
-            }
+            else item.setChecked(true);
+            iJobs_to_Display=Breakdown.Status_JOB_COMPLETED;
+            RefreshJobsFromDB();
             return true;
         }else if (id == R.id.menu_jobs_unatended) {
             if (item.isChecked()) item.setChecked(false);
-            else {
-                item.setChecked(true);
-                iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
-                RefreshJobsFromDB();
-            }
+            else item.setChecked(true);
+            iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+            RefreshJobsFromDB();
             return true;
         }
         return super.onOptionsItemSelected(item);
