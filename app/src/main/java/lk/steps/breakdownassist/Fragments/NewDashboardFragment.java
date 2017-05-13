@@ -4,9 +4,11 @@ package lk.steps.breakdownassist.Fragments;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.eazegraph.lib.charts.BarChart;
 import org.eazegraph.lib.charts.ValueLineChart;
@@ -14,6 +16,8 @@ import org.eazegraph.lib.models.BarModel;
 import org.eazegraph.lib.models.ValueLinePoint;
 import org.eazegraph.lib.models.ValueLineSeries;
 
+import lk.steps.breakdownassist.Breakdown;
+import lk.steps.breakdownassist.MyDBHandler;
 import lk.steps.breakdownassist.R;
 
 public class NewDashboardFragment extends Fragment {
@@ -24,7 +28,28 @@ public class NewDashboardFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate( R.layout.fragment_dashboard_new,container,false);
+        refreshCounts();
+        DrawChart();
+        return mView;
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshCounts();
+    }
+
+    private void refreshCounts(){
+        MyDBHandler  dbHandler = new MyDBHandler(getActivity().getApplicationContext(), null, null, 1);
+        int counts[] = dbHandler.getBreakdownCounts();
+
+        TextView txtUnattainedCount = (TextView) mView.findViewById(R.id.txtUnattainedCount);
+        TextView txtCompletedCount = (TextView) mView.findViewById(R.id.txtCompletedCount);
+        txtCompletedCount.setText(String.valueOf(counts[0]));
+        txtUnattainedCount.setText(String.valueOf(counts[1]));
+    }
+
+    private void DrawChart(){
         /*BarChart mBarChart = (BarChart) mView.findViewById(R.id.chart);
         mBarChart.addBar(new BarModel(2.3f, 0xFF123456));
         mBarChart.addBar(new BarModel(2.f,  0xFF343456));
@@ -56,8 +81,5 @@ public class NewDashboardFragment extends Fragment {
 
         mCubicValueLineChart.addSeries(series);
         mCubicValueLineChart.startAnimation();
-
-        return mView;
     }
-
 }

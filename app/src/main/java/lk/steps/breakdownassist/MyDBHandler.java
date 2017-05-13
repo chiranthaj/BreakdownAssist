@@ -114,7 +114,26 @@ public class MyDBHandler extends SQLiteOpenHelper
         iResult=1; //Return Success
         return iResult;
     }
+    public int[] getBreakdownCounts()
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT COUNT(*) AS TOTAL," +
+                        "SUM(CASE _Status  WHEN 1 THEN 1 ELSE 0 END) AS COMPLETED," +
+                        "SUM(CASE _Status  WHEN 0 THEN 1 ELSE 0 END) AS UNATTAINED" +
+                        " FROM BreakdownRecords;";
 
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+
+        int[] counts = new int[2];
+        if (!c.isAfterLast()){
+            counts[0] = c.getInt(c.getColumnIndex("COMPLETED"));
+            counts[1] = c.getInt(c.getColumnIndex("UNATTAINED"));
+        }
+        c.close();
+        db.close();
+        return counts;
+    }
     public void importGPSdata(String sDBPath)
     {
         SQLiteDatabase db = getWritableDatabase();

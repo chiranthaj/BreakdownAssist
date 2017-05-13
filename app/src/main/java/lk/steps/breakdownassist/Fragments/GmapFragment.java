@@ -349,7 +349,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public void AddCustomerLocationToMap(String Account_Num) {
         Breakdown newBreakdown = dbHandler.ReadCustomer_by_ACCT_NUM(Account_Num);
         if (newBreakdown!=null){
-            Marker CreatedMarker=AddBreakDownToMap(newBreakdown,
+            Marker CreatedMarker = AddBreakDownToMap(newBreakdown,
                     BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             if (CreatedMarker!=null){
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(CreatedMarker.getPosition()));
