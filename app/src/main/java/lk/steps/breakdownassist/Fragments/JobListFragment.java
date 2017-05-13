@@ -3,7 +3,6 @@ package lk.steps.breakdownassist.Fragments;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -137,6 +136,22 @@ public class JobListFragment extends Fragment {
             @Override
             public void onCardViewTap(View view, int position) {
 //Toast.makeText(getActivity(), "Tapped " + BreakdonwList.get(position).get_id(), Toast.LENGTH_SHORT).show();
+                final int listPossition=position;
+                final FragmentManager fm;
+                fm = getFragmentManager();
+                //Toast.makeText(getActivity(), "Tapped " + BreakdonwList.get(position).get_id(), Toast.LENGTH_SHORT).show();
+                fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MainActivity.MAP_FRAGMENT_TAG).commit();
+                Toast.makeText(getActivity(), BreakdonwList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
+                        if (currentFragment instanceof GmapFragment) {
+                            GmapFragment GmapFrag= (GmapFragment) currentFragment;
+                            GmapFrag.FocusBreakdown(BreakdonwList.get(listPossition));
+                        }
+                    }
+                }, 2000);
+
             }
 
             @Override
