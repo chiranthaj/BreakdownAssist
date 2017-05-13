@@ -35,14 +35,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-//import lk.steps.breakdownassist.Fragments.NewDashboardFragment;
+import lk.steps.breakdownassist.Fragments.NewDashboardFragment;
 
 import lk.steps.breakdownassist.Fragments.JobListFragment;
-import lk.steps.breakdownassist.Fragments.DashBoardFragment;
+
 
 import lk.steps.breakdownassist.Fragments.GmapAddTestBreakdownFragment;
 import lk.steps.breakdownassist.Fragments.GmapFragment;
-import lk.steps.breakdownassist.Fragments.JobListFragment;
+
 import lk.steps.breakdownassist.Fragments.SearchViewFragment;
 
 
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
             //fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
-
+        }
         else if (id == R.id.nav_completed_jobs) {
 
             Bundle arguments = new Bundle();
