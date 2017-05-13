@@ -21,16 +21,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
-
 import java.util.ArrayList;
-
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.MainActivity;
 import lk.steps.breakdownassist.MyDBHandler;
 import lk.steps.breakdownassist.R;
-
 import lk.steps.breakdownassist.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
 import lk.steps.breakdownassist.RecyclerViewCards.JobsRecyclerAdapter;
+
 
 public class JobListFragment extends Fragment {
 
@@ -59,6 +57,7 @@ public class JobListFragment extends Fragment {
         RefreshListView();
         return mView;
     }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.jobs_to_display_menu, menu);
@@ -68,6 +67,7 @@ public class JobListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+
         //noinspection SimplifiableIfStatement
         if (id == R.id.menu_jobs_all) {
             if (item.isChecked()) item.setChecked(false);
@@ -92,12 +92,11 @@ public class JobListFragment extends Fragment {
                 iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
                 RefreshListView();
             }
+
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
-
 
     @Override
     public void onPause() {
@@ -122,7 +121,9 @@ public class JobListFragment extends Fragment {
 
     private void RefreshListView() {
 
+
         final ArrayList<Breakdown> BreakdonwList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
+
 
         RecyclerView mRecyclerView = (RecyclerView)mView.findViewById(R.id.recycleview);
 
@@ -135,6 +136,7 @@ public class JobListFragment extends Fragment {
         OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
             @Override
             public void onCardViewTap(View view, int position) {
+
 //Toast.makeText(getActivity(), "Tapped " + BreakdonwList.get(position).get_id(), Toast.LENGTH_SHORT).show();
                 final int listPossition=position;
                 final FragmentManager fm;
@@ -171,7 +173,9 @@ public class JobListFragment extends Fragment {
         };
 
         // specify an adapter (see also next example)
+
         final RecyclerView.Adapter mAdapter = new JobsRecyclerAdapter(getActivity(),BreakdonwList, itemTouchListener);
+
         mRecyclerView.setAdapter(mAdapter);
 
         SwipeableRecyclerViewTouchListener swipeTouchListener =
@@ -191,6 +195,7 @@ public class JobListFragment extends Fragment {
                             public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
 //                                    Toast.makeText(MainActivity.this, mItems.get(position) + " swiped left", Toast.LENGTH_SHORT).show();
+
                                     BreakdonwList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }
@@ -201,6 +206,7 @@ public class JobListFragment extends Fragment {
                             public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
 //                                    Toast.makeText(MainActivity.this, mItems.get(position) + " swiped right", Toast.LENGTH_SHORT).show();
+
                                     BreakdonwList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }

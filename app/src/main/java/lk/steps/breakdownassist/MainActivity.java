@@ -34,10 +34,15 @@ import com.facebook.stetho.Stetho;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
+//import lk.steps.breakdownassist.Fragments.NewDashboardFragment;
+
 import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.Fragments.DashBoardFragment;
+
 import lk.steps.breakdownassist.Fragments.GmapAddTestBreakdownFragment;
 import lk.steps.breakdownassist.Fragments.GmapFragment;
+import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.Fragments.SearchViewFragment;
 
 
@@ -92,7 +97,7 @@ public class MainActivity extends AppCompatActivity
         ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(),this);
         fm = getFragmentManager();
 
-        fm.beginTransaction().replace(R.id.content_frame, new DashBoardFragment()).commit();
+        fm.beginTransaction().replace(R.id.content_frame, new NewDashboardFragment()).commit();
        // fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
@@ -256,7 +261,7 @@ public class MainActivity extends AppCompatActivity
             //TODO : If current fragment is NOT Map fragment only replace the fragment
             fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
         }else if (id == R.id.nav_dashboard) {
-            fm.beginTransaction().replace(R.id.content_frame, new DashBoardFragment()).commit();
+            fm.beginTransaction().replace(R.id.content_frame, new NewDashboardFragment()).commit();
         }
         else if (id == R.id.nav_search) {
             fm.beginTransaction().replace(R.id.content_frame, new SearchViewFragment()).commit();
@@ -267,13 +272,15 @@ public class MainActivity extends AppCompatActivity
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
             //fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
-        }
+
         else if (id == R.id.nav_completed_jobs) {
+
             Bundle arguments = new Bundle();
             arguments.putInt("JOB_STATUS", Breakdown.Status_JOB_COMPLETED);
             JobListFragment fragment = new JobListFragment();
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
+
         }else if (id == R.id.nav_Test_BD_ADD) {
             fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),
                     MAP_ADDTestBREAKDOWN_FRAGMENT_TAG).addToBackStack(MAP_FRAGMENT_TAG).commit();

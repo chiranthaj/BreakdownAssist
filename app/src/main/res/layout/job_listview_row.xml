@@ -129,21 +129,23 @@
             android:textColor="@android:color/holo_orange_dark"
             android:textSize="22sp" />
 
-        <Button
-            android:id="@+id/card_view_button1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/address"
-            android:layout_toStartOf="@+id/card_view_button2"
-            android:text="Button" />
+    <Button
+        android:id="@+id/card_view_button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/address"
+        android:layout_toStartOf="@+id/card_view_button2"
+        android:text="Button"
+        android:visibility="gone" />
 
-        <Button
-            android:id="@+id/card_view_button2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@+id/address"
-            android:text="button2" />
+    <Button
+        android:id="@+id/card_view_button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/address"
+        android:text="button2"
+        android:visibility="gone" />
 
     <CheckBox
         android:id="@+id/card_view_checkBox1"

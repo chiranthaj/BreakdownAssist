@@ -1,8 +1,6 @@
 package lk.steps.breakdownassist.RecyclerViewCards;
 
-/**
- * Created by praneethsai on 05-07-2016.
- */
+
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -82,7 +80,9 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
             completed_date_time = (TextView)itemLayoutView.findViewById(R.id.completed_date_time);
             name = (TextView) itemLayoutView.findViewById(R.id.name);
             address = (TextView) itemLayoutView.findViewById(R.id.address);
+
             // description = (TextView)itemLayoutView.findViewById(R.id.description);
+
             button1 = (Button) itemView.findViewById(R.id.card_view_button1);
             button2 = (Button) itemView.findViewById(R.id.card_view_button2);
             checkBox1 = (CheckBox) itemView.findViewById(R.id.card_view_checkBox1);
