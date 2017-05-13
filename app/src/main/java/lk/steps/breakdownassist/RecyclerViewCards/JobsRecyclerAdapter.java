@@ -17,17 +17,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lk.steps.breakdownassist.Breakdown;
-import lk.steps.breakdownassist.Fragments.CompletedJobsFragment;
-import lk.steps.breakdownassist.Fragments.UnattainedJobsFragment;
+import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.R;
 
 
-public class UnattainedJobsRecyclerAdapter extends RecyclerView.Adapter<UnattainedJobsRecyclerAdapter.ViewHolder> {
+public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapter.ViewHolder> {
 
     static   List<Breakdown> dbList;
     static  Context context;
-    public static UnattainedJobsFragment.OnItemTouchListener onItemTouchListener;
-    public UnattainedJobsRecyclerAdapter(Context context, List<Breakdown> dbList, UnattainedJobsFragment.OnItemTouchListener onItemTouchListener ){
+    public static JobListFragment.OnItemTouchListener onItemTouchListener;
+    public JobsRecyclerAdapter(Context context, List<Breakdown> dbList, JobListFragment.OnItemTouchListener onItemTouchListener ){
         this.dbList = new ArrayList<Breakdown>();
         this.context = context;
         this.dbList = dbList;
@@ -35,7 +34,7 @@ public class UnattainedJobsRecyclerAdapter extends RecyclerView.Adapter<Unattain
     }
 
     @Override
-    public UnattainedJobsRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public JobsRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         View itemLayoutView = LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.job_listview_row, null);
@@ -47,7 +46,7 @@ public class UnattainedJobsRecyclerAdapter extends RecyclerView.Adapter<Unattain
     }
 
     @Override
-    public void onBindViewHolder(UnattainedJobsRecyclerAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(JobsRecyclerAdapter.ViewHolder holder, int position) {
 
         holder.acc_no.setText(dbList.get(position).get_Acct_Num());
         holder.job_no.setText(dbList.get(position).get_Job_No());
@@ -56,7 +55,7 @@ public class UnattainedJobsRecyclerAdapter extends RecyclerView.Adapter<Unattain
         holder.name.setText(dbList.get(position).get_Name());
         holder.address.setText(dbList.get(position).get_ADDRESS());
         //holder.description.setText(dbList.get(position).get_Full_Description());
-        if(dbList.get(position).get_Completed_Time()==null){
+        if(dbList.get(position).get_Completed_Time() == null){
             holder.completed_date_time.setText("Unattained job");
         }else{
             holder.completed_date_time.setText(dbList.get(position).get_Completed_Time());
@@ -83,8 +82,7 @@ public class UnattainedJobsRecyclerAdapter extends RecyclerView.Adapter<Unattain
             completed_date_time = (TextView)itemLayoutView.findViewById(R.id.completed_date_time);
             name = (TextView) itemLayoutView.findViewById(R.id.name);
             address = (TextView) itemLayoutView.findViewById(R.id.address);
-           // description = (TextView)itemLayoutView.findViewById(R.id.description);
-            //itemLayoutView.setOnClickListener(this);
+            // description = (TextView)itemLayoutView.findViewById(R.id.description);
             button1 = (Button) itemView.findViewById(R.id.card_view_button1);
             button2 = (Button) itemView.findViewById(R.id.card_view_button2);
             checkBox1 = (CheckBox) itemView.findViewById(R.id.card_view_checkBox1);
@@ -95,7 +93,6 @@ public class UnattainedJobsRecyclerAdapter extends RecyclerView.Adapter<Unattain
                     onItemTouchListener.onCardViewTap(v, getLayoutPosition());
                 }
             });
-
             button1.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -125,7 +122,7 @@ public class UnattainedJobsRecyclerAdapter extends RecyclerView.Adapter<Unattain
             intent.putExtras(extras);
 
             context.startActivity(intent);*/
-            Toast.makeText(UnattainedJobsRecyclerAdapter.context, "you have clicked Row " + getAdapterPosition(), Toast.LENGTH_LONG).show();
+            Toast.makeText(JobsRecyclerAdapter.context, "you have clicked Row " + getAdapterPosition(), Toast.LENGTH_LONG).show();
         }
 
 
