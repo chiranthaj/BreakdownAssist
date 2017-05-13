@@ -81,10 +81,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     long lMap_lastUserInteractionTime = 0;
 
-    Map mMarker = new WeakHashMap<Breakdown, Marker>();
-    Map mBreakdown = new WeakHashMap<Marker, Breakdown>();
-    HashMap listBreakdownsOnMap = new HashMap<String, Breakdown>();
-    ArrayList<Marker> listMarkersOnMap = new ArrayList<Marker>();
+    Map Marker_by_BD_Id_OnMap = new WeakHashMap<String, Marker>(); //BD_Id is the key
+    Map BD_Id_by_Marker_OnMap = new WeakHashMap<Marker,String>(); //Marker is the key
 
     LatLng lastlocation = new LatLng(7, 80);
     MyDBHandler dbHandler;
@@ -292,6 +290,19 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.setTrafficEnabled(false);
     }
 
+    public void FocusBreakdown(Breakdown breakdown){
+        if (breakdown.get_Status()==Breakdown.Status_JOB_NOT_ATTENDED){
+            iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+        }else if (breakdown.get_Status()==Breakdown.Status_JOB_COMPLETED){
+            iJobs_to_Display=Breakdown.Status_JOB_COMPLETED;
+        }else {
+            iJobs_to_Display=Breakdown.Status_JOB_ANY;
+        }
+        RefreshJobsFromDB();
+        Marker selectedMarker = (Marker) Marker_by_BD_Id_OnMap.get(breakdown.get_id());
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(selectedMarker.getPosition()));
+        selectedMarker.showInfoWindow();
+    }
     public void ApplyMapDayNightModeAccordingly(){
         //Change only if the AutoMode in ON and apply once if not already applied the Night/Day mode
         if (Globals.getNightMode().equalsIgnoreCase("1")) {//Automatic
@@ -345,7 +356,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastlocation));
        // mMap.setInfoWindowAdapter(new MyInfoWindowAdapter(getActivity().getLayoutInflater()));
     }
-
+//TODO: DO not show the normal dialog for marker click
     public void AddCustomerLocationToMap(String Account_Num) {
         Breakdown newBreakdown = dbHandler.ReadCustomer_by_ACCT_NUM(Account_Num);
         if (newBreakdown!=null){
@@ -401,11 +412,11 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public Marker AddBreakDownToMap(Breakdown breakdown, BitmapDescriptor MarkerICON) /*int icon*/ {
         Marker CreatedMarker=null;//For Return
 
-        listBreakdownsOnMap.put(breakdown.get_id(), breakdown);
+
         Marker bdMarker;
-        //To Avoid adding a same BD marker more than once to the map, may be check with the hash map and marker ID
+        //To Avoid adding a same BD marker more than once to the map, may be check with the hash map
         if (breakdown.getLocation() != null) {
-            if (mMarker.containsKey(breakdown) == false) {/*mMarker.get(bd)==null*/
+            if (!Marker_by_BD_Id_OnMap.containsKey(breakdown.get_id())) {/*mMarker.get(bd)==null*/
                 bdMarker = mMap.addMarker(new MarkerOptions()
                         .position(breakdown.getLocation())
                         .title(breakdown.get_Job_No() + " - " + breakdown.get_Acct_Num())
@@ -414,11 +425,12 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                         //.icon(BitmapDescriptorFactory.fromResource(icon))
 
                         .icon(MarkerICON)
-
                         .snippet(breakdown.get_Name() + "\n" + breakdown.get_ADDRESS() + "\n\n" + breakdown.get_Full_Description()));
 
-                mMarker.put(breakdown, bdMarker); //Adding to Harshmap
-                mBreakdown.put(bdMarker, breakdown);//We have two HarshMaps for search either from Marker or Breakdown
+                //We have two HarshMaps for search either from Marker or breakdown.ID
+                Marker_by_BD_Id_OnMap.put(breakdown.get_id(), bdMarker) ; //(key,marker)
+                BD_Id_by_Marker_OnMap.put(bdMarker,breakdown.get_id())  ; //(key,data)
+
                 lastlocation = breakdown.getLocation();
                 CreatedMarker=bdMarker;
             }
@@ -434,14 +446,15 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
-    public void remove_breakdown(Breakdown breakdown) {
-        Marker selectedMarker = (Marker) mMarker.get(breakdown);
-        listBreakdownsOnMap.remove(breakdown);
-        selectedMarker.remove();
-    }
-
     public void RefreshJobsFromDB() {
-        if (mMap != null) mMap.clear();  //Clear all the overlays
+        if (mMap != null) {
+            mMap.clear();  //Clear all the overlays
+/*            mMarker.clear();//
+            mBreakdown.clear();*/
+
+            BD_Id_by_Marker_OnMap.clear();
+            Marker_by_BD_Id_OnMap.clear();
+        }
         AddBreakDownListToMap(dbHandler.ReadBreakdowns(iJobs_to_Display));
     }
 
@@ -584,10 +597,10 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-    //@Override
-    //public void onInfoWindowClick(Marker marker) {
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         final Marker selectedMarker = marker;  //to access in Override Methods
-        final Breakdown selectedBreakdown=(Breakdown) mBreakdown.get(selectedMarker); //Calling from Harshmap by giving the Marker Ref
+        //Calling from Harshmap by giving the Marker Ref
+        final Breakdown selectedBreakdown=dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(selectedMarker));
 
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -683,7 +696,9 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     public void BreakdownFeedbackDialog(final Marker marker){
         final Marker selectedMarker = marker;  //to access in Override Methods
-        final Breakdown selectedBreakdown=(Breakdown) mBreakdown.get(selectedMarker); //Calling from Harshmap by giving the Marker Ref
+        //final Breakdown selectedBreakdown=(Breakdown) mBreakdown.get(selectedMarker); //Calling from Harshmap by giving the Marker Ref
+        //Calling from Harshmap by giving the Marker Ref
+        final Breakdown selectedBreakdown=dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(selectedMarker));
 
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -762,7 +777,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public void UpdateBreakDown(Breakdown selectedBreakdown,int iStatus) {
         dbHandler.UpdateBreakdownStatus(selectedBreakdown,iStatus);
         RefreshJobsFromDB();
-        //TODO : Add methods to handle other status like Visited etc, then change the marker
+        //TODO : Add methods to handle other status like Visited etc may be with custom time, then change the marker
     }
 
     @Override

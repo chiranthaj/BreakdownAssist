@@ -34,11 +34,17 @@ import com.facebook.stetho.Stetho;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import lk.steps.breakdownassist.Fragments.NewDashboardFragment;
+
+//import lk.steps.breakdownassist.Fragments.NewDashboardFragment;
+
+import lk.steps.breakdownassist.Fragments.JobListFragment;
+import lk.steps.breakdownassist.Fragments.DashBoardFragment;
+
 import lk.steps.breakdownassist.Fragments.GmapAddTestBreakdownFragment;
 import lk.steps.breakdownassist.Fragments.GmapFragment;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.Fragments.SearchViewFragment;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -49,7 +55,7 @@ public class MainActivity extends AppCompatActivity
     protected PowerManager.WakeLock mWakeLock;
     public static final String STATE_SCORE = "playerScore";
     public static final String MAP_FRAGMENT_TAG = "TagMapFragment";
-    public static final String MAP_ADDBREAKDOWN_FRAGMENT_TAG = "TagMapAddBreakdownFragment";
+    public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
 
     private static Context context;
 
@@ -176,7 +182,11 @@ public class MainActivity extends AppCompatActivity
                 }
             }, 2000);
         }
-
+/*        if (getFragmentManager().getBackStackEntryCount() > 0 ){
+            getFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }*/
     }
 
     @Override
@@ -262,15 +272,18 @@ public class MainActivity extends AppCompatActivity
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
             //fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
-        }  else if (id == R.id.nav_completed_jobs) {
+
+        else if (id == R.id.nav_completed_jobs) {
+
             Bundle arguments = new Bundle();
             arguments.putInt("JOB_STATUS", Breakdown.Status_JOB_COMPLETED);
             JobListFragment fragment = new JobListFragment();
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
-            //fm.beginTransaction().replace(R.id.content_frame, new CompletedJobsFragment()).commit();
+
         }else if (id == R.id.nav_Test_BD_ADD) {
-            fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),MAP_ADDBREAKDOWN_FRAGMENT_TAG).addToBackStack("GmapAddTestBreakdownFragment").commit();
+            fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),
+                    MAP_ADDTestBREAKDOWN_FRAGMENT_TAG).addToBackStack(MAP_FRAGMENT_TAG).commit();
         } else if (id == R.id.nav_sync_sms_inbox) {
             Toast.makeText(this, "Please wait.. This will take some time to complete" , Toast.LENGTH_LONG).show();
             ReadSMS.SyncSMSInbox(this);
@@ -287,6 +300,8 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
     public static Context getAppContext() {
         return MainActivity.context;
     }

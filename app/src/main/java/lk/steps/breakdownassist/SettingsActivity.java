@@ -3,14 +3,17 @@ package lk.steps.breakdownassist;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -297,4 +300,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             return (Activity) c;
         return null;
     }
+
 }
+
+
