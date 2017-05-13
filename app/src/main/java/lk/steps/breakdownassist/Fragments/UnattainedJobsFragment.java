@@ -2,11 +2,14 @@ package lk.steps.breakdownassist.Fragments;
 
 
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,6 +23,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 import java.util.ArrayList;
 import lk.steps.breakdownassist.Breakdown;
+import lk.steps.breakdownassist.MainActivity;
 import lk.steps.breakdownassist.MyDBHandler;
 import lk.steps.breakdownassist.R;
 import lk.steps.breakdownassist.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
@@ -112,7 +116,7 @@ public class UnattainedJobsFragment extends Fragment {
     private void RefreshListView() {
 
         //TODO : Make Sure we are showing all the Breakdown.Status_JOB_NOT_ATTENDED,Status_JOB_VISITED etc
-        final ArrayList<Breakdown> dbList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
+        final ArrayList<Breakdown> BreakdonwList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
 
         RecyclerView mRecyclerView = (RecyclerView)mView.findViewById(R.id.recycleview);
 
@@ -127,27 +131,42 @@ public class UnattainedJobsFragment extends Fragment {
         OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
             @Override
             public void onCardViewTap(View view, int position) {
-                Toast.makeText(getActivity(), "Tapped " + dbList.get(position), Toast.LENGTH_SHORT).show();
+                final int listPossition=position;
+                final FragmentManager fm;
+                fm = getFragmentManager();
+                //Toast.makeText(getActivity(), "Tapped " + BreakdonwList.get(position).get_id(), Toast.LENGTH_SHORT).show();
+                fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MainActivity.MAP_FRAGMENT_TAG).commit();
+                Toast.makeText(getActivity(), BreakdonwList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
+                        if (currentFragment instanceof GmapFragment) {
+                            GmapFragment GmapFrag= (GmapFragment) currentFragment;
+                            GmapFrag.FocusBreakdown(BreakdonwList.get(listPossition));
+                        }
+                    }
+                }, 2000);
+
             }
 
             @Override
             public void onButton1Click(View view, int position) {
-                Toast.makeText(getActivity(), "Clicked Button1 in " + dbList.get(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Clicked Button1 in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onButton2Click(View view, int position) {
-                Toast.makeText(getActivity(), "Clicked Button2 in " + dbList.get(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Clicked Button2 in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onCheckBox1Click(View view, int position) {
-                Toast.makeText(getActivity(), "Clicked onCheckBox1Click in " + dbList.get(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Clicked onCheckBox1Click in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
             }
         };
 
         // specify an adapter (see also next example)
-        final RecyclerView.Adapter mAdapter = new UnattainedJobsRecyclerAdapter(getActivity(),dbList, itemTouchListener);
+        final RecyclerView.Adapter mAdapter = new UnattainedJobsRecyclerAdapter(getActivity(),BreakdonwList, itemTouchListener);
         mRecyclerView.setAdapter(mAdapter);
 
         SwipeableRecyclerViewTouchListener swipeTouchListener =
@@ -167,7 +186,7 @@ public class UnattainedJobsFragment extends Fragment {
                             public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
 //                                    Toast.makeText(MainActivity.this, mItems.get(position) + " swiped left", Toast.LENGTH_SHORT).show();
-                                    dbList.remove(position);
+                                    BreakdonwList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }
                                 mAdapter.notifyDataSetChanged();
@@ -177,7 +196,7 @@ public class UnattainedJobsFragment extends Fragment {
                             public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
 //                                    Toast.makeText(MainActivity.this, mItems.get(position) + " swiped right", Toast.LENGTH_SHORT).show();
-                                    dbList.remove(position);
+                                    BreakdonwList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }
                                 mAdapter.notifyDataSetChanged();

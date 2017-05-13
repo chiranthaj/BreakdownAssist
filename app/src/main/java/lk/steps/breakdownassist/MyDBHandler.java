@@ -209,8 +209,6 @@ public class MyDBHandler extends SQLiteOpenHelper
 
     public Cursor ReadBreakdownsToCursor(int iStatus)
     {
-        List<Breakdown> Breakdownslist = new LinkedList<Breakdown>();
-
         SQLiteDatabase db = getWritableDatabase();
         //String query = "SELECT `_id` as ID,`NAME`,`LONGITUDE`,`LATITUDE` FROM `Customers` limit 3;";
 
@@ -333,7 +331,6 @@ public class MyDBHandler extends SQLiteOpenHelper
     {
         String sBreakdownID=null;
 
-        String dbString = "";
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT `B`.`_id` AS `_id` " +
                 " FROM `BreakdownRecords` `B`,`Customers` `C`  WHERE `B`.`_Acct_Num`='" + sACCT_NUM + "' " +
@@ -356,7 +353,19 @@ public class MyDBHandler extends SQLiteOpenHelper
     {
         Breakdown newBreakdown=null;
 
-        Cursor c =ReadBreakdownsToCursor(0);
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`," +
+                " C.`LATITUDE` as `LATITUDE`, `B`.`_Status` as `Status`, " +
+                " `B`.`_Acct_Num` as `_Acct_Num`,`C`.`ADDRESS` as `ADDRESS`,   " +
+                " `B`.`_Description` as `Description`, `B`.`_Job_Num` as `_Job_Num`, `B`.`_Contact_Num` as  `_Contact_Num`,  " +
+                " `P`.`PremisesID` as `PremisesID` , `B`.`DateTime` as `DateTime1`, `B`.`completed_timestamp` as `DateTime2` " +
+                " FROM `BreakdownRecords` `B` " +
+                " LEFT JOIN `Customers` `C` ON `C`.`ACCT_NUM` = `B`.`_Acct_Num` " +
+                " LEFT JOIN `PremisesID` `P` ON `P`.`ACCT_NUM` = `B`.`_Acct_Num` " +
+                " WHERE `B`.`_id` = '" + sID + "';";
+
+        Cursor c = db.rawQuery(query, null);
+
         c.moveToFirst();
 
         if (!c.isAfterLast() && c.getString(0) != null) //AND and AND only && not &
@@ -368,6 +377,8 @@ public class MyDBHandler extends SQLiteOpenHelper
             newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
             newBreakdown.set_Status(c.getShort(c.getColumnIndex("Status")));
             newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
+            newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
+            newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
             newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
             newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
             newBreakdown.set_Job_No(c.getString(c.getColumnIndex("_Job_Num")));
@@ -419,9 +430,9 @@ public class MyDBHandler extends SQLiteOpenHelper
 
 
     public int UpdateBreakdownStatus(Breakdown breakdown,int Breakdown_Status)
-    {//TODO : Use Enum class to to have Breakdownstatus.Done like thing
+    {// TODO : Maintain to two tables, one for Current status, one for status changed with all the status changes list with timesatamp
         int iResult=-1;
-        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy:MM:d h:m:s a");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/d h:m:s a");
         String time = timeFormat.format(System.currentTimeMillis());
 
         SQLiteDatabase db = getWritableDatabase();

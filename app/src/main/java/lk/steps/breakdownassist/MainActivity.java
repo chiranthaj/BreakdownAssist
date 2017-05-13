@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity
     protected PowerManager.WakeLock mWakeLock;
     public static final String STATE_SCORE = "playerScore";
     public static final String MAP_FRAGMENT_TAG = "TagMapFragment";
-    public static final String MAP_ADDBREAKDOWN_FRAGMENT_TAG = "TagMapAddBreakdownFragment";
+    public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
 
     private static Context context;
 
@@ -177,7 +177,11 @@ public class MainActivity extends AppCompatActivity
                 }
             }, 2000);
         }
-
+/*        if (getFragmentManager().getBackStackEntryCount() > 0 ){
+            getFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }*/
     }
 
     @Override
@@ -262,7 +266,8 @@ public class MainActivity extends AppCompatActivity
         else if (id == R.id.nav_completed_jobs) {
             fm.beginTransaction().replace(R.id.content_frame, new CompletedJobsFragment()).commit();
         }else if (id == R.id.nav_Test_BD_ADD) {
-            fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),MAP_ADDBREAKDOWN_FRAGMENT_TAG).addToBackStack("GmapAddTestBreakdownFragment").commit();
+            fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),
+                    MAP_ADDTestBREAKDOWN_FRAGMENT_TAG).addToBackStack(MAP_FRAGMENT_TAG).commit();
         } else if (id == R.id.nav_sync_sms_inbox) {
             Toast.makeText(this, "Please wait.. This will take some time to complete" , Toast.LENGTH_LONG).show();
             ReadSMS.SyncSMSInbox(this);
@@ -279,6 +284,8 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
     public static Context getAppContext() {
         return MainActivity.context;
     }
