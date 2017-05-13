@@ -50,6 +50,8 @@ public class NewDashboardFragment extends Fragment {
     }
 
     private void DrawChart(){
+        MyDBHandler  dbHandler = new MyDBHandler(getActivity().getApplicationContext(), null, null, 1);
+        int counts[][] = dbHandler.getBreakdownStatistics();
         /*BarChart mBarChart = (BarChart) mView.findViewById(R.id.chart);
         mBarChart.addBar(new BarModel(2.3f, 0xFF123456));
         mBarChart.addBar(new BarModel(2.f,  0xFF343456));
@@ -66,7 +68,14 @@ public class NewDashboardFragment extends Fragment {
         ValueLineSeries series = new ValueLineSeries();
         series.setColor(0xFF56B7F1);
 
-        series.addPoint(new ValueLinePoint("Jan", 2.4f));
+        Log.d("x",counts.length+"=");
+        Log.d("y",counts[0].length+"=");
+        for (int i =0; i<1; i++) {
+            Log.d("DATE,COUNT",counts[0][i] +"," +counts[1][i]);
+            series.addPoint(new ValueLinePoint(String.valueOf(counts[0][i]), counts[1][i]));
+        }
+
+        /*series.addPoint(new ValueLinePoint("Jan", 2.4f));
         series.addPoint(new ValueLinePoint("Feb", 3.4f));
         series.addPoint(new ValueLinePoint("Mar", .4f));
         series.addPoint(new ValueLinePoint("Apr", 1.2f));
@@ -77,7 +86,7 @@ public class NewDashboardFragment extends Fragment {
         series.addPoint(new ValueLinePoint("Sep", 2.4f));
         series.addPoint(new ValueLinePoint("Oct", 3.4f));
         series.addPoint(new ValueLinePoint("Nov", .4f));
-        series.addPoint(new ValueLinePoint("Dec", 1.3f));
+        series.addPoint(new ValueLinePoint("Dec", 1.3f));*/
 
         mCubicValueLineChart.addSeries(series);
         mCubicValueLineChart.startAnimation();
