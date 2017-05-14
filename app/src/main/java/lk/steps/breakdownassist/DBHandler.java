@@ -30,31 +30,31 @@ public class DBHandler extends SQLiteOpenHelper
     {
         String query;
         query = "CREATE TABLE `BreakdownRecords` (" +
-                "`_id`	INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "`DateTime`	TEXT," +
-                "`_Acct_Num`	TEXT," +
-                "`_Status`	TEXT," +
-                "`_Job_Num`	TEXT," +
-                "`_Contact_Num`	TEXT," +
-                "`_JOB_Source`	TEXT," +
-                "`_Description`	TEXT, " +
-                "`inbox_ref`	TEXT UNIQUE, " +
-                "`last_timestamp` TEXT, " +
-                "`completed_timestamp` TEXT " +
+                "`_id`	                INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "`DateTime`	            TEXT," +
+                "`_Acct_Num`	        TEXT," +
+                "`_Status`	            TEXT," +
+                "`_Job_Num`	            TEXT," +
+                "`_Contact_Num`	        TEXT," +
+                "`_JOB_Source`	        TEXT," +
+                "`_Description`	        TEXT, " +
+                "`inbox_ref`	        TEXT UNIQUE, " +
+                "`last_timestamp`       TEXT, " +
+                "`completed_timestamp`  TEXT " +
                 ");";
         db.execSQL(query);
         query = "CREATE TABLE `Customers` (" +
-                "`_id` INTEGER PRIMARY KEY," +
-                "`ACCT_NUM` TEXT," +
-                "`WALK_ORDER` TEXT," +
-                "`NAME` TEXT,"+
-                "`ADDRESS` TEXT," +
-                "`SUB` TEXT," +
-                "`ECSC` TEXT," +
-                "`TARIFF_COD` TEXT," +
-                "`NO_OF_MET` TEXT,"+
-                "`LATITUDE` TEXT,"+
-                "`LONGITUDE` TEXT,"+
+                "`_id`          INTEGER PRIMARY KEY," +
+                "`ACCT_NUM`     TEXT," +
+                "`WALK_ORDER`   TEXT," +
+                "`NAME`         TEXT,"+
+                "`ADDRESS`      TEXT," +
+                "`SUB`          TEXT," +
+                "`ECSC`         TEXT," +
+                "`TARIFF_COD`   TEXT," +
+                "`NO_OF_MET`    TEXT,"+
+                "`LATITUDE`     TEXT,"+
+                "`LONGITUDE`    TEXT,"+
                 "`GPS_ACCURACY` TEXT "+
                 ");";
         db.execSQL(query);
@@ -119,8 +119,8 @@ public class DBHandler extends SQLiteOpenHelper
     {
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT COUNT(*) AS TOTAL," +
-                        "SUM(CASE _Status  WHEN 1 THEN 1 ELSE 0 END) AS COMPLETED," +
-                        "SUM(CASE _Status  WHEN 0 THEN 1 ELSE 0 END) AS UNATTAINED" +
+                        "SUM(CASE _Status  WHEN "+Breakdown.Status_JOB_COMPLETED +" THEN 1 ELSE 0 END) AS COMPLETED," +
+                        "SUM(CASE _Status  WHEN "+Breakdown.Status_JOB_NOT_ATTENDED + " THEN 1 ELSE 0 END) AS UNATTAINED" +
                         " FROM BreakdownRecords;";
 
         Cursor c = db.rawQuery(query, null);
@@ -144,18 +144,19 @@ public class DBHandler extends SQLiteOpenHelper
                 "ORDER BY substr(DateTime,0,11)";
 
         Cursor cursor = db.rawQuery(query, null);
-        cursor.moveToFirst();
-
         String[][] counts = new String[2][cursor.getCount()];
-        int i =0;
-        do{
-            counts[0][i] = cursor.getString(cursor.getColumnIndex("DATE"));
-            counts[1][i] = cursor.getString(cursor.getColumnIndex("COUNT"));
-            i++;
-        }while(cursor.moveToNext());
+        if(cursor.getCount()>0){
+            cursor.moveToFirst();
+            int i =0;
+            do{
+                counts[0][i] = cursor.getString(cursor.getColumnIndex("DATE"));
+                counts[1][i] = cursor.getString(cursor.getColumnIndex("COUNT"));
+                i++;
+            }while(cursor.moveToNext());
 
-        cursor.close();
-        db.close();
+            cursor.close();
+            db.close();
+        }
         return counts;
     }
     public void importGPSdata(String sDBPath)
@@ -289,10 +290,8 @@ public class DBHandler extends SQLiteOpenHelper
 
     public List<Breakdown> ReadBreakdowns(int iStatus)
     {
-        List<Breakdown> Breakdownslist = new LinkedList<Breakdown>();
-
+        List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
         Cursor c = ReadBreakdownsToCursor(iStatus);
-
         while (!c.isAfterLast())
         {
             if (c.getString(0) != null)
@@ -312,13 +311,13 @@ public class DBHandler extends SQLiteOpenHelper
                 newBreakdown.set_Job_No(c.getString(c.getColumnIndex("_Job_Num")));
                 newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("_Contact_Num")));
                 newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
-                Breakdownslist.add(newBreakdown);
+                BreakdownsList.add(newBreakdown);
             }
             c.moveToNext();
         }
         c.close();
         //TODO : find a way to close the db ( db.close()) of the c cursor
-        return Breakdownslist;
+        return BreakdownsList;
     }
 
     public String getLastBreakdownID()
@@ -453,7 +452,7 @@ public class DBHandler extends SQLiteOpenHelper
 
         SQLiteDatabase db = getWritableDatabase();
         Cursor c = db.rawQuery(query, null);
-        Log.d("TTTTTTTTTTT1",c.getCount()+"");
+        //Log.d("TTTTTTTTTTT1",c.getCount()+"");
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
         if (c != null) {
             c.moveToFirst();
@@ -499,7 +498,7 @@ public class DBHandler extends SQLiteOpenHelper
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
         if (c != null) {
             c.moveToFirst();
-            Log.d("TTTTTTTTTTT2",c.getCount()+"");
+            //Log.d("TTTTTTTTTTT2",c.getCount()+"");
             do{
                 Breakdown newBreakdown=new Breakdown();
                 newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
