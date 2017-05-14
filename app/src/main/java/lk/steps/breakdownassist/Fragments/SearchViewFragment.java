@@ -60,7 +60,13 @@ public class SearchViewFragment extends Fragment {
     private void RefreshListView(String keyWord) {
 
         //final ArrayList<Breakdown> BreakdonwList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
-        final List<Breakdown> BreakdownsList = dbHandler.SearchInBreakdowns(keyWord);
+        List<Breakdown> _BreakdownsList = dbHandler.SearchInBreakdowns(keyWord);
+        if (_BreakdownsList.size() == 0) {
+            _BreakdownsList = dbHandler.SearchInCustomers(keyWord);
+        }
+
+        final List<Breakdown> BreakdownsList = _BreakdownsList;
+
         RecyclerView mRecyclerView = (RecyclerView)mView.findViewById(R.id.recycleview);
 
         mRecyclerView.setHasFixedSize(true);

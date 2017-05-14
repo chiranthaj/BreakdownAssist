@@ -37,6 +37,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -212,10 +213,15 @@ public class MainActivity extends AppCompatActivity
             //TODO : Move these to designated fragments and localize them
                 @Override
                 public boolean onQueryTextSubmit(String keyWord) {
-                    final List<Breakdown> BreakdownsList = dbHandler.SearchInBreakdowns(keyWord);
+                    List<Breakdown> BreakdownsList = dbHandler.SearchInBreakdowns(keyWord);
+                    if (BreakdownsList.size() == 0) {
+                        BreakdownsList = dbHandler.SearchInCustomers(keyWord);
+                    }
+                    Log.d("AAA","1");
                     if (BreakdownsList.size() == 0) {
                         Toast.makeText(MainActivity.getAppContext(), "No match found..!" , Toast.LENGTH_LONG).show();
                     } else if (BreakdownsList.size() == 1) {
+                        Log.d("AAA","2");
                         Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
                         if (currentFragment instanceof GmapFragment) {
                             GmapFragment GmapFrag= (GmapFragment) currentFragment;
@@ -225,6 +231,13 @@ public class MainActivity extends AppCompatActivity
                                 GmapFrag.mMap.animateCamera(CameraUpdateFactory.newLatLng(CreatedMarker.getPosition()));
                                 CreatedMarker.showInfoWindow();
                             }
+                        }else{
+                            Bundle arguments = new Bundle();
+                            arguments.putString("KEY_WORD", keyWord);
+                            //arguments.putParcelableArrayList("LIST",BreakdownsList);
+                            SearchViewFragment fragment = new SearchViewFragment();
+                            fragment.setArguments(arguments);
+                            fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
                         }
                     } else {
                         Bundle arguments = new Bundle();

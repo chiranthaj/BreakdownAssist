@@ -433,6 +433,7 @@ public class DBHandler extends SQLiteOpenHelper
     {
         return ReadBreakdown_by_ID(getBreakdown_ID(sACCT_NUM));
     }
+
     public List<Breakdown> SearchInBreakdowns(String word){
         String WORD = "%" + word.trim().toUpperCase() + "%";
 
@@ -452,6 +453,7 @@ public class DBHandler extends SQLiteOpenHelper
 
         SQLiteDatabase db = getWritableDatabase();
         Cursor c = db.rawQuery(query, null);
+        Log.d("TTTTTTTTTTT1",c.getCount()+"");
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
         if (c != null) {
             c.moveToFirst();
@@ -480,32 +482,46 @@ public class DBHandler extends SQLiteOpenHelper
             }
             c.close();
             //TODO : find a way to close the db ( db.close()) of the c cursor
-
         }
         return BreakdownsList;
     }
 
-    public Cursor SearchInBreakdowns2(String word){
+    public List<Breakdown> SearchInCustomers(String word){
         String WORD = "%" + word.trim().toUpperCase() + "%";
-        String query = "SELECT `_id` as `ID`,`_Acct_Num`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
-                "FROM `BreakdownRecords` " +
-                "WHERE " +
-                "`ACCT_NUM` LIKE'" + WORD +"' OR " +
-                "`NAME` LIKE'" + WORD +"' OR " +
-                "`ADDRESS` LIKE'" + WORD +"';";
-        SQLiteDatabase db = getWritableDatabase();
-        return  db.rawQuery(query, null);
-    }
-    public Cursor SearchInCustomers(String word){
-        String WORD = "%" + word.trim().toUpperCase() + "%";
-        String query = "SELECT `_id` as `ID`,`ACCT_NUM` as `_Acct_Num`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
+        String query = "SELECT `_id`,`ACCT_NUM`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
                 "FROM `Customers` " +
                 "WHERE " +
                 "`ACCT_NUM` LIKE'" + WORD +"' OR " +
                 "`NAME` LIKE'" + WORD +"' OR " +
                 "`ADDRESS` LIKE'" + WORD +"';";
         SQLiteDatabase db = getWritableDatabase();
-        return  db.rawQuery(query, null);
+        Cursor c = db.rawQuery(query, null);
+        List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
+        if (c != null) {
+            c.moveToFirst();
+            Log.d("TTTTTTTTTTT2",c.getCount()+"");
+            do{
+                Breakdown newBreakdown=new Breakdown();
+                newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
+                newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
+                newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
+                newBreakdown.set_Status(0);
+                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
+                newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
+                newBreakdown.set_Received_Time("");
+                newBreakdown.set_Completed_Time("");
+                newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                newBreakdown.set_Full_Description("-");
+                newBreakdown.set_Job_No("No breakdown entries found");
+                newBreakdown.set_Contact_No("");
+                newBreakdown.set_PremisesID("");
+                BreakdownsList.add(newBreakdown);
+            }while(c.moveToNext());
+            c.close();
+            //TODO : find a way to close the db ( db.close()) of the c cursor
+        }
+        return BreakdownsList;
     }
 
     //TODO : Add using customer object
