@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +19,7 @@ import android.support.design.widget.FloatingActionButton;
 
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -30,7 +33,11 @@ import android.widget.Toast;
 
 /*import com.arlib.floatingsearchview.FloatingSearchView;*/
 import com.facebook.stetho.Stetho;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Marker;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -204,21 +211,29 @@ public class MainActivity extends AppCompatActivity
             search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             //TODO : Move these to designated fragments and localize them
                 @Override
-                public boolean onQueryTextSubmit(String s) {
-                    //Log.d("TEST", "onQueryTextSubmit ");
-                  /*  cursor=studentRepo.getStudentListByKeyword(s);
-                    if (cursor==null){
-                        Toast.makeText(MainActivity.this,"No records found!",Toast.LENGTH_LONG).show();
-                    }else{
-                        Toast.makeText(MainActivity.this, cursor.getCount() + " records found!",Toast.LENGTH_LONG).show();
+                public boolean onQueryTextSubmit(String keyWord) {
+                    final List<Breakdown> BreakdownsList = dbHandler.SearchInBreakdowns(keyWord);
+                    if (BreakdownsList.size() == 0) {
+                        Toast.makeText(MainActivity.getAppContext(), "No match found..!" , Toast.LENGTH_LONG).show();
+                    } else if (BreakdownsList.size() == 1) {
+                        Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
+                        if (currentFragment instanceof GmapFragment) {
+                            GmapFragment GmapFrag= (GmapFragment) currentFragment;
+                            Marker CreatedMarker = GmapFrag.AddBreakDownToMap(BreakdownsList.get(0),
+                                    BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                            if (CreatedMarker!=null){
+                                GmapFrag.mMap.animateCamera(CameraUpdateFactory.newLatLng(CreatedMarker.getPosition()));
+                                CreatedMarker.showInfoWindow();
+                            }
+                        }
+                    } else {
+                        Bundle arguments = new Bundle();
+                        arguments.putString("KEY_WORD", keyWord);
+                        SearchViewFragment fragment = new SearchViewFragment();
+                        fragment.setArguments(arguments);
+                        fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
                     }
-                    customAdapter.swapCursor(cursor);*/
-                    Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
-                    if (currentFragment instanceof GmapFragment) {
-                        GmapFragment GmapFrag= (GmapFragment) currentFragment;
-                        GmapFrag.AddCustomerLocationToMap(s);
-                    }
-                    return false;
+                    return true;
                 }
 
                 @Override

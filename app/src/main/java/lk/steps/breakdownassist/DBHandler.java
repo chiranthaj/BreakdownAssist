@@ -291,7 +291,7 @@ public class DBHandler extends SQLiteOpenHelper
     {
         List<Breakdown> Breakdownslist = new LinkedList<Breakdown>();
 
-        Cursor c =ReadBreakdownsToCursor(iStatus);
+        Cursor c = ReadBreakdownsToCursor(iStatus);
 
         while (!c.isAfterLast())
         {
@@ -341,7 +341,6 @@ public class DBHandler extends SQLiteOpenHelper
     public List<Breakdown> ReadAllCustomers()
     {
         List<Breakdown> Breakdownslist = new LinkedList<Breakdown>();
-
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT `_id` as `ID`,`ACCT_NUM` as `_Acct_Num`,`NAME`,`ADDRESS`,`LONGITUDE`,`LATITUDE` " +
                 "FROM `Customers` limit 1000 ;";
@@ -382,7 +381,6 @@ public class DBHandler extends SQLiteOpenHelper
                 ";";
 
         Cursor c = db.rawQuery(query, null);
-
         c.moveToFirst();
 
         if (!c.isAfterLast() & c.getString(0) != null)
@@ -393,8 +391,7 @@ public class DBHandler extends SQLiteOpenHelper
         db.close();
         return sBreakdownID;
     }
-    public Breakdown ReadBreakdown_by_ID(String sID)
-    {
+    public Breakdown ReadBreakdown_by_ID(String sID){
         Breakdown newBreakdown=null;
 
         SQLiteDatabase db = getWritableDatabase();
@@ -436,6 +433,81 @@ public class DBHandler extends SQLiteOpenHelper
     {
         return ReadBreakdown_by_ID(getBreakdown_ID(sACCT_NUM));
     }
+    public List<Breakdown> SearchInBreakdowns(String word){
+        String WORD = "%" + word.trim().toUpperCase() + "%";
+
+        String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`,C.`TARIFF_COD` as `TARIFF_COD`," +
+                " C.`LATITUDE` as `LATITUDE`, `B`.`_Status` as `Status`, " +
+                " `B`.`_Acct_Num` as `_Acct_Num`,`C`.`ADDRESS` as `ADDRESS`,   " +
+                " `B`.`_Description` as `Description`, `B`.`_Job_Num` as `_Job_Num`, `B`.`_Contact_Num` as  `_Contact_Num`,  " +
+                " `P`.`PremisesID` as `PremisesID` , `B`.`DateTime` as `DateTime1`, `B`.`completed_timestamp` as `DateTime2` " +
+                " FROM `BreakdownRecords` `B` " +
+                " LEFT JOIN `Customers` `C` ON `C`.`ACCT_NUM` = `B`.`_Acct_Num` " +
+                " LEFT JOIN `PremisesID` `P` ON `P`.`ACCT_NUM` = `B`.`_Acct_Num` " +
+                " WHERE " +
+                "`B`.`_Acct_Num` LIKE'" + WORD +"' OR " +
+                "`C`.`NAME` LIKE'" + WORD +"' OR " +
+                "`C`.`ADDRESS` LIKE'" + WORD +"'"+
+                " ORDER BY DateTime DESC;";
+
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor c = db.rawQuery(query, null);
+        List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
+        if (c != null) {
+            c.moveToFirst();
+            while (!c.isAfterLast())
+            {
+                if (c.getString(0) != null)
+                {
+                    Breakdown newBreakdown=new Breakdown();
+                    newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
+                    newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                    newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
+                    newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
+                    newBreakdown.set_Status(c.getShort(c.getColumnIndex("Status")));
+                    newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
+                    newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
+                    newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
+                    newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
+                    newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                    newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
+                    newBreakdown.set_Job_No(c.getString(c.getColumnIndex("_Job_Num")));
+                    newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("_Contact_Num")));
+                    newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
+                    BreakdownsList.add(newBreakdown);
+                }
+                c.moveToNext();
+            }
+            c.close();
+            //TODO : find a way to close the db ( db.close()) of the c cursor
+
+        }
+        return BreakdownsList;
+    }
+
+    public Cursor SearchInBreakdowns2(String word){
+        String WORD = "%" + word.trim().toUpperCase() + "%";
+        String query = "SELECT `_id` as `ID`,`_Acct_Num`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
+                "FROM `BreakdownRecords` " +
+                "WHERE " +
+                "`ACCT_NUM` LIKE'" + WORD +"' OR " +
+                "`NAME` LIKE'" + WORD +"' OR " +
+                "`ADDRESS` LIKE'" + WORD +"';";
+        SQLiteDatabase db = getWritableDatabase();
+        return  db.rawQuery(query, null);
+    }
+    public Cursor SearchInCustomers(String word){
+        String WORD = "%" + word.trim().toUpperCase() + "%";
+        String query = "SELECT `_id` as `ID`,`ACCT_NUM` as `_Acct_Num`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
+                "FROM `Customers` " +
+                "WHERE " +
+                "`ACCT_NUM` LIKE'" + WORD +"' OR " +
+                "`NAME` LIKE'" + WORD +"' OR " +
+                "`ADDRESS` LIKE'" + WORD +"';";
+        SQLiteDatabase db = getWritableDatabase();
+        return  db.rawQuery(query, null);
+    }
+
     //TODO : Add using customer object
     public Breakdown ReadCustomer_by_ACCT_NUM(String sACCT_NUM)
     {

@@ -33,8 +33,6 @@ import lk.steps.breakdownassist.RecyclerViewCards.JobsRecyclerAdapter;
 public class JobListFragment extends Fragment {
 
     private View mView;
-
-    private SimpleCursorAdapter dataAdapter;
     DBHandler dbHandler;
     private int iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
     //private int JOB_STATUS;
@@ -101,6 +99,7 @@ public class JobListFragment extends Fragment {
         super.onResume();
         getActivity().registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
     }
+
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

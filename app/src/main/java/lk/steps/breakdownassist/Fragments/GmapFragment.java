@@ -72,7 +72,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener,
         LocationListener, GoogleMap.OnCameraMoveStartedListener, DirectionFinderListener {
 
-    private GoogleMap mMap;
+    public GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     Marker mCurrLocationMarker;
