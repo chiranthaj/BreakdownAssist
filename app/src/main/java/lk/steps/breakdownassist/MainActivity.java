@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity
     public static final String STATE_SCORE = "playerScore";
     public static final String MAP_FRAGMENT_TAG = "TagMapFragment";
     public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
-
+    private NavigationView navigationView;
     private static Context context;
 
     boolean doubleBackToExitPressedOnce = false;
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         dbHandler = new DBHandler(this,null,null,1);
@@ -176,25 +176,25 @@ public class MainActivity extends AppCompatActivity
             if (doubleBackToExitPressedOnce) {
                 super.onBackPressed();
                 return;
+            }else if(navigationView.getMenu().findItem(R.id.nav_dashboard).isChecked())
+            {
+                this.doubleBackToExitPressedOnce = true;
+                Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+                //TODO : Check if this works on previous versions
+                new Handler().postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        doubleBackToExitPressedOnce=false;
+                    }
+                }, 2000);
+            } else {
+                MenuItem target = navigationView.getMenu().findItem(R.id.nav_dashboard);
+                target.setChecked(true);
+                onNavigationItemSelected(target);
             }
-
-            this.doubleBackToExitPressedOnce = true;
-            Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-            //TODO : Check if this works on previous versions
-            new Handler().postDelayed(new Runnable() {
-
-                @Override
-                public void run() {
-                    doubleBackToExitPressedOnce=false;
-                }
-            }, 2000);
         }
-/*        if (getFragmentManager().getBackStackEntryCount() > 0 ){
-            getFragmentManager().popBackStack();
-        } else {
-            super.onBackPressed();
-        }*/
     }
 
     @Override
@@ -302,7 +302,6 @@ public class MainActivity extends AppCompatActivity
             //fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
         }
         else if (id == R.id.nav_completed_jobs) {
-
             Bundle arguments = new Bundle();
             arguments.putInt("JOB_STATUS", Breakdown.Status_JOB_COMPLETED);
             JobListFragment fragment = new JobListFragment();
@@ -330,6 +329,16 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    public void openUnattainedJobFragment(View view){
+        MenuItem target = navigationView.getMenu().findItem(R.id.nav_unattained_jobs);
+        target.setChecked(true);
+        onNavigationItemSelected(target);
+    }
+    public void openCompletedJobFragment(View view){
+        MenuItem target = navigationView.getMenu().findItem(R.id.nav_completed_jobs);
+        target.setChecked(true);
+        onNavigationItemSelected(target);
+    }
     public static Context getAppContext() {
         return MainActivity.context;
     }

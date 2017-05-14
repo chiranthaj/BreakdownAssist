@@ -5,6 +5,7 @@
         <item
             android:id="@+id/nav_dashboard"
             android:icon="@drawable/ic_media_route_on_22_light"
+            android:checked="true"
             android:title="Dashboard" />
         <item
             android:id="@+id/nav_map_view"
