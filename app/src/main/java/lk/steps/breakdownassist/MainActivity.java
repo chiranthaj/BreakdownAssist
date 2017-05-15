@@ -104,7 +104,6 @@ public class MainActivity extends AppCompatActivity
 
         ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(),this);
         fm = getFragmentManager();
-
         fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
        // fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
 
@@ -285,6 +284,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
+        item.setChecked(true);
         if (id == R.id.nav_map_view) {
             //TODO : If current fragment is NOT Map fragment only replace the fragment
             fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
