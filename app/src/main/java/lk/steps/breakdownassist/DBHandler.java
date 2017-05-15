@@ -433,7 +433,14 @@ public class DBHandler extends SQLiteOpenHelper
         return ReadBreakdown_by_ID(getBreakdown_ID(sACCT_NUM));
     }
 
-    public List<Breakdown> SearchInBreakdowns(String word){
+    public List<Breakdown> SearchInDatabase(String word) {
+        List<Breakdown> part1 = SearchInBreakdowns2(word);
+        List<Breakdown> part2 = SearchInCustomers2(word);
+        part1.addAll(part2);
+        return part1;
+    }
+
+    public List<Breakdown> SearchInBreakdowns2(String word){
         String WORD = "%" + word.trim().toUpperCase() + "%";
 
         String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`,C.`TARIFF_COD` as `TARIFF_COD`," +
@@ -485,7 +492,7 @@ public class DBHandler extends SQLiteOpenHelper
         return BreakdownsList;
     }
 
-    public List<Breakdown> SearchInCustomers(String word){
+    public List<Breakdown> SearchInCustomers2(String word){
         String WORD = "%" + word.trim().toUpperCase() + "%";
         String query = "SELECT `_id`,`ACCT_NUM`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
                 "FROM `Customers` " +

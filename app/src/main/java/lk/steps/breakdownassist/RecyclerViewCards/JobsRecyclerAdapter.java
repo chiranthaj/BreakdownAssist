@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +59,14 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
         }else{
             holder.completed_date_time.setText(dbList.get(position).get_Completed_Time());
         }
+        String lat = dbList.get(position).get_LATITUDE();
+        if(lat==null){
+            holder.imgMap.setVisibility(View.INVISIBLE);
+        }else if(lat.trim().length()>3){
+            holder.imgMap.setVisibility(View.VISIBLE);
+        }else{
+            holder.imgMap.setVisibility(View.INVISIBLE);
+        }
 
     }
 
@@ -68,9 +77,10 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        public TextView acc_no,job_no,received_date_time,completed_date_time,name,address,description;
+        private TextView acc_no,job_no,received_date_time,completed_date_time,name,address,description;
         private Button button1,button2;
         private CheckBox checkBox1;
+        private ImageView imgMap;
 
         public ViewHolder(View itemLayoutView) {
             super(itemLayoutView);
@@ -80,7 +90,7 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
             completed_date_time = (TextView)itemLayoutView.findViewById(R.id.completed_date_time);
             name = (TextView) itemLayoutView.findViewById(R.id.name);
             address = (TextView) itemLayoutView.findViewById(R.id.address);
-
+            imgMap = (ImageView) itemLayoutView.findViewById(R.id.imgMap);
             // description = (TextView)itemLayoutView.findViewById(R.id.description);
 
             button1 = (Button) itemView.findViewById(R.id.card_view_button1);
@@ -122,10 +132,8 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
             intent.putExtras(extras);
 
             context.startActivity(intent);*/
-            Toast.makeText(JobsRecyclerAdapter.context, "you have clicked Row " + getAdapterPosition(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(JobsRecyclerAdapter.context, "you have clicked Row " + getAdapterPosition(), Toast.LENGTH_LONG).show();
         }
-
-
     }
 }
 

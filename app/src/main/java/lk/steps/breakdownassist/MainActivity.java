@@ -212,10 +212,10 @@ public class MainActivity extends AppCompatActivity
             //TODO : Move these to designated fragments and localize them
                 @Override
                 public boolean onQueryTextSubmit(String keyWord) {
-                    List<Breakdown> BreakdownsList = dbHandler.SearchInBreakdowns(keyWord);
-                    if (BreakdownsList.size() == 0) {
+                    List<Breakdown> BreakdownsList = dbHandler.SearchInDatabase(keyWord);
+                    /*if (BreakdownsList.size() == 0) {
                         BreakdownsList = dbHandler.SearchInCustomers(keyWord);
-                    }
+                    }*/
                     Log.d("AAA","1");
                     if (BreakdownsList.size() == 0) {
                         Toast.makeText(MainActivity.getAppContext(), "No match found..!" , Toast.LENGTH_LONG).show();
