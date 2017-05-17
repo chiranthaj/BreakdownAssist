@@ -293,6 +293,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         return null;
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
 }
 
 

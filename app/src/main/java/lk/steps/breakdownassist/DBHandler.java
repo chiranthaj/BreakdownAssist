@@ -440,7 +440,7 @@ public class DBHandler extends SQLiteOpenHelper
         return part1;
     }
 
-    public List<Breakdown> SearchInBreakdowns2(String word){
+    private List<Breakdown> SearchInBreakdowns2(String word){
         String WORD = "%" + word.trim().toUpperCase() + "%";
 
         String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`,C.`TARIFF_COD` as `TARIFF_COD`," +
@@ -459,15 +459,12 @@ public class DBHandler extends SQLiteOpenHelper
 
         SQLiteDatabase db = getWritableDatabase();
         Cursor c = db.rawQuery(query, null);
-        //Log.d("TTTTTTTTTTT1",c.getCount()+"");
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
         if (c != null) {
-            c.moveToFirst();
-            while (!c.isAfterLast())
-            {
-                if (c.getString(0) != null)
-                {
-                    Breakdown newBreakdown=new Breakdown();
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                do {
+                    Breakdown newBreakdown = new Breakdown();
                     newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
                     newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
                     newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
@@ -483,16 +480,14 @@ public class DBHandler extends SQLiteOpenHelper
                     newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("_Contact_Num")));
                     newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
                     BreakdownsList.add(newBreakdown);
-                }
-                c.moveToNext();
+                } while (c.moveToNext());
             }
             c.close();
-            //TODO : find a way to close the db ( db.close()) of the c cursor
         }
         return BreakdownsList;
     }
 
-    public List<Breakdown> SearchInCustomers2(String word){
+    private List<Breakdown> SearchInCustomers2(String word){
         String WORD = "%" + word.trim().toUpperCase() + "%";
         String query = "SELECT `_id`,`ACCT_NUM`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
                 "FROM `Customers` " +
@@ -504,26 +499,27 @@ public class DBHandler extends SQLiteOpenHelper
         Cursor c = db.rawQuery(query, null);
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
         if (c != null) {
-            c.moveToFirst();
-            //Log.d("TTTTTTTTTTT2",c.getCount()+"");
-            do{
-                Breakdown newBreakdown=new Breakdown();
-                newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
-                newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
-                newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
-                newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
-                newBreakdown.set_Status(0);
-                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
-                newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
-                newBreakdown.set_Received_Time("");
-                newBreakdown.set_Completed_Time("");
-                newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
-                newBreakdown.set_Full_Description("-");
-                newBreakdown.set_Job_No("No breakdown entries found");
-                newBreakdown.set_Contact_No("");
-                newBreakdown.set_PremisesID("");
-                BreakdownsList.add(newBreakdown);
-            }while(c.moveToNext());
+            if (c.getCount()>0) {
+                c.moveToFirst();
+                do {
+                    Breakdown newBreakdown = new Breakdown();
+                    newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
+                    newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                    newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
+                    newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
+                    newBreakdown.set_Status(0);
+                    newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
+                    newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
+                    newBreakdown.set_Received_Time("");
+                    newBreakdown.set_Completed_Time("");
+                    newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                    newBreakdown.set_Full_Description("-");
+                    newBreakdown.set_Job_No("No breakdown entries found");
+                    newBreakdown.set_Contact_No("");
+                    newBreakdown.set_PremisesID("");
+                    BreakdownsList.add(newBreakdown);
+                } while (c.moveToNext());
+            }
             c.close();
             //TODO : find a way to close the db ( db.close()) of the c cursor
         }

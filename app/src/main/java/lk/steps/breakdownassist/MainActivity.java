@@ -216,11 +216,9 @@ public class MainActivity extends AppCompatActivity
                     /*if (BreakdownsList.size() == 0) {
                         BreakdownsList = dbHandler.SearchInCustomers(keyWord);
                     }*/
-                    Log.d("AAA","1");
                     if (BreakdownsList.size() == 0) {
                         Toast.makeText(MainActivity.getAppContext(), "No match found..!" , Toast.LENGTH_LONG).show();
                     } else if (BreakdownsList.size() == 1) {
-                        Log.d("AAA","2");
                         Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
                         if (currentFragment instanceof GmapFragment) {
                             GmapFragment GmapFrag= (GmapFragment) currentFragment;
