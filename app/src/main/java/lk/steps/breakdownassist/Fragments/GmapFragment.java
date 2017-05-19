@@ -290,9 +290,11 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         }else {
             iJobs_to_Display=Breakdown.Status_JOB_ANY;
         }
+        Log.d("GMAP","4");
         RefreshJobsFromDB();
         Marker selectedMarker = (Marker) Marker_by_BD_Id_OnMap.get(breakdown.get_id());
         if(selectedMarker!=null){
+            Log.d("GMAP","3");
             mMap.animateCamera(CameraUpdateFactory.newLatLng(selectedMarker.getPosition()));
             selectedMarker.showInfoWindow();
         }
@@ -716,11 +718,9 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(spinner1.getSelectedItemPosition() == 0){
+                /*if(spinner1.getSelectedItemPosition() == 0){
                     final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
                     alertDialog.setTitle("Please select a Failure type");
-                    //alertDialog.setMessage("message");
-                    //alertDialog.setIcon(R.drawable.welcome);
                     alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             alertDialog.dismiss();
@@ -730,8 +730,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 }else if(spinner2.getSelectedItemPosition() == 0){
                     final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
                     alertDialog.setTitle("Please select a Failure nature");
-                    //alertDialog.setMessage("message");
-                    //alertDialog.setIcon(R.drawable.welcome);
                     alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             alertDialog.dismiss();
@@ -741,8 +739,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 }else if(spinner3.getSelectedItemPosition() == 0){
                     final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
                     alertDialog.setTitle("Please select a Failure cause");
-                    //alertDialog.setMessage("message");
-                    //alertDialog.setIcon(R.drawable.welcome);
                     alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             alertDialog.dismiss();
@@ -753,7 +749,10 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                     UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
                     Log.d("Reason ",spinner1.getSelectedItem().toString());
                     dialog.dismiss();
-                }
+                }*/
+                UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
+                Log.d("Reason ",spinner1.getSelectedItem().toString());
+                dialog.dismiss();
                 //TODO : Use an Undo option
             }
         });

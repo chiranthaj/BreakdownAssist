@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -126,25 +127,25 @@ public class JobListFragment extends Fragment {
 
         OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
             @Override
-            public void onCardViewTap(View view, int position) {
+            public void onCardViewTap(View view, final int position) {
+                if(TextUtils.isEmpty(BreakdonwList.get(position).get_LATITUDE())) {
+                    Toast.makeText(getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
+                }else{
+                    final FragmentManager fm;
+                    fm = getFragmentManager();
+                    fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MainActivity.MAP_FRAGMENT_TAG).commit();
+                    Toast.makeText(getActivity(), BreakdonwList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
 
-//Toast.makeText(getActivity(), "Tapped " + BreakdonwList.get(position).get_id(), Toast.LENGTH_SHORT).show();
-                final int listPossition=position;
-                final FragmentManager fm;
-                fm = getFragmentManager();
-                //Toast.makeText(getActivity(), "Tapped " + BreakdonwList.get(position).get_id(), Toast.LENGTH_SHORT).show();
-                fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MainActivity.MAP_FRAGMENT_TAG).commit();
-                Toast.makeText(getActivity(), BreakdonwList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
-                new Handler().postDelayed(new Runnable() {
-                    public void run() {
-                        Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
-                        if (currentFragment instanceof GmapFragment) {
-                            GmapFragment GmapFrag= (GmapFragment) currentFragment;
-                            GmapFrag.FocusBreakdown(BreakdonwList.get(listPossition));
+                            Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
+                            if (currentFragment instanceof GmapFragment) {
+                                GmapFragment GmapFrag= (GmapFragment) currentFragment;
+                                GmapFrag.FocusBreakdown(BreakdonwList.get(position));
+                            }
                         }
-                    }
-                }, 2000);
-
+                    }, 2000);
+                }
             }
 
             @Override

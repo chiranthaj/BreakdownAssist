@@ -83,7 +83,7 @@ public class ReadSMS
         cursor.close();
     }
 
-    public static String extractAccountNo(String sInputText)//To detect area codes part (41, 42 ) in the account no
+    static String extractAccountNo(String sInputText)//To detect area codes part (41, 42 ) in the account no
     {
         String sAccountNo="";
         String ProbableAreaCodesMask ="";
