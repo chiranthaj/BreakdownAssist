@@ -128,9 +128,10 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
                 if (mMarker.containsKey(bd)==false){/*mMarker.get(bd)==null*/
                     bdMarker=mMap.addMarker(new MarkerOptions()
                             .position(bd.getLocation())
-                            .title(bd.get_Acct_Num())
+                            .title(bd.get_Job_No())
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)) //TODO : Depending on the priority mark the color
-                            .snippet(bd.get_Name() + "\n" + bd.get_ADDRESS() + "\n\n" + bd.get_Full_Description()  ));
+                            .snippet(bd.get_Acct_Num()));
+                            //.snippet(bd.get_Acct_Num() + "\n" + bd.get_ADDRESS().trim()));
                     //bdMarker.setTag(bd.get_id());
 
                     mMarker.put(bd,bdMarker); //Adding to Harshmap

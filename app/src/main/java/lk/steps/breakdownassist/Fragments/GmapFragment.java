@@ -422,13 +422,12 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             if (!Marker_by_BD_Id_OnMap.containsKey(breakdown.get_id())) {/*mMarker.get(bd)==null*/
                 bdMarker = mMap.addMarker(new MarkerOptions()
                         .position(breakdown.getLocation())
-                        .title(breakdown.get_Job_No() + " - " + breakdown.get_Acct_Num())
-
+                        .title(breakdown.get_Job_No())
                         //.icon(MarkerICON) //TODO : Depending on the priority mark the color
                         //.icon(BitmapDescriptorFactory.fromResource(icon))
-
                         .icon(MarkerICON)
-                        .snippet(breakdown.get_Name() + "\n" + breakdown.get_ADDRESS() + "\n\n" + breakdown.get_Full_Description()));
+                        //.snippet(breakdown.get_Name() + "\n" + breakdown.get_ADDRESS() + "\n\n" + breakdown.get_Full_Description()));
+                        .snippet(breakdown.get_ADDRESS().trim()));
 
                 //We have two HarshMaps for search either from Marker or breakdown.ID
                 Marker_by_BD_Id_OnMap.put(breakdown.get_id(), bdMarker) ; //(key,marker)
@@ -698,6 +697,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         dialog.show();*/
         return true;
     }
+
 
     public void BreakdownFeedbackDialog(final Marker marker){
         final Marker selectedMarker = marker;  //to access in Override Methods

@@ -142,7 +142,7 @@ public class JobListFragment extends Fragment {
 
                             Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
                             if (currentFragment instanceof GmapFragment) {
-                                GmapFragment GmapFrag= (GmapFragment) currentFragment;
+                                GmapFragment GmapFrag = (GmapFragment) currentFragment;
                                 GmapFrag.FocusBreakdown(BreakdonwList.get(position));
                             }
                         }
