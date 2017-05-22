@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import lk.steps.breakdownassist.Breakdown;
+import lk.steps.breakdownassist.BreakdownView;
 import lk.steps.breakdownassist.Globals;
 import lk.steps.breakdownassist.ManagePermissions;
 import lk.steps.breakdownassist.Modules.DirectionFinder;
@@ -596,9 +597,11 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         final Marker selectedMarker = marker;  //to access in Override Methods
         //Calling from Harshmap by giving the Marker Ref
-        final Breakdown selectedBreakdown=dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(selectedMarker));
+        final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(selectedMarker));
 
-        final Dialog dialog = new Dialog(getActivity());
+        BreakdownView.Dialog(this,selectedBreakdown,selectedMarker,getLastLocation());
+
+        /*final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_dialog);
         //dialog.setTitle("Job Details");
@@ -625,7 +628,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             @Override
             public void onClick(View v) {
                 BreakdownFeedbackDialog(selectedMarker);
-               // UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
+                // UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
                 //TODO : Use an Undo option
                 dialog.dismiss();
             }
@@ -686,7 +689,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         });
 
 
-        dialog.show();
+        dialog.show();*/
         return true;
     }
 
@@ -851,7 +854,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
-    private void getDirections(LatLng origin, LatLng destination) {
+    public void getDirections(LatLng origin, LatLng destination) {
         //TODO : Exception when current location is not available
         try {
             String sOrigin=String.valueOf(origin.latitude) + ","+ String.valueOf(origin.longitude);

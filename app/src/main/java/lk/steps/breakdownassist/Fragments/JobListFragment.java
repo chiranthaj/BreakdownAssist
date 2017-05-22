@@ -24,6 +24,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 import java.util.ArrayList;
 import lk.steps.breakdownassist.Breakdown;
+import lk.steps.breakdownassist.BreakdownView;
 import lk.steps.breakdownassist.MainActivity;
 import lk.steps.breakdownassist.DBHandler;
 import lk.steps.breakdownassist.R;
@@ -33,9 +34,9 @@ import lk.steps.breakdownassist.RecyclerViewCards.JobsRecyclerAdapter;
 
 public class JobListFragment extends Fragment {
 
-    private View mView;
-    DBHandler dbHandler;
-    private int iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+    private static View mView;
+    private static DBHandler dbHandler;
+    private static int iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
     //private int JOB_STATUS;
 
     @Override
@@ -53,7 +54,7 @@ public class JobListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate( R.layout.job_listview,container,false);
         dbHandler = new DBHandler(getActivity(),null,null,1); //TODO : Close on exit
-        RefreshListView();
+        RefreshListView(JobListFragment.this);
         return mView;
     }
 
@@ -71,19 +72,19 @@ public class JobListFragment extends Fragment {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
             iJobs_to_Display=Breakdown.Status_JOB_ANY;
-            RefreshListView();
+            RefreshListView(JobListFragment.this);
             return true;
         }else if (id == R.id.menu_jobs_completed) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
             iJobs_to_Display=Breakdown.Status_JOB_COMPLETED;
-            RefreshListView();
+            RefreshListView(JobListFragment.this);
             return true;
         }else if (id == R.id.menu_jobs_unatended) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
             iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
-            RefreshListView();
+            RefreshListView(JobListFragment.this);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -105,13 +106,13 @@ public class JobListFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             //Add to list view
-            RefreshListView();
+            RefreshListView(JobListFragment.this);
 
         }
     };
 
 
-    private void RefreshListView() {
+    public static void RefreshListView(final Fragment fragment) {
 
 
         final ArrayList<Breakdown> BreakdonwList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
@@ -122,19 +123,20 @@ public class JobListFragment extends Fragment {
         mRecyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(fragment.getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
             @Override
             public void onCardViewTap(View view, final int position) {
                 if(TextUtils.isEmpty(BreakdonwList.get(position).get_LATITUDE())) {
-                    Toast.makeText(getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
+                    BreakdownView.Dialog(fragment,BreakdonwList.get(position),null,null);
                 }else{
                     final FragmentManager fm;
-                    fm = getFragmentManager();
+                    fm = fragment.getFragmentManager();
                     fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MainActivity.MAP_FRAGMENT_TAG).commit();
-                    Toast.makeText(getActivity(), BreakdonwList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
+                    Toast.makeText(fragment.getActivity(), BreakdonwList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
                     new Handler().postDelayed(new Runnable() {
                         public void run() {
 
@@ -150,23 +152,23 @@ public class JobListFragment extends Fragment {
 
             @Override
             public void onButton1Click(View view, int position) {
-                Toast.makeText(getActivity(), "Clicked Button1 in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragment.getActivity(), "Clicked Button1 in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onButton2Click(View view, int position) {
-                Toast.makeText(getActivity(), "Clicked Button2 in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragment.getActivity(), "Clicked Button2 in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onCheckBox1Click(View view, int position) {
-                Toast.makeText(getActivity(), "Clicked onCheckBox1Click in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragment.getActivity(), "Clicked onCheckBox1Click in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
             }
         };
 
         // specify an adapter (see also next example)
 
-        final RecyclerView.Adapter mAdapter = new JobsRecyclerAdapter(getActivity(),BreakdonwList, itemTouchListener);
+        final RecyclerView.Adapter mAdapter = new JobsRecyclerAdapter(fragment.getActivity(),BreakdonwList, itemTouchListener);
 
         mRecyclerView.setAdapter(mAdapter);
 
