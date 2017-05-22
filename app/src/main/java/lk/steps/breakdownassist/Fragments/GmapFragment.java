@@ -1,19 +1,16 @@
 package lk.steps.breakdownassist.Fragments;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -98,7 +95,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     private ProgressDialog progressDialog;
     Button buttonRestoreMap;
 
-    Boolean bRestoreMap = true;
+    Boolean bReCenterMap = true;
+    Boolean bDontReCenterMap = false;
 
     boolean isDirectionsJustStarted = false;
 
@@ -152,12 +150,12 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         fragment.getMapAsync(this);
 
 
-        buttonRestoreMap = (Button) getActivity().findViewById(R.id.buttonRestoreMap);
+        buttonRestoreMap = (Button) getActivity().findViewById(R.id.buttonReCenterMap);
         buttonRestoreMap.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        ReStoreMap();
+                        ReCenterMap();
                     }
                 }
         );
@@ -171,9 +169,18 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             RefreshJobsFromDB();
         }
     };
-    public void ReStoreMap(){
 
-        bRestoreMap = true;
+    public void MapManuallyMoved()
+    {
+        bReCenterMap = false; //for the button
+        bDontReCenterMap=true;
+        buttonRestoreMap.setVisibility(View.VISIBLE);   //Shows a Re-Center Button like in Google Navigation
+        // and stop map current location track temporary, after timeout start again and hide the button
+    }
+    public void ReCenterMap(){
+
+        bReCenterMap = true;
+        bDontReCenterMap=false;
         buttonRestoreMap.setVisibility(View.INVISIBLE);
 
         Location currentLocation = getLastLocation();
@@ -250,9 +257,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 reason == GoogleMap.OnCameraMoveStartedListener
                         .REASON_API_ANIMATION) && !isDirectionsJustStarted) {
             lMap_lastUserInteractionTime = System.currentTimeMillis();//Record the time now
-            bRestoreMap = false; //for the button
-            buttonRestoreMap.setVisibility(View.VISIBLE);   //Shows a Re-Center Button like in Google Navigation
-            // and stop map current location track temporary, after timeout start again and hide the button
+            MapManuallyMoved();
         }
         if (isDirectionsJustStarted)
             isDirectionsJustStarted = false;
@@ -296,7 +301,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         Marker selectedMarker = (Marker) Marker_by_BD_Id_OnMap.get(breakdown.get_id());
         if(selectedMarker!=null){
             Log.d("GMAP","3");
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(selectedMarker.getPosition()));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(selectedMarker.getPosition()));
+            MapManuallyMoved();
             selectedMarker.showInfoWindow();
         }
     }
@@ -560,7 +566,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
             // if (last_update_time/ user last interacted time with map - current_time)>1min Zoom and move back to current location
             // TODO :else update only the Vehicle Icon (if exists)
-            if ((Math.abs(lCurTime - lMap_lastUserInteractionTime) > 60000) || bRestoreMap) {
+            if (((Math.abs(lCurTime - lMap_lastUserInteractionTime) > 60000) || bReCenterMap ) && !bDontReCenterMap) {
 
                 LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
@@ -829,7 +835,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
             isDirectionsJustStarted=true;
-            ReStoreMap();
+            ReCenterMap();
         }
     }
 

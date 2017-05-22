@@ -51,10 +51,10 @@
     </LinearLayout>
 
     <Button
-        android:text="Resume"
+        android:text="Re-Center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/buttonRestoreMap"
+        android:id="@+id/buttonReCenterMap"
         android:layout_gravity="bottom|left"
         android:layout_margin="20dp"
         android:visibility="invisible" />
