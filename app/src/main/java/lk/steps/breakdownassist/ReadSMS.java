@@ -61,15 +61,18 @@ public class ReadSMS
                 Date callDayTime = new Date(Long.parseLong( cursor.getString(2)));
                 SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
                 String time = timeFormat.format(callDayTime);
-//                //String sNextID =getNextID(context);
-                String sAcct_num=extractAccountNo(sFullMessage);
+                //String sNextID =getNextID(context);
                 String sJob_No=extractJobNo(sFullMessage);
+                String sAcct_num=extractAccountNo(sFullMessage);
                 String sPhone_No=extractPhoneNo(sFullMessage);
 
-                DBHandler dbHandler= new DBHandler(context,null,null,1);
-                dbHandler.addBreakdown(sID,time,sAcct_num,sFullMessage,sJob_No,sPhone_No,sAddress);
-
-                dbHandler.close();
+                if(sJob_No != null) {// Added on 2017/05/22 to prevent irrelevant sms to add as a breakdown
+                    if (sJob_No.length() == 21) {
+                        DBHandler dbHandler = new DBHandler(context, null, null, 1);
+                        dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress);
+                        dbHandler.close();
+                    }
+                }
             }
             while (cursor.moveToNext());
         }
