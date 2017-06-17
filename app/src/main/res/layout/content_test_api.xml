@@ -8,26 +8,47 @@
     tools:context="lk.steps.breakdownassist.TestAPI"
     tools:showIn="@layout/activity_test_api">
 
+
     <LinearLayout
         android:layout_width="368dp"
         android:layout_height="495dp"
-        android:orientation="horizontal"
-        tools:layout_editor_absoluteY="8dp"
-        tools:layout_editor_absoluteX="8dp">
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="TextView" />
+        <Button
+            android:id="@+id/buttonPOSTBDREC"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="POST DB REC" />
+
+        <Button
+            android:id="@+id/buttonSaveToDB"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="SAVE DB"/>
 
         <Button
             android:id="@+id/buttonTestAPI"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.41"
-            android:text="TestAPI" />
+            android:text="TestAPI"/>
 
+        <Button
+            android:id="@+id/buttonPost"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="POST" />
+        <Button
+            android:id="@+id/buttonSync"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Sync"
+            android:onClick="startSyncService"/>
+        <Button
+            android:id="@+id/buttonSyncStop"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Sync Stop"
+            android:onClick="stopSyncService"/>
     </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>

@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
+
 /**
  * Created by Chirantha on 4/9/2017.
  */
@@ -15,6 +17,7 @@ public class Globals
     public static String AreaCode2="";
     public static String AreaCode3="";
     public static int NoOfAreaCodes=0;
+    public static SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
 
     public static void initAreaCodes(Context context)
     {

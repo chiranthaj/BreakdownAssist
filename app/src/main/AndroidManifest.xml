@@ -60,7 +60,7 @@
             android:name=".FileExplorer.FileChooser"
             android:label="Choose File"
             android:theme="@android:style/Theme.Holo">
-            <action android:name="com.example.fileexplorer.FileChooser" />
+            <action android:name="lk.steps.breakdownassist.fileexplorer.FileChooser" />
 
             <category android:name="android.intent.category.DEFAULT" />
         </activity>
@@ -73,6 +73,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="lk.steps.breakdownassist.MainActivity" />
         </activity>
+        <service android:name=".BackgroundService" />
     </application>
 
 </manifest>
