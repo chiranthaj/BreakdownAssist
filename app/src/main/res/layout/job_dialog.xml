@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
-    android:layout_width="match_parent"
+    android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:weightSum="1"
@@ -110,7 +110,7 @@
             <ImageButton
                 android:id="@+id/dialogButtonNavigate"
                 style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.25"
                 android:src="@drawable/ic_navigation"
@@ -119,7 +119,7 @@
             <ImageButton
                 android:id="@+id/dialogButtonForward"
                 style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.25"
                 android:src="@drawable/ic_forward"
@@ -128,8 +128,8 @@
             <ImageButton
                 android:id="@+id/dialogButtonVisited"
                 style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:src="@drawable/ic_av_timer"
                 android:layout_weight="0.25"
                 android:text="Visited" />
@@ -137,15 +137,58 @@
             <ImageButton
                 android:id="@+id/dialogButtonCompleted"
                 style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="0.25"
                 android:src="@drawable/ic_done"
                 android:text="COMLTD" />
         </TableRow>
 
     </TableLayout>
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_marginBottom="10dp"
+        android:layout_height="50dp">
 
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <Button
+                android:id="@+id/btnVisted"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.25"
+                android:text="Visited" />
+
+            <Button
+                android:id="@+id/btnAttending"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.25"
+                android:text="Attending" />
+
+            <Button
+                android:id="@+id/btnDone"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.25"
+                android:text="Done" />
+
+            <Button
+                android:id="@+id/btnCompleted"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.25"
+                android:text="Completed" />
+        </TableRow>
+
+    </TableLayout>
 </LinearLayout>
     </ScrollView>
 

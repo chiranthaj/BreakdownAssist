@@ -707,7 +707,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.job_feedback_dialog);
+        dialog.setContentView(R.layout.job_complete_dialog);
         //TODO : Use date time picker
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         txtView.setText(selectedBreakdown.get_Name()+"\n"+selectedBreakdown.get_ADDRESS());

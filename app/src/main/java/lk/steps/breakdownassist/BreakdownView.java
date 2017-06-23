@@ -1,6 +1,5 @@
 package lk.steps.breakdownassist;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Intent;
@@ -10,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -20,7 +20,6 @@ import com.google.android.gms.maps.model.Marker;
 
 import java.io.UnsupportedEncodingException;
 
-import lk.steps.breakdownassist.Fragments.GmapFragment;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.Modules.DirectionFinder;
 import lk.steps.breakdownassist.Modules.DirectionFinderListener;
@@ -122,7 +121,42 @@ public  class BreakdownView {
             }
         });
 
-
+        Button btnVisted = (Button) dialog.findViewById(R.id.btnVisted);
+        // if button is clicked, close the job_dialog dialog
+        btnVisted.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(fragment.getActivity().getApplicationContext(),
+                        "btnVisted",Toast.LENGTH_LONG).show();
+            }
+        });
+        Button btnAttending = (Button) dialog.findViewById(R.id.btnAttending);
+        // if button is clicked, close the job_dialog dialog
+        btnAttending.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(fragment.getActivity().getApplicationContext(),
+                        "btnAttending",Toast.LENGTH_LONG).show();
+            }
+        });
+        Button btnDone = (Button) dialog.findViewById(R.id.btnDone);
+        // if button is clicked, close the job_dialog dialog
+        btnDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(fragment.getActivity().getApplicationContext(),
+                        "btnDone",Toast.LENGTH_LONG).show();
+            }
+        });
+        Button btnCompleted = (Button) dialog.findViewById(R.id.btnVisted);
+        // if button is clicked, close the job_dialog dialog
+        btnCompleted.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(fragment.getActivity().getApplicationContext(),
+                        "btnCompleted",Toast.LENGTH_LONG).show();
+            }
+        });
         dialog.show();
     }
 
@@ -130,7 +164,7 @@ public  class BreakdownView {
 
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.job_feedback_dialog);
+        dialog.setContentView(R.layout.job_complete_dialog);
         //TODO : Use date time picker
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
