@@ -567,7 +567,7 @@ public  class JobView {
                 datePicker.getMonth(),datePicker.getDayOfMonth(),
                 timePicker.getCurrentHour(),timePicker.getCurrentMinute());
 
-        DateFormat gmtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateFormat gmtFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
         String text = ""+ gmtFormat.format(calendar.getTime());
         return  text;
     }
