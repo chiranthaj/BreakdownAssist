@@ -37,6 +37,13 @@ import lk.steps.breakdownassist.Modules.DirectionFinderListener;
 public  class JobView {
 
     public static void Dialog(final Fragment fragment, final Breakdown breakdown, final Marker marker, final Location lastLocation){
+
+        if(breakdown == null){
+            Toast.makeText(fragment.getActivity().getApplicationContext(),
+                    "Breakdown details not available..",Toast.LENGTH_LONG).show();
+            return;
+        }
+
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_dialog);
@@ -117,6 +124,7 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 JobVisitedDialog(fragment,breakdown);
+                dialog.dismiss();
             }
         });
         Button btnAttending = (Button) dialog.findViewById(R.id.btnAttending);
@@ -124,6 +132,7 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 JobAttendingDialog(fragment,breakdown);
+                dialog.dismiss();
             }
         });
         Button btnDone = (Button) dialog.findViewById(R.id.btnDone);
@@ -131,6 +140,7 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 JobDoneDialog(fragment,breakdown);
+                dialog.dismiss();
             }
         });
         Button btnCompleted = (Button) dialog.findViewById(R.id.btnCompleted);
@@ -138,6 +148,7 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 JobCompleteDialog(fragment,breakdown);
+                dialog.dismiss();
             }
         });
         dialog.show();
