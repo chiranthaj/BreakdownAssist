@@ -57,7 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import lk.steps.breakdownassist.Breakdown;
-import lk.steps.breakdownassist.BreakdownView;
+import lk.steps.breakdownassist.Failure;
+import lk.steps.breakdownassist.JobView;
 import lk.steps.breakdownassist.Globals;
 import lk.steps.breakdownassist.ManagePermissions;
 import lk.steps.breakdownassist.Modules.DirectionFinder;
@@ -604,7 +605,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         //Calling from Harshmap by giving the Marker Ref
         final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(selectedMarker));
 
-        BreakdownView.Dialog(this,selectedBreakdown,selectedMarker,getLastLocation());
+        JobView.Dialog(this,selectedBreakdown,selectedMarker,getLastLocation());
 
         /*final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -698,84 +699,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         return true;
     }
 
-
-    public void BreakdownFeedbackDialog(final Marker marker){
-        final Marker selectedMarker = marker;  //to access in Override Methods
-        //final Breakdown selectedBreakdown=(Breakdown) mBreakdown.get(selectedMarker); //Calling from Harshmap by giving the Marker Ref
-        //Calling from Harshmap by giving the Marker Ref
-        final Breakdown selectedBreakdown=dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(selectedMarker));
-
-        final Dialog dialog = new Dialog(getActivity());
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.job_feedback_dialog);
-        //TODO : Use date time picker
-        TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        txtView.setText(selectedBreakdown.get_Name()+"\n"+selectedBreakdown.get_ADDRESS());
-        //Spinner
-        ArrayAdapter adapter1 = ArrayAdapter.createFromResource(getActivity(), R.array.failure_type, R.layout.spinner_row );
-        final Spinner spinner1 = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner1.setAdapter(adapter1);
-        ArrayAdapter adapter2 = ArrayAdapter.createFromResource(getActivity(), R.array.failure_nature, R.layout.spinner_row );
-        final Spinner spinner2 = (Spinner) dialog.findViewById(R.id.spinner2);
-        spinner2.setAdapter(adapter2);
-        ArrayAdapter adapter3 = ArrayAdapter.createFromResource(getActivity(), R.array.failure_cause, R.layout.spinner_row );
-        final Spinner spinner3 = (Spinner) dialog.findViewById(R.id.spinner3);
-        spinner3.setAdapter(adapter3);
-
-        ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
-        // if button is clicked, close the job_dialog dialog
-        dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                /*if(spinner1.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure type");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner2.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure nature");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner3.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure cause");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else{
-                    UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
-                    Log.d("Reason ",spinner1.getSelectedItem().toString());
-                    dialog.dismiss();
-                }*/
-                UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
-                Log.d("Reason ",spinner1.getSelectedItem().toString());
-                dialog.dismiss();
-                //TODO : Use an Undo option
-            }
-        });
-        ImageButton dialogButton_visited = (ImageButton) dialog.findViewById(R.id.btnCancel);
-        // if button is clicked, close the job_dialog dialog
-        dialogButton_visited.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //TODO : Use an Undo option
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
-    }
 
 
     public void UpdateBreakDown(Breakdown selectedBreakdown,int iStatus) {

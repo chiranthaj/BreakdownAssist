@@ -38,7 +38,7 @@
 
         <TableRow
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="200dp"
             android:gravity="center"
             android:weightSum="1">
 
@@ -61,7 +61,7 @@
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="20dp"
                 android:gravity="center">
 
                 <TextView
@@ -77,8 +77,6 @@
                     android:id="@+id/spinner1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:entries="@array/failure_type"
-                    android:entryValues="@array/failure_type_index"
                     android:gravity="left"
                     android:title="Job Description" />
             </TableRow>
@@ -86,7 +84,7 @@
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="20dp"
                 android:gravity="center">
 
                 <TextView
@@ -102,8 +100,6 @@
                     android:id="@+id/spinner2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:entries="@array/failure_nature"
-                    android:entryValues="@array/failure_nature_index"
                     android:gravity="left"
                     android:title="Job Description" />
             </TableRow>
@@ -111,7 +107,7 @@
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="20dp"
                 android:gravity="center">
 
                 <TextView
@@ -127,8 +123,6 @@
                     android:id="@+id/spinner3"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:entries="@array/failure_cause"
-                    android:entryValues="@array/failure_cause_index"
                     android:gravity="left"
                     android:title="Job Description" />
             </TableRow>
@@ -146,9 +140,31 @@
                     style="@style/Widget.AppCompat.Button.Colored"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginEnd="50dp"
-                    android:layout_marginStart="50dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginStart="20dp"
                     android:src="@drawable/ic_cancel"
+                    android:layout_weight="0.5"
+                    android:text="Visited" />
+
+                <ImageButton
+                    android:id="@+id/btnTask1"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginStart="20dp"
+                    android:src="@drawable/ic_forward"
+                    android:layout_weight="0.5"
+                    android:text="Visited" />
+
+                <ImageButton
+                    android:id="@+id/btnTask2"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginStart="20dp"
+                    android:src="@drawable/ic_forward"
                     android:layout_weight="0.5"
                     android:text="Visited" />
 
