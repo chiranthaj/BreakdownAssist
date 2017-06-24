@@ -197,32 +197,7 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_VISITED);
-
-                JobChangeStatus myjobstatusRec=new JobChangeStatus();
-
-                myjobstatusRec.job_no=breakdown.get_Job_No();
-
-                DatePicker datePicker = (DatePicker)dialog.findViewById(R.id.datePicker);
-                TimePicker timePicker = (TimePicker) dialog.findViewById(R.id.timePicker);
-
-                int   day  = datePicker.getDayOfMonth();
-                int   month= datePicker.getMonth();
-                int   year = datePicker.getYear();
-
-                int  hour   =timePicker.getHour();
-                int  minutes   =timePicker.getMinute();
-
-
-                Toast.makeText(dialog.getContext(),
-                        Globals.getGetDateTime(year,month,day,hour,minutes),Toast.LENGTH_SHORT).show();
-
-/*                Date callDayTime = new Date( System.currentTimeMillis());
-                myjobstatusRec.change_datetime=Globals.timeFormat.format(callDayTime);
-                myjobstatusRec.st_code="V";
-                myjobstatusRec.comment="Test comment xyz";
-
-                UpdateJobStatusChange(fragment,myjobstatusRec );
-                dialog.dismiss();*/
+                dialog.dismiss();
             }
         });
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);

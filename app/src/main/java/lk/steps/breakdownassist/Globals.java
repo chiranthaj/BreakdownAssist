@@ -75,21 +75,4 @@ public class Globals
         return sReturn;
     }
 
-    public static String getGetDateTime(int year,int month, int day,int hour, int minutes)
-    {
-        String sReturn="";
-/*        try {
-            Date DateTime =timeFormat.parse( Integer.toString(year) + "/"+ Integer.toString(month) + "/"+ Integer.toString(day)+ " "+
-                    Integer.toString(hour)+ ":"+ Integer.toString(minutes) + ":00 ");
-            sReturn=DateTime.toString();
-        }
-        catch (Exception e)
-        {
-
-        }*/
-        sReturn=Integer.toString(year) + "/"+ Integer.toString(month) + "/"+ Integer.toString(day)+ " "+
-                Integer.toString(hour)+ ":"+ Integer.toString(minutes) + ":00 ";
-
-        return sReturn;
-    }
 }
