@@ -8,10 +8,12 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class Breakdown {
     public static final int Status_JOB_ANY = -1;
+    public static final int Status_JOB_NOT_ATTENDED = 0;
     public static final int Status_JOB_COMPLETED = 1;
     public static final int Status_JOB_VISITED = 2;
-    public static final int Status_JOB_NOT_ATTENDED = 0;
-    public static final int Status_JOB_NOT_FOUND = 3;
+    public static final int Status_JOB_DONE = 3;
+    public static final int Status_JOB_ATTENDING = 3;
+    public static final int Status_JOB_NOT_FOUND = 10;
 
 
     private String _id;

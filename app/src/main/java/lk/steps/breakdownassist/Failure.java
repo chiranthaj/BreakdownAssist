@@ -7,66 +7,66 @@ package lk.steps.breakdownassist;
 public class Failure {
     public static String[] Type = {
             "Please select",
-            "Medium Voltage",
-            "Low Voltage",
-            "Service Main"
+            "Medium voltage",
+            "Low voltage",
+            "Service main"
     };
 
     public static String[] Cause1 = {
             "Please select",
-            "Fuse Blown",
-            "Low Voltage issue",
+            "Fuse blown",
+            "Low voltage issue",
             "Neutral leakage",
-            "Low Voltage",
-            "Service Main"
+            "Low voltage",
+            "Service main"
     };
 
     public static String[] Cause2 = {
             "Please select",
-            "DDLO Fuse blown",
+            "DDLO fuse blown",
             "Overhead line"
     };
 
     public static String[] Cause3 = {
             "Please select",
             "House",
-            "Service Pole"
+            "Service pole"
     };
     
     public static String[] Description1 = {
             "Please select",
             "Accident due to vehicle",
-            "Bad wether condition",
+            "Bad weather condition",
             "Broken conductor",
             "Broken Pole",
             "Burnt tail wire",
-            "Due to bird and annimal",
-            "Loose span and Entaglment",
-            "Vegitation",
+            "Due to bird and animal",
+            "Loose span and entanglement",
+            "Vegetation",
     };
 
     public static String[] Description2 = {
             "Please select",
-            "HT Fuse blown",
-            "Loose span and Entaglement",
-            "Vegitation",
+            "HT fuse blown",
+            "Loose span and entanglement",
+            "Vegetation",
     };
 
     public static String[] Description3 = {
             "Please select",
             "cracked insulation",
             "Due to service Wire shorting",
-            "Loose span and Entaglement",
+            "Loose span and entanglement",
     };
 
 
     public static String[] Description4 = {
             "Please select",
-            "Accident due to vehicals",
+            "Accident due to vehicle",
             "Bad Weather",
-            "Branches Coming from Distance",
-            "Cracked Insulator",
-            "DDLO carrier demage",
+            "Branches coming from distance",
+            "Cracked insulator",
+            "DDLO carrier damage",
             "Due to lines over loading",
             "Other fault",
             "Vegetation",
@@ -74,16 +74,16 @@ public class Failure {
 
     public static String[] Description5 = {
             "Please select",
-            "Accident due to vehicals",
-            "Bad Weather",
+            "Accident due to vehicle",
+            "Bad weather",
             "Broken/damage HT conductor",
-            "Burnt HT Conductor",
+            "Burnt HT conductor",
             "Insulator damaged",
             "Jumper ",
             "Loose connection at jumper point",
             "Other fault",
             "Spark at the conductor due to entanglement",
-            "Tree branches coming fron distance",
+            "Tree branches coming from distance",
             "Vegetation",
     };
 
@@ -98,7 +98,7 @@ public class Failure {
     public static String[] Description7 = {
             "Please select",
             "Connection point at pole",
-            "Other Fault",
+            "Other fault",
             "Pole damage",
             "Wire broken",
     };

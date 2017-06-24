@@ -91,7 +91,6 @@ public  class JobView {
         btnNavigate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(marker != null)marker.hideInfoWindow();
                 Toast.makeText(fragment.getActivity().getApplicationContext(),"Press and Hold for Google Navigation !!",
                         Toast.LENGTH_SHORT).show();
                 if (currentLocation!=null){
@@ -106,7 +105,7 @@ public  class JobView {
         btnNavigate.setOnLongClickListener(new View.OnLongClickListener(){
             @Override
             public boolean onLongClick(View v) {
-                Toast.makeText(fragment.getActivity().getApplicationContext(),"Opening Google Navigation...",
+                Toast.makeText(fragment.getActivity().getApplicationContext(),"Opening Google Map Navigation...",
                         Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
                         Uri.parse("http://maps.google.com/maps?daddr=" + marker.getPosition().latitude + "," +
@@ -182,13 +181,14 @@ public  class JobView {
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
         spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, Failure.VisitedComments));
+                R.layout.spinner_row,R.id.textView, Failure.VisitedComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 if(view != null){
-                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                    else ((TextView) view).setTextColor(Color.RED);
+                    TextView textView = (TextView) view.findViewById(R.id.textView);
+                    if(position>0)textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else textView.setTextColor(Color.RED);
                 }
                 if(Failure.DoneComments[position].contains("Other")){
                     etComment.setVisibility(View.VISIBLE);
@@ -238,13 +238,14 @@ public  class JobView {
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
         spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, Failure.AttendingComments));
+                R.layout.spinner_row,R.id.textView, Failure.AttendingComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 if(view != null){
-                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                    else ((TextView) view).setTextColor(Color.RED);
+                    TextView textView = (TextView) view.findViewById(R.id.textView);
+                    if(position>0)textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else textView.setTextColor(Color.RED);
                 }
                 if(Failure.DoneComments[position].contains("Other")){
                     etComment.setVisibility(View.VISIBLE);
@@ -294,13 +295,14 @@ public  class JobView {
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
         spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, Failure.DoneComments));
+                R.layout.spinner_row,R.id.textView, Failure.DoneComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 if(view != null){
-                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                    else ((TextView) view).setTextColor(Color.RED);
+                    TextView textView = (TextView) view.findViewById(R.id.textView);
+                    if(position>0)textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else textView.setTextColor(Color.RED);
                 }
                 if(Failure.DoneComments[position].contains("Other")){
                     etComment.setVisibility(View.VISIBLE);
@@ -355,23 +357,24 @@ public  class JobView {
         //Failure Type Spinner
         final Spinner spinner_type = (Spinner) dialog.findViewById(R.id.spinner_failure_type);
         spinner_type.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, Failure.Type));
+                R.layout.spinner_row,R.id.textView, Failure.Type));
 
         final Spinner spinner_cause = (Spinner) dialog.findViewById(R.id.spinner_failure_cause);
         spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, Failure.Cause1));
+                R.layout.spinner_row,R.id.textView, Failure.Cause1));
 
         final Spinner spinner_description = (Spinner) dialog.findViewById(R.id.spinner_failure_description);
         spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, Failure.Description1));
+                R.layout.spinner_row,R.id.textView, Failure.Description1));
 
         spinner_type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 SetCauseSpinners(fragment,spinner_type,spinner_cause,spinner_description);
                 if(view != null){
-                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                    else ((TextView) view).setTextColor(Color.RED);
+                    TextView textView = (TextView) view.findViewById(R.id.textView);
+                    if(position>0)textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else textView.setTextColor(Color.RED);
                 }
             }
             @Override
@@ -384,8 +387,9 @@ public  class JobView {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 SetDescriptionSpinners(fragment,spinner_type,spinner_cause,spinner_description);
                 if(view != null){
-                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                    else ((TextView) view).setTextColor(Color.RED);
+                    TextView textView = (TextView) view.findViewById(R.id.textView);
+                    if(position>0)textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else textView.setTextColor(Color.RED);
                 }
             }
             @Override
@@ -398,8 +402,9 @@ public  class JobView {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 //SetDescriptionSpinners(fragment,spinner_type,spinner_cause,spinner_description);
                 if(view != null){
-                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                    else ((TextView) view).setTextColor(Color.RED);
+                    TextView textView = (TextView) view.findViewById(R.id.textView);
+                    if(position>0)textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else textView.setTextColor(Color.RED);
                 }
             }
             @Override
@@ -492,19 +497,19 @@ public  class JobView {
         int type = spinner_type.getSelectedItemPosition();
         if(type == 0 | type == 1 ){
             spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, Failure.Cause1));
+                    R.layout.spinner_row,R.id.textView, Failure.Cause1));
             spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, Failure.Description1));
+                    R.layout.spinner_row,R.id.textView, Failure.Description1));
         }else if(type == 2){
             spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, Failure.Cause2));
+                    R.layout.spinner_row,R.id.textView, Failure.Cause2));
             spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, Failure.Description4));
+                    R.layout.spinner_row,R.id.textView, Failure.Description4));
         }else if(type == 3){
             spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, Failure.Cause3));
+                    R.layout.spinner_row,R.id.textView, Failure.Cause3));
             spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, Failure.Description6));
+                    R.layout.spinner_row,R.id.textView, Failure.Description6));
         }
         spinner_cause.setSelection(0);
         spinner_description.setSelection(0);
@@ -525,29 +530,29 @@ public  class JobView {
         if((type == 0 | type == 1 ) ){
             if(cause == 1){
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row, Failure.Description1));
+                        R.layout.spinner_row,R.id.textView, Failure.Description1));
             }else if(cause == 2){
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row, Failure.Description2));
+                        R.layout.spinner_row,R.id.textView, Failure.Description2));
             }else if(cause == 3){
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row, Failure.Description3));
+                        R.layout.spinner_row,R.id.textView, Failure.Description3));
             }
         }else if(type == 2){
             if(cause == 1){
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row, Failure.Description4));
+                        R.layout.spinner_row,R.id.textView, Failure.Description4));
             }else if(cause == 2){
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row, Failure.Description5));
+                        R.layout.spinner_row,R.id.textView, Failure.Description5));
             }
         }else if(type == 3){
             if(cause == 1){
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row, Failure.Description6));
+                        R.layout.spinner_row,R.id.textView, Failure.Description6));
             }else if(cause == 2){
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row, Failure.Description7));
+                        R.layout.spinner_row,R.id.textView, Failure.Description7));
             }
         }
         spinner_description.setSelection(0);
@@ -560,7 +565,6 @@ public  class JobView {
 
 
     private static String GetSelectedDateTime(Dialog view){
-
         DatePicker datePicker = (DatePicker) view.findViewById(R.id.datePicker);
         TimePicker timePicker = (TimePicker) view.findViewById(R.id.timePicker);
         GregorianCalendar calendar=new GregorianCalendar(datePicker.getYear(),
