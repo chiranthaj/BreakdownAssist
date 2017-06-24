@@ -111,51 +111,31 @@
 
                 <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1">
 
                     <ImageButton
-                        android:id="@+id/dialogButtonNavigate"
+                        android:id="@+id/btnCancel"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0.25"
-                        android:src="@drawable/ic_navigation"
-                        android:text="Nav" />
+                        android:src="@drawable/ic_cancel" />
 
                     <ImageButton
-                        android:id="@+id/dialogButtonForward"
-                        style="@style/Widget.AppCompat.Button.Colored"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="0.25"
-                        android:src="@drawable/ic_forward"
-                        android:text="FWD" />
-
-                    <ImageButton
-                        android:id="@+id/dialogButtonVisited"
+                        android:id="@+id/btnNavigate"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0.25"
-                        android:src="@drawable/ic_av_timer"
-                        android:text="Visited" />
-
-                    <ImageButton
-                        android:id="@+id/dialogButtonCompleted"
-                        style="@style/Widget.AppCompat.Button.Colored"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.25"
-                        android:src="@drawable/ic_done"
-                        android:text="COMLTD" />
+                        android:src="@drawable/ic_navigation" />
                 </TableRow>
 
             </TableLayout>
 
             <TableLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp">
 
                 <TableRow

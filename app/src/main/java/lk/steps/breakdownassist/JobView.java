@@ -1,17 +1,21 @@
 package lk.steps.breakdownassist;
 
+import android.app.ActionBar;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -36,7 +40,8 @@ public  class JobView {
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_dialog);
-        //dialog.setTitle("Job Details");
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        dialog.setCancelable(false);
 
         TextView txtJobno = (TextView) dialog.findViewById(R.id.jobno);
         txtJobno.setText(breakdown.get_Job_No().trim());
@@ -53,31 +58,19 @@ public  class JobView {
             txtPhoneNo.setText(breakdown.get_Contact_No().trim());
 
         TextView txtFullDescription = (TextView) dialog.findViewById(R.id.fulldescription);
-        //txtFullDescription.setText(selectedBreakdown.get_Full_Description().trim());
         txtFullDescription.setText("");
 
-        ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
-        dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
+        ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //BreakdownFeedbackDialog(fragment,breakdown);
-                // UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
-                //TODO : Use an Undo option
                 dialog.dismiss();
             }
         });
-        ImageButton dialogButton_visited = (ImageButton) dialog.findViewById(R.id.dialogButtonVisited);
-        dialogButton_visited.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_VISITED);
-                //TODO : Use an Undo option
-                dialog.dismiss();
-            }
-        });
-        ImageButton dialogButton_navigate = (ImageButton) dialog.findViewById(R.id.dialogButtonNavigate);
-        if(marker == null)dialogButton_navigate.setEnabled(false);
-        dialogButton_navigate.setOnClickListener(new View.OnClickListener() {
+
+        ImageButton btnNavigate = (ImageButton) dialog.findViewById(R.id.btnNavigate);
+        if(marker == null)btnNavigate.setEnabled(false);
+        btnNavigate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 marker.hideInfoWindow();
@@ -93,7 +86,7 @@ public  class JobView {
                 dialog.dismiss();
             }
         });
-        dialogButton_navigate.setOnLongClickListener(new View.OnLongClickListener(){
+        btnNavigate.setOnLongClickListener(new View.OnLongClickListener(){
             @Override
             public boolean onLongClick(View v) {
                 Toast.makeText(fragment.getActivity().getApplicationContext(),"Opening Google Navigation...",
@@ -110,7 +103,6 @@ public  class JobView {
 
 
         ImageButton btnCall = (ImageButton) dialog.findViewById(R.id.btnMakeCall);
-        // if button is clicked, close the job_dialog dialog
         btnCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -121,43 +113,31 @@ public  class JobView {
         });
 
         Button btnVisted = (Button) dialog.findViewById(R.id.btnVisted);
-        // if button is clicked, close the job_dialog dialog
         btnVisted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 JobVisitedDialog(fragment,breakdown);
-                //Toast.makeText(fragment.getActivity().getApplicationContext(),
-                //        "btnVisted",Toast.LENGTH_LONG).show();
             }
         });
         Button btnAttending = (Button) dialog.findViewById(R.id.btnAttending);
-        // if button is clicked, close the job_dialog dialog
         btnAttending.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 JobAttendingDialog(fragment,breakdown);
-                //Toast.makeText(fragment.getActivity().getApplicationContext(),
-                //        "btnAttending",Toast.LENGTH_LONG).show();
             }
         });
         Button btnDone = (Button) dialog.findViewById(R.id.btnDone);
-        // if button is clicked, close the job_dialog dialog
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 JobDoneDialog(fragment,breakdown);
-                //Toast.makeText(fragment.getActivity().getApplicationContext(),
-                //        "btnDone",Toast.LENGTH_LONG).show();
             }
         });
         Button btnCompleted = (Button) dialog.findViewById(R.id.btnCompleted);
-        // if button is clicked, close the job_dialog dialog
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 JobCompleteDialog(fragment,breakdown);
-                //Toast.makeText(fragment.getActivity().getApplicationContext(),
-                //        "btnCompleted",Toast.LENGTH_LONG).show();
             }
         });
         dialog.show();
@@ -175,58 +155,42 @@ public  class JobView {
             txtView.setText(breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
+        final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
         //Spinner
-
-
-        ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
-        // if button is clicked, close the job_dialog dialog
-        dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
+        final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
+        spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, Failure.VisitedComments));
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(View v) {
-                /*if(spinner1.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure type");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner2.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure nature");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner3.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure cause");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                if(view != null){
+                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else ((TextView) view).setTextColor(Color.RED);
+                }
+                if(Failure.DoneComments[position].contains("Other")){
+                    etComment.setVisibility(View.VISIBLE);
                 }else{
-                    UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
-                    Log.d("Reason ",spinner1.getSelectedItem().toString());
-                    dialog.dismiss();
-                }*/
-                UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_COMPLETED);
-                //Log.d("Reason ",spinner1.getSelectedItem().toString());
-                dialog.dismiss();
-                //TODO : Use an Undo option
+                    etComment.setVisibility(View.GONE);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
             }
         });
-        ImageButton dialogButton_visited = (ImageButton) dialog.findViewById(R.id.btnCancel);
-        // if button is clicked, close the job_dialog dialog
-        dialogButton_visited.setOnClickListener(new View.OnClickListener() {
+
+        ImageButton btnVisited = (ImageButton) dialog.findViewById(R.id.btnVisited);
+        btnVisited.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO : Use an Undo option
+                UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_VISITED);
+                dialog.dismiss();
+            }
+        });
+        ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 dialog.dismiss();
             }
         });
@@ -244,57 +208,41 @@ public  class JobView {
             txtView.setText(breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
-
-
-        ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
-        // if button is clicked, close the job_dialog dialog
-        dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
+        final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
+        //Spinner
+        final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
+        spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, Failure.AttendingComments));
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(View v) {
-                /*if(spinner1.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure type");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner2.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure nature");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner3.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure cause");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                if(view != null){
+                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else ((TextView) view).setTextColor(Color.RED);
+                }
+                if(Failure.DoneComments[position].contains("Other")){
+                    etComment.setVisibility(View.VISIBLE);
                 }else{
-                    UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
-                    Log.d("Reason ",spinner1.getSelectedItem().toString());
-                    dialog.dismiss();
-                }*/
-                UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_COMPLETED);
-                //Log.d("Reason ",spinner1.getSelectedItem().toString());
-                dialog.dismiss();
-                //TODO : Use an Undo option
+                    etComment.setVisibility(View.GONE);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
             }
         });
-        ImageButton dialogButton_visited = (ImageButton) dialog.findViewById(R.id.btnCancel);
-        // if button is clicked, close the job_dialog dialog
-        dialogButton_visited.setOnClickListener(new View.OnClickListener() {
+        ImageButton btnAttending = (ImageButton) dialog.findViewById(R.id.btnAttending);
+        btnAttending.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO : Use an Undo option
+                //UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_ANY);
+                dialog.dismiss();
+            }
+        });
+        ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 dialog.dismiss();
             }
         });
@@ -313,67 +261,57 @@ public  class JobView {
         else
             txtView.setText(breakdown.get_Job_No());
 
-
-        ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
-        // if button is clicked, close the job_dialog dialog
-        dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
+        final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
+        //Spinner
+        final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
+        spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, Failure.DoneComments));
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(View v) {
-                /*if(spinner1.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure type");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner2.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure nature");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner3.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure cause");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                if(view != null){
+                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else ((TextView) view).setTextColor(Color.RED);
+                }
+                if(Failure.DoneComments[position].contains("Other")){
+                    etComment.setVisibility(View.VISIBLE);
                 }else{
-                    UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
-                    Log.d("Reason ",spinner1.getSelectedItem().toString());
-                    dialog.dismiss();
-                }*/
-                UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_COMPLETED);
-                //Log.d("Reason ",spinner1.getSelectedItem().toString());
-                dialog.dismiss();
-                //TODO : Use an Undo option
+                    etComment.setVisibility(View.GONE);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
             }
         });
-        ImageButton dialogButton_visited = (ImageButton) dialog.findViewById(R.id.btnCancel);
-        // if button is clicked, close the job_dialog dialog
-        dialogButton_visited.setOnClickListener(new View.OnClickListener() {
+
+        ImageButton btnDone = (ImageButton) dialog.findViewById(R.id.btnDone);
+        btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO : Use an Undo option
+                //UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_D);
+                dialog.dismiss();
+            }
+        });
+        ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 dialog.dismiss();
             }
         });
         dialog.show();
     }
 
+
+
     private static void JobCompleteDialog(final Fragment fragment, final Breakdown breakdown){
 
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_complete_dialog);
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        dialog.setCancelable(false);
         //TODO : Use date time picker
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
@@ -396,8 +334,40 @@ public  class JobView {
 
         spinner_type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long arg3) {
-                SetSpinners(fragment,spinner_type,spinner_cause,spinner_description);
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                SetCauseSpinners(fragment,spinner_type,spinner_cause,spinner_description);
+                if(view != null){
+                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else ((TextView) view).setTextColor(Color.RED);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+        spinner_cause.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                SetDescriptionSpinners(fragment,spinner_type,spinner_cause,spinner_description);
+                if(view != null){
+                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else ((TextView) view).setTextColor(Color.RED);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+        spinner_description.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                //SetDescriptionSpinners(fragment,spinner_type,spinner_cause,spinner_description);
+                if(view != null){
+                    if(position>0)((TextView) view).setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    else ((TextView) view).setTextColor(Color.RED);
+                }
             }
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
@@ -484,32 +454,74 @@ public  class JobView {
     }
 
 
-    private static void SetSpinners(Fragment fragment,Spinner spinner_type,Spinner spinner_cause, Spinner spinner_description){
+
+    private static void SetCauseSpinners(Fragment fragment,Spinner spinner_type,Spinner spinner_cause, Spinner spinner_description){
         int type = spinner_type.getSelectedItemPosition();
         if(type == 0 | type == 1 ){
             spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
                     R.layout.spinner_row, Failure.Cause1));
+            spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                    R.layout.spinner_row, Failure.Description1));
         }else if(type == 2){
             spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
                     R.layout.spinner_row, Failure.Cause2));
+            spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                    R.layout.spinner_row, Failure.Description4));
         }else if(type == 3){
             spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
                     R.layout.spinner_row, Failure.Cause3));
+            spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                    R.layout.spinner_row, Failure.Description6));
         }
+        spinner_cause.setSelection(0);
+        spinner_description.setSelection(0);
 
+        if(type == 0){
+            spinner_cause.setEnabled(false);
+            spinner_description.setEnabled(false);
+        }else{
+            spinner_cause.setEnabled(true);
+            spinner_description.setEnabled(true);
+        }
+    }
+
+    private static void SetDescriptionSpinners(Fragment fragment,Spinner spinner_type,Spinner spinner_cause, Spinner spinner_description){
+        int type = spinner_type.getSelectedItemPosition();
         int cause = spinner_cause.getSelectedItemPosition();
-        if(type == 0 | type == 1 ){
-            spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, Failure.Cause1));
+
+        if((type == 0 | type == 1 ) ){
+            if(cause == 1){
+                spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                        R.layout.spinner_row, Failure.Description1));
+            }else if(cause == 2){
+                spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                        R.layout.spinner_row, Failure.Description2));
+            }else if(cause == 3){
+                spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                        R.layout.spinner_row, Failure.Description3));
+            }
         }else if(type == 2){
-            spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, Failure.Cause2));
+            if(cause == 1){
+                spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                        R.layout.spinner_row, Failure.Description4));
+            }else if(cause == 2){
+                spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                        R.layout.spinner_row, Failure.Description5));
+            }
         }else if(type == 3){
-            spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, Failure.Cause3));
+            if(cause == 1){
+                spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                        R.layout.spinner_row, Failure.Description6));
+            }else if(cause == 2){
+                spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                        R.layout.spinner_row, Failure.Description7));
+            }
         }
-
-        int description= spinner_description.getSelectedItemPosition();
-
+        spinner_description.setSelection(0);
+        if(cause == 0){
+            spinner_description.setEnabled(false);
+        }else{
+            spinner_description.setEnabled(true);
+        }
     }
 }
