@@ -163,7 +163,7 @@ public  class JobView {
         //TODO : Use date time picker
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
+            txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
@@ -216,7 +216,7 @@ public  class JobView {
         //TODO : Use date time picker
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
+            txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
@@ -268,7 +268,7 @@ public  class JobView {
         //TODO : Use date time picker
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
+            txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
 
@@ -326,7 +326,7 @@ public  class JobView {
         //TODO : Use date time picker
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
+            txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
 
