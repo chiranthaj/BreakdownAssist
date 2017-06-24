@@ -78,7 +78,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:gravity="center"
-
                         android:text="Phone No"
                         android:textSize="25sp" />
 
@@ -86,9 +85,7 @@
                         android:id="@+id/btnMakeCall"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-
-                        android:src="@android:drawable/sym_action_call"
-                        android:text="COMLTD" />
+                        android:src="@android:drawable/sym_action_call" />
                 </TableRow>
 
             </TableLayout>
@@ -103,35 +100,6 @@
                 android:textColor="@color/wallet_link_text_light"
                 android:textSize="25sp"
                 android:textStyle="italic" />
-
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp">
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
-
-                    <ImageButton
-                        android:id="@+id/btnCancel"
-                        style="@style/Widget.AppCompat.Button.Colored"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.25"
-                        android:src="@drawable/ic_cancel" />
-
-                    <ImageButton
-                        android:id="@+id/btnNavigate"
-                        style="@style/Widget.AppCompat.Button.Colored"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.25"
-                        android:src="@drawable/ic_navigation" />
-                </TableRow>
-
-            </TableLayout>
 
             <TableLayout
                 android:layout_width="match_parent"
@@ -174,6 +142,35 @@
                         android:layout_height="match_parent"
                         android:layout_weight="0.25"
                         android:text="Completed" />
+                </TableRow>
+
+            </TableLayout>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <ImageButton
+                        android:id="@+id/btnCancel"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.25"
+                        android:src="@drawable/ic_cancel" />
+
+                    <ImageButton
+                        android:id="@+id/btnNavigate"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.25"
+                        android:src="@drawable/ic_navigation" />
                 </TableRow>
 
             </TableLayout>

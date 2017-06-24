@@ -471,7 +471,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
         mContext=getActivity().getApplicationContext(); // To use in the startLocationUpdates(), otherwise it crashes when
         //getActivity().getApplicationContext() is used
-
     }
 
     @Override
@@ -605,7 +604,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         //Calling from Harshmap by giving the Marker Ref
         final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(selectedMarker));
 
-        JobView.Dialog(this,selectedBreakdown,selectedMarker,getLastLocation());
+        JobView.DialogInfo(this,selectedBreakdown,selectedMarker,getLastLocation());
 
         /*final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);

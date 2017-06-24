@@ -1,12 +1,15 @@
 package lk.steps.breakdownassist;
 
+import android.*;
 import android.app.ActionBar;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -21,11 +24,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
 import java.io.UnsupportedEncodingException;
 
+import lk.steps.breakdownassist.Fragments.GmapFragment;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.Modules.DirectionFinder;
 import lk.steps.breakdownassist.Modules.DirectionFinderListener;
@@ -36,12 +42,12 @@ import lk.steps.breakdownassist.Modules.DirectionFinderListener;
 
 public  class JobView {
 
-    public static void Dialog(final Fragment fragment, final Breakdown breakdown, final Marker marker, final Location lastLocation){
+    public static Dialog DialogInfo(final Fragment fragment, final Breakdown breakdown, final Marker marker, final Location currentLocation){
 
         if(breakdown == null){
             Toast.makeText(fragment.getActivity().getApplicationContext(),
                     "Breakdown details not available..",Toast.LENGTH_LONG).show();
-            return;
+            return null;
         }
 
         final Dialog dialog = new Dialog(fragment.getActivity());
@@ -80,10 +86,9 @@ public  class JobView {
         btnNavigate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                marker.hideInfoWindow();
+                if(marker != null)marker.hideInfoWindow();
                 Toast.makeText(fragment.getActivity().getApplicationContext(),"Press and Hold for Google Navigation !!",
                         Toast.LENGTH_SHORT).show();
-                Location currentLocation = lastLocation;
                 if (currentLocation!=null){
                     getDirections(fragment, new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()),marker.getPosition() );
                 }else{
@@ -152,6 +157,7 @@ public  class JobView {
             }
         });
         dialog.show();
+        return dialog;
     }
 
 
@@ -160,7 +166,8 @@ public  class JobView {
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_visited_dialog);
-        //TODO : Use date time picker
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
@@ -213,7 +220,8 @@ public  class JobView {
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_attending_dialog);
-        //TODO : Use date time picker
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
@@ -265,7 +273,8 @@ public  class JobView {
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_done_dialog);
-        //TODO : Use date time picker
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
@@ -316,7 +325,7 @@ public  class JobView {
 
 
 
-    private static void JobCompleteDialog(final Fragment fragment, final Breakdown breakdown){
+    public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown){
 
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -386,13 +395,13 @@ public  class JobView {
             }
         });
 
-        ImageButton dialogButton_Complete = (ImageButton) dialog.findViewById(R.id.dialogButtonCompleted);
+        ImageButton btnCompleted = (ImageButton) dialog.findViewById(R.id.btnCompleted);
 
 
         DatePicker datePicker = (DatePicker) dialog.findViewById(R.id.datePicker);
 
         // if button is clicked, close the job_dialog dialog
-        dialogButton_Complete.setOnClickListener(new View.OnClickListener() {
+        btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 /*if(spinner1.getSelectedItemPosition() == 0){
@@ -443,6 +452,7 @@ public  class JobView {
             }
         });
         dialog.show();
+        return dialog;
     }
 
     private static void UpdateBreakDown(Fragment fragment, Breakdown breakdown,int iStatus) {
