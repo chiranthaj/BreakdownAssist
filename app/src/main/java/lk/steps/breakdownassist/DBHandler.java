@@ -10,14 +10,16 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import java.io.File;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version =55;
+    private static final int Database_Version =56;
     private static final String Database_Name = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -253,6 +255,62 @@ public class DBHandler extends SQLiteOpenHelper
         db.close();
         return counts;
     }
+    public long getAttainedTime()
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT completed_timestamp AS Date2 ,DateTime AS Date1 FROM BreakdownRecords";
+
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+        long avgTime = 0;
+        do{
+            String date1 = cursor.getString(cursor.getColumnIndex("Date1"));
+            String date2 = cursor.getString(cursor.getColumnIndex("Date2"));
+            if(date1 != null & date2 != null){
+                avgTime = (avgTime + GetTimeDifference(date1,date2)) / 2;
+                //Log.d("Duration",GetTimeDifference(date1,date2)+"");
+            }
+        }while(cursor.moveToNext());
+
+        cursor.close();
+        db.close();
+        return avgTime;
+    }
+    public static long GetTimeDifference(String day1, String day2) {
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a", Locale.US);
+
+        long duration = 0;
+        try {
+            Date d1 = dateFormat.parse(day1);
+            Date d2 = dateFormat.parse(day2);
+
+            duration = (d2.getTime() - d1.getTime()) / 1000 / 60 ; // In Minutes
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return duration;
+    }
+    /*public void getAttainedTime()
+    {
+        Log.d("TEST","Start");
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT completed_timestamp AS Date2 ,DateTime AS Date1 FROM BreakdownRecords";
+
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+
+        //int[] counts = new int[2];
+        if (!c.isAfterLast()){
+            //counts[0] = c.getInt(c.getColumnIndex("Duration"));
+            Log.d("Date1",c.getString(c.getColumnIndex("Date1"))+"");
+            Log.d("Date2",c.getString(c.getColumnIndex("Date2"))+"");
+        }
+        c.close();
+        db.close();
+        // return counts;
+    }*/
     public String[][] getBreakdownStatistics()
     {
         SQLiteDatabase db = getWritableDatabase();

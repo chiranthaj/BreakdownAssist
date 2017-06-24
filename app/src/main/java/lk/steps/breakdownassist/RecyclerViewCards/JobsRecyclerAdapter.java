@@ -25,10 +25,11 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
     static   List<Breakdown> dbList;
     static  Context context;
     public static JobListFragment.OnItemTouchListener onItemTouchListener;
-    public JobsRecyclerAdapter(Context context, List<Breakdown> dbList, JobListFragment.OnItemTouchListener onItemTouchListener ){
+
+    public JobsRecyclerAdapter(Context context, List<Breakdown> data, JobListFragment.OnItemTouchListener onItemTouchListener ){
         this.dbList = new ArrayList<Breakdown>();
         this.context = context;
-        this.dbList = dbList;
+        this.dbList = data;
         this.onItemTouchListener = onItemTouchListener;
     }
 

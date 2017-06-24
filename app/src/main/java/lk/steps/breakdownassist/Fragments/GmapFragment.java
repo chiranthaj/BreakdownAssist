@@ -132,6 +132,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         } else {
             // Probably initialize members with default values for a new instance
         }
+
     }
 
     @Override
@@ -359,6 +360,16 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         RefreshJobsFromDB();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastlocation));
        // mMap.setInfoWindowAdapter(new InfoWindowAdapter(getActivity().getLayoutInflater()));
+
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+                final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(marker));
+                JobView.DialogInfo(GmapFragment.this,selectedBreakdown,marker,getLastLocation());
+                marker.hideInfoWindow();
+            }
+        });
     }
 //TODO: DO not show the normal dialog for marker click
     public void AddCustomerLocationToMap(String Account_Num) {
@@ -471,7 +482,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
         mContext=getActivity().getApplicationContext(); // To use in the startLocationUpdates(), otherwise it crashes when
         //getActivity().getApplicationContext() is used
-
     }
 
     @Override
@@ -601,12 +611,12 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public boolean onMarkerClick(final Marker marker) {
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
-        final Marker selectedMarker = marker;  //to access in Override Methods
+        //final Marker selectedMarker = marker;  //to access in Override Methods
         //Calling from Harshmap by giving the Marker Ref
-        final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(selectedMarker));
+        final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(marker));
 
-        JobView.Dialog(this,selectedBreakdown,selectedMarker,getLastLocation());
-
+        JobView.DialogInfo(this,selectedBreakdown,marker,getLastLocation());
+        marker.hideInfoWindow();
         /*final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_dialog);

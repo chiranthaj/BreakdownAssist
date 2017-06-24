@@ -1,10 +1,12 @@
 package lk.steps.breakdownassist.Fragments;
 
 
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -21,7 +23,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
 import java.util.ArrayList;
+
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.JobView;
 import lk.steps.breakdownassist.MainActivity;
@@ -35,7 +39,7 @@ public class JobListFragment extends Fragment {
 
     private static View mView;
     private static DBHandler dbHandler;
-    private static int iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+    private static int iJobs_to_Display = Breakdown.Status_JOB_NOT_ATTENDED;
     //private int JOB_STATUS;
 
     @Override
@@ -45,14 +49,15 @@ public class JobListFragment extends Fragment {
         Bundle bundle = this.getArguments();
         if (bundle != null) {
             iJobs_to_Display = bundle.getInt("JOB_STATUS", -1);
-            Log.d("JOB_STATUS","JOB_STATUS="+iJobs_to_Display);
+            Log.d("JOB_STATUS", "JOB_STATUS=" + iJobs_to_Display);
         }
     }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate( R.layout.job_listview,container,false);
-        dbHandler = new DBHandler(getActivity(),null,null,1); //TODO : Close on exit
+        mView = inflater.inflate(R.layout.job_listview, container, false);
+        dbHandler = new DBHandler(getActivity(), null, null, 1); //TODO : Close on exit
         RefreshListView(JobListFragment.this);
         return mView;
     }
@@ -70,19 +75,19 @@ public class JobListFragment extends Fragment {
         if (id == R.id.menu_jobs_all) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display=Breakdown.Status_JOB_ANY;
+            iJobs_to_Display = Breakdown.Status_JOB_ANY;
             RefreshListView(JobListFragment.this);
             return true;
-        }else if (id == R.id.menu_jobs_completed) {
+        } else if (id == R.id.menu_jobs_completed) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display=Breakdown.Status_JOB_COMPLETED;
+            iJobs_to_Display = Breakdown.Status_JOB_COMPLETED;
             RefreshListView(JobListFragment.this);
             return true;
-        }else if (id == R.id.menu_jobs_unatended) {
+        } else if (id == R.id.menu_jobs_unatended) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+            iJobs_to_Display = Breakdown.Status_JOB_NOT_ATTENDED;
             RefreshListView(JobListFragment.this);
             return true;
         }
@@ -110,10 +115,12 @@ public class JobListFragment extends Fragment {
         }
     };
 
+    private static RecyclerView.Adapter mAdapter;
+
 
     public static void RefreshListView(final Fragment fragment) {
         final ArrayList<Breakdown> BreakdownList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
-        RecyclerView mRecyclerView = (RecyclerView)mView.findViewById(R.id.recycleview);
+        final RecyclerView mRecyclerView = (RecyclerView) mView.findViewById(R.id.recycleview);
 
         mRecyclerView.setHasFixedSize(true);
 
@@ -124,17 +131,25 @@ public class JobListFragment extends Fragment {
         OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
             @Override
             public void onCardViewTap(View view, final int position) {
-                if(TextUtils.isEmpty(BreakdownList.get(position).get_LATITUDE())) {
+                if (TextUtils.isEmpty(BreakdownList.get(position).get_LATITUDE())) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
-                    JobView.Dialog(fragment,BreakdownList.get(position),null,null);
-                }else{
+                    Dialog dialog = JobView.DialogInfo(fragment, BreakdownList.get(position), null, null);
+                    if (dialog != null)
+                        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                mAdapter.notifyDataSetChanged();
+                                //mRecyclerView.ref.invalidate();
+                                //RefreshListView(fragment);
+                            }
+                        });
+                } else {
                     final FragmentManager fm;
                     fm = fragment.getFragmentManager();
-                    fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MainActivity.MAP_FRAGMENT_TAG).commit();
-                    Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
+                    fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(), MainActivity.MAP_FRAGMENT_TAG).commit();
+                    Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " Locating... ", Toast.LENGTH_LONG).show();
                     new Handler().postDelayed(new Runnable() {
                         public void run() {
-
                             Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
                             if (currentFragment instanceof GmapFragment) {
                                 GmapFragment GmapFrag = (GmapFragment) currentFragment;
@@ -163,7 +178,7 @@ public class JobListFragment extends Fragment {
 
         // specify an adapter (see also next example)
 
-        final RecyclerView.Adapter mAdapter = new JobsRecyclerAdapter(fragment.getActivity(),BreakdownList, itemTouchListener);
+        mAdapter = new JobsRecyclerAdapter(fragment.getActivity(), BreakdownList, itemTouchListener);
 
         mRecyclerView.setAdapter(mAdapter);
 
@@ -183,8 +198,16 @@ public class JobListFragment extends Fragment {
                             @Override
                             public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
-                                    Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped left", Toast.LENGTH_SHORT).show();
-
+                                    //Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped left", Toast.LENGTH_SHORT).show();
+                                    Dialog dialog = JobView.JobCompleteDialog(fragment, BreakdownList.get(position));
+                                    if (dialog != null)
+                                        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                            @Override
+                                            public void onDismiss(DialogInterface dialog) {
+                                                //RefreshListView(fragment);
+                                                mAdapter.notifyDataSetChanged();
+                                            }
+                                        });
                                     BreakdownList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }
@@ -194,8 +217,16 @@ public class JobListFragment extends Fragment {
                             @Override
                             public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
-                                    Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped right", Toast.LENGTH_SHORT).show();
-
+                                    //Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped right", Toast.LENGTH_SHORT).show();
+                                    Dialog dialog = JobView.DialogInfo(fragment, BreakdownList.get(position), null, null);
+                                    if (dialog != null)
+                                        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                            @Override
+                                            public void onDismiss(DialogInterface dialog) {
+                                                mAdapter.notifyDataSetChanged();
+                                                //RefreshListView(fragment);
+                                            }
+                                        });
                                     BreakdownList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }

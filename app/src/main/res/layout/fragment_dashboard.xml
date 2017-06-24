@@ -1,78 +1,216 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <TableLayout
+        android:id="@+id/layout1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent"
+            android:weightSum="1">
 
-            <Button
-                android:id="@+id/button2"
-                android:layout_width="0dp"
-                android:layout_height="95dp"
-                android:layout_weight="1"
-                android:text="Maps -5" />
-
-            <Button
-                android:id="@+id/button4"
-                android:layout_width="0dp"
-                android:layout_height="95dp"
-                android:layout_weight="1"
-                android:text="Jobs -5" />
-
-            <Button
-                android:id="@+id/button5"
-                android:layout_width="0dp"
-                android:layout_height="95dp"
-                android:layout_weight="1"
-                android:text="Work Permit" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
-            <Button
-                android:id="@+id/button3"
-                android:layout_width="0dp"
-                android:layout_height="95dp"
-                android:layout_weight="1"
-                android:text="Search" />
-
-            <Button
-                android:id="@+id/button6"
-                android:layout_width="0dp"
-                android:layout_height="95dp"
-                android:layout_weight="1"
-                android:text="Search" />
-
-            <Button
-                android:id="@+id/button10"
-                android:layout_width="0dp"
-                android:layout_height="95dp"
-                android:layout_weight="1"
-                android:text="TRIP CLOSE Update" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="wrap_content"
+            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Last Job - J41/H/2016/09/08/4.1"
-                android:textSize="30sp"
-                android:textStyle="bold" />
-        </TableRow>
+                android:layout_margin="5dp"
+                android:layout_weight="0.5"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="openCompletedJobFragment"
+                android:orientation="horizontal"
+                card_view:cardCornerRadius="5dp"
+                card_view:cardUseCompatPadding="true">
 
+                <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+
+
+                    <TextView
+                        android:id="@+id/test1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:gravity="center_horizontal"
+                        android:text="Completed Breakdowns"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="22sp" />
+
+                    <TextView
+                        android:id="@+id/txtCompletedCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_below="@+id/test1"
+                        android:gravity="center_horizontal"
+                        android:text="119"
+                        android:textColor="@android:color/holo_green_dark"
+                        android:textSize="60sp"
+                        android:textStyle="normal|bold" />
+
+                </RelativeLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_weight="0.5"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="openUnattainedJobFragment"
+                android:orientation="horizontal"
+                card_view:cardCornerRadius="5dp"
+                card_view:cardUseCompatPadding="true">
+
+                <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+
+
+                    <TextView
+                        android:id="@+id/test3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:gravity="center_horizontal"
+                        android:text="New Breakdowns"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="22sp" />
+
+                    <TextView
+                        android:id="@+id/txtUnattainedCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_below="@+id/test3"
+                        android:gravity="center_horizontal"
+                        android:text="24"
+                        android:textColor="@android:color/holo_red_light"
+                        android:textSize="60sp"
+                        android:textStyle="normal|bold" />
+
+                </RelativeLayout>
+            </android.support.v7.widget.CardView>
+        </TableRow>
     </TableLayout>
 
-</FrameLayout>
+    <TableLayout
+        android:id="@+id/layout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/layout1">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:weightSum="1">
+
+            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                card_view:cardCornerRadius="5dp"
+                card_view:cardUseCompatPadding="true">
+
+                <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+
+
+                    <TextView
+                        android:id="@+id/test5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:gravity="center_horizontal"
+                        android:text="Avarage Time to Attained a Breakdown"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="22sp" />
+
+                    <TextView
+                        android:id="@+id/txtAvgTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_below="@+id/test5"
+                        android:gravity="center_horizontal"
+                        android:text="Not available"
+                        android:textColor="@android:color/holo_orange_dark"
+                        android:textSize="60sp"
+                        android:textStyle="normal|bold" />
+
+                </RelativeLayout>
+            </android.support.v7.widget.CardView>
+        </TableRow>
+    </TableLayout>
+
+    <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/layout2"
+        android:layout_margin="5dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        card_view:cardCornerRadius="5dp"
+        card_view:cardUseCompatPadding="true">
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:orientation="vertical"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/test55"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:gravity="center_horizontal"
+                android:text="Number of Breakdowns"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="22sp" />
+
+            <org.eazegraph.lib.charts.ValueLineChart xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/chart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_below="@+id/test55"
+                android:padding="10dp"
+                app:egCurveSmoothness="0.4"
+                app:egLegendHeight="40dp"
+                app:egUseCubic="true"
+                app:egUseOverlapFill="true" />
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+</RelativeLayout>

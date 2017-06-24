@@ -3,7 +3,9 @@ package lk.steps.breakdownassist.Fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +25,10 @@ public class DashboardFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate( R.layout.fragment_dashboard_new,container,false);
+        mView = inflater.inflate( R.layout.fragment_dashboard,container,false);
         refreshCounts();
         DrawChart();
+        SetAttainedTime();
         return mView;
     }
 
@@ -43,6 +46,23 @@ public class DashboardFragment extends Fragment {
         TextView txtCompletedCount = (TextView) mView.findViewById(R.id.txtCompletedCount);
         txtCompletedCount.setText(String.valueOf(counts[0]));
         txtUnattainedCount.setText(String.valueOf(counts[1]));
+    }
+
+
+    private void SetAttainedTime(){
+
+        final Handler handler = new Handler();
+        final TextView txtAvgTime = (TextView) mView.findViewById(R.id.txtAvgTime);
+        final Runnable r = new Runnable() {
+            public void run() {
+//                DBHandler dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
+                //long avgTime = dbHandler.getAttainedTime();
+                txtAvgTime.setText(/*avgTime+*/" min");
+                //handler.postDelayed(this, 1000*60*10);//Continue updating 10min
+            }
+        };
+
+        handler.postDelayed(r, 2000); //2Sec
     }
 
     private void DrawChart(){
