@@ -112,11 +112,7 @@ public class JobListFragment extends Fragment {
 
 
     public static void RefreshListView(final Fragment fragment) {
-
-
-        final ArrayList<Breakdown> BreakdonwList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
-
-
+        final ArrayList<Breakdown> BreakdownList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
         RecyclerView mRecyclerView = (RecyclerView)mView.findViewById(R.id.recycleview);
 
         mRecyclerView.setHasFixedSize(true);
@@ -128,21 +124,21 @@ public class JobListFragment extends Fragment {
         OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
             @Override
             public void onCardViewTap(View view, final int position) {
-                if(TextUtils.isEmpty(BreakdonwList.get(position).get_LATITUDE())) {
+                if(TextUtils.isEmpty(BreakdownList.get(position).get_LATITUDE())) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
-                    JobView.Dialog(fragment,BreakdonwList.get(position),null,null);
+                    JobView.Dialog(fragment,BreakdownList.get(position),null,null);
                 }else{
                     final FragmentManager fm;
                     fm = fragment.getFragmentManager();
                     fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MainActivity.MAP_FRAGMENT_TAG).commit();
-                    Toast.makeText(fragment.getActivity(), BreakdonwList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
+                    Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " Locating... "  , Toast.LENGTH_LONG).show();
                     new Handler().postDelayed(new Runnable() {
                         public void run() {
 
                             Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
                             if (currentFragment instanceof GmapFragment) {
                                 GmapFragment GmapFrag = (GmapFragment) currentFragment;
-                                GmapFrag.FocusBreakdown(BreakdonwList.get(position));
+                                GmapFrag.FocusBreakdown(BreakdownList.get(position));
                             }
                         }
                     }, 2000);
@@ -151,23 +147,23 @@ public class JobListFragment extends Fragment {
 
             @Override
             public void onButton1Click(View view, int position) {
-                Toast.makeText(fragment.getActivity(), "Clicked Button1 in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragment.getActivity(), "Clicked Button1 in " + BreakdownList.get(position), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onButton2Click(View view, int position) {
-                Toast.makeText(fragment.getActivity(), "Clicked Button2 in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragment.getActivity(), "Clicked Button2 in " + BreakdownList.get(position), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onCheckBox1Click(View view, int position) {
-                Toast.makeText(fragment.getActivity(), "Clicked onCheckBox1Click in " + BreakdonwList.get(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragment.getActivity(), "Clicked onCheckBox1Click in " + BreakdownList.get(position), Toast.LENGTH_SHORT).show();
             }
         };
 
         // specify an adapter (see also next example)
 
-        final RecyclerView.Adapter mAdapter = new JobsRecyclerAdapter(fragment.getActivity(),BreakdonwList, itemTouchListener);
+        final RecyclerView.Adapter mAdapter = new JobsRecyclerAdapter(fragment.getActivity(),BreakdownList, itemTouchListener);
 
         mRecyclerView.setAdapter(mAdapter);
 
@@ -187,9 +183,9 @@ public class JobListFragment extends Fragment {
                             @Override
                             public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
-//                                    Toast.makeText(MainActivity.this, mItems.get(position) + " swiped left", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped left", Toast.LENGTH_SHORT).show();
 
-                                    BreakdonwList.remove(position);
+                                    BreakdownList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }
                                 mAdapter.notifyDataSetChanged();
@@ -198,9 +194,9 @@ public class JobListFragment extends Fragment {
                             @Override
                             public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
-//                                    Toast.makeText(MainActivity.this, mItems.get(position) + " swiped right", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped right", Toast.LENGTH_SHORT).show();
 
-                                    BreakdonwList.remove(position);
+                                    BreakdownList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }
                                 mAdapter.notifyDataSetChanged();

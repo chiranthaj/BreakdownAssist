@@ -24,7 +24,7 @@ public class Failure {
     public static String[] Cause2 = {
             "Please select",
             "DDLO Fuse blown",
-            "OH LINE"
+            "Overhead line"
     };
 
     public static String[] Cause3 = {
@@ -69,7 +69,7 @@ public class Failure {
             "DDLO carrier demage",
             "Due to lines over loading",
             "Other fault",
-            "Vegetation\t",
+            "Vegetation",
     };
 
     public static String[] Description5 = {
@@ -101,5 +101,30 @@ public class Failure {
             "Other Fault",
             "Pole damage",
             "Wire broken",
+    };
+
+
+    public static String[] VisitedComments = {
+            "Please select",
+            "Comment1",
+            "Comment2",
+            "Comment3",
+            "Other",
+    };
+
+    public static String[] AttendingComments = {
+            "Please select",
+            "Comment1",
+            "Comment2",
+            "Comment3",
+            "Other",
+    };
+
+    public static String[] DoneComments = {
+            "Please select",
+            "Comment1",
+            "Comment2",
+            "Comment3",
+            "Other",
     };
 }
