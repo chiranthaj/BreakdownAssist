@@ -22,6 +22,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -30,6 +31,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import lk.steps.breakdownassist.Fragments.GmapFragment;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
@@ -201,6 +206,8 @@ public  class JobView {
         btnVisited.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(fragment.getActivity().getApplicationContext(),
+                        "DateTime="+GetSelectedDateTime(dialog),Toast.LENGTH_LONG).show();
                 UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_VISITED);
                 dialog.dismiss();
             }
@@ -254,6 +261,8 @@ public  class JobView {
         btnAttending.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(fragment.getActivity().getApplicationContext(),
+                        "DateTime="+GetSelectedDateTime(dialog),Toast.LENGTH_LONG).show();
                 //UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_ANY);
                 dialog.dismiss();
             }
@@ -309,6 +318,8 @@ public  class JobView {
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(fragment.getActivity().getApplicationContext(),
+                        "DateTime="+GetSelectedDateTime(dialog),Toast.LENGTH_LONG).show();
                 //UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_D);
                 dialog.dismiss();
             }
@@ -325,6 +336,7 @@ public  class JobView {
 
 
 
+
     public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown){
 
         final Dialog dialog = new Dialog(fragment.getActivity());
@@ -338,6 +350,7 @@ public  class JobView {
             txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
+
 
         //Failure Type Spinner
         final Spinner spinner_type = (Spinner) dialog.findViewById(R.id.spinner_failure_type);
@@ -397,9 +410,6 @@ public  class JobView {
 
         ImageButton btnCompleted = (ImageButton) dialog.findViewById(R.id.btnCompleted);
 
-
-        DatePicker datePicker = (DatePicker) dialog.findViewById(R.id.datePicker);
-
         // if button is clicked, close the job_dialog dialog
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -436,6 +446,8 @@ public  class JobView {
                     Log.d("Reason ",spinner1.getSelectedItem().toString());
                     dialog.dismiss();
                 }*/
+                Toast.makeText(fragment.getActivity().getApplicationContext(),
+                        "DateTime="+GetSelectedDateTime(dialog),Toast.LENGTH_LONG).show();
                 UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_COMPLETED);
                 //Log.d("Reason ",spinner1.getSelectedItem().toString());
                 dialog.dismiss();
@@ -544,5 +556,19 @@ public  class JobView {
         }else{
             spinner_description.setEnabled(true);
         }
+    }
+
+
+    private static String GetSelectedDateTime(Dialog view){
+
+        DatePicker datePicker = (DatePicker) view.findViewById(R.id.datePicker);
+        TimePicker timePicker = (TimePicker) view.findViewById(R.id.timePicker);
+        GregorianCalendar calendar=new GregorianCalendar(datePicker.getYear(),
+                datePicker.getMonth(),datePicker.getDayOfMonth(),
+                timePicker.getCurrentHour(),timePicker.getCurrentMinute());
+
+        DateFormat gmtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String text = ""+ gmtFormat.format(calendar.getTime());
+        return  text;
     }
 }

@@ -23,7 +23,7 @@ public class DashboardFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate( R.layout.fragment_dashboard_new,container,false);
+        mView = inflater.inflate( R.layout.fragment_dashboard,container,false);
         refreshCounts();
         DrawChart();
         return mView;
