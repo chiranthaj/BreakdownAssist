@@ -19,7 +19,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
             android:text="Job info"
             android:textAlignment="center"
             android:textColor="@android:color/darker_gray"
@@ -63,14 +62,14 @@
 
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="20dp"
+            android:layout_height="fill_parent"
             android:gravity="center">
 
             <TextView
                 android:id="@+id/text1"
                 android:layout_width="250dp"
                 android:layout_height="match_parent"
+                android:gravity="center_vertical"
                 android:text="Failure Type :"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
@@ -85,8 +84,8 @@
 
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="20dp"
+            android:layout_height="fill_parent"
+            android:layout_marginTop="10dp"
             android:gravity="center">
 
             <TextView
@@ -94,6 +93,7 @@
                 android:layout_width="250dp"
                 android:layout_height="match_parent"
                 android:text="Failure Cause :"
+                android:gravity="center_vertical"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
                 android:textStyle="normal" />
@@ -107,8 +107,8 @@
 
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="20dp"
+            android:layout_height="fill_parent"
+            android:layout_marginTop="10dp"
             android:gravity="center">
 
             <TextView
@@ -116,6 +116,7 @@
                 android:layout_width="250dp"
                 android:layout_height="match_parent"
                 android:text="Failure Description :"
+                android:gravity="center_vertical"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
                 android:textStyle="normal" />
@@ -142,31 +143,10 @@
                 android:layout_height="match_parent"
                 android:layout_marginEnd="10dp"
                 android:layout_marginStart="10dp"
-                android:layout_weight="0.25"
+                android:layout_weight="0.5"
                 android:src="@drawable/ic_cancel"
                 android:text="Visited" />
 
-            <ImageButton
-                android:id="@+id/btnTask1"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="10dp"
-                android:layout_marginStart="10dp"
-                android:layout_weight="0.25"
-                android:src="@drawable/ic_forward"
-                android:text="Visited" />
-
-            <ImageButton
-                android:id="@+id/btnTask2"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="10dp"
-                android:layout_marginStart="10dp"
-                android:layout_weight="0.25"
-                android:src="@drawable/ic_forward"
-                android:text="Visited" />
 
             <ImageButton
                 android:id="@+id/btnCompleted"
@@ -175,7 +155,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginEnd="10dp"
                 android:layout_marginStart="10dp"
-                android:layout_weight="0.25"
+                android:layout_weight="0.5"
                 android:src="@drawable/ic_done"
                 android:text="COMLTD" />
         </TableRow>

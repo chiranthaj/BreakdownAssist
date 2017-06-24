@@ -116,10 +116,12 @@ public class JobListFragment extends Fragment {
         }
     };
 
+    private static RecyclerView.Adapter mAdapter;
+
 
     public static void RefreshListView(final Fragment fragment) {
         final ArrayList<Breakdown> BreakdownList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
-        RecyclerView mRecyclerView = (RecyclerView) mView.findViewById(R.id.recycleview);
+        final RecyclerView mRecyclerView = (RecyclerView) mView.findViewById(R.id.recycleview);
 
         mRecyclerView.setHasFixedSize(true);
 
@@ -137,7 +139,9 @@ public class JobListFragment extends Fragment {
                         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
                             public void onDismiss(DialogInterface dialog) {
-                                RefreshListView(fragment);
+                                mAdapter.notifyDataSetChanged();
+                                //mRecyclerView.ref.invalidate();
+                                //RefreshListView(fragment);
                             }
                         });
                 } else {
@@ -176,7 +180,7 @@ public class JobListFragment extends Fragment {
 
         // specify an adapter (see also next example)
 
-        final RecyclerView.Adapter mAdapter = new JobsRecyclerAdapter(fragment.getActivity(), BreakdownList, itemTouchListener);
+        mAdapter = new JobsRecyclerAdapter(fragment.getActivity(), BreakdownList, itemTouchListener);
 
         mRecyclerView.setAdapter(mAdapter);
 
@@ -202,7 +206,8 @@ public class JobListFragment extends Fragment {
                                         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                                             @Override
                                             public void onDismiss(DialogInterface dialog) {
-                                                RefreshListView(fragment);
+                                                //RefreshListView(fragment);
+                                                mAdapter.notifyDataSetChanged();
                                             }
                                         });
                                     BreakdownList.remove(position);
@@ -220,7 +225,8 @@ public class JobListFragment extends Fragment {
                                         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                                             @Override
                                             public void onDismiss(DialogInterface dialog) {
-                                                RefreshListView(fragment);
+                                                mAdapter.notifyDataSetChanged();
+                                                //RefreshListView(fragment);
                                             }
                                         });
                                     BreakdownList.remove(position);

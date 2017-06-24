@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         MainActivity.context = getApplicationContext();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -103,9 +104,7 @@ public class MainActivity extends AppCompatActivity
         dbHandler = new DBHandler(this,null,null,1);
 
         ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(),this);
-        fm = getFragmentManager();
-        fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
-       // fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
+
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
         this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "My Tag");
@@ -118,6 +117,26 @@ public class MainActivity extends AppCompatActivity
         timer.schedule(myTimerTask, 1000, 5000);
 
         Globals.initAreaCodes(getApplicationContext());
+
+        fm = getFragmentManager();
+        fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
+        Log.d("TEST","0");
+        if(savedInstanceState != null){
+            Log.d("TEST","1");
+            String previousFragment = savedInstanceState.getString("CURRENT_FRAGMENT");
+            if(previousFragment!=null){
+                Log.d("TEST","2");
+                try {
+                    Class mClass =  Class.forName(previousFragment);
+                    fm.beginTransaction().replace(R.id.content_frame, (Fragment)mClass.newInstance()).commit();
+                } catch (Exception e) {
+                    Log.d("TEST","10");
+                    e.printStackTrace();
+                }
+
+
+            }
+        }
     }
 
     @Override
@@ -147,6 +166,11 @@ public class MainActivity extends AppCompatActivity
         // Save the user's current game state
         savedInstanceState.putInt(STATE_SCORE, 123);//Testing
 
+        //Send current fragment to use in on create
+        Fragment currentFragment = this.getFragmentManager().findFragmentById(R.id.content_frame);
+        if(currentFragment!=null){
+            savedInstanceState.putString("CURRENT_FRAGMENT",currentFragment.getClass().getName());
+        }
         // Always call the superclass so it can save the view hierarchy state
         super.onSaveInstanceState(savedInstanceState);
     }
@@ -203,7 +227,7 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.search_menu, menu);
 
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        //if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             SearchManager manager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
             SearchView search = (SearchView) menu.findItem(R.id.search).getActionView();
             search.setSearchableInfo(manager.getSearchableInfo(getComponentName()));
@@ -258,7 +282,7 @@ public class MainActivity extends AppCompatActivity
 
             });
 
-        }
+        //}
         return true;
     }
 
@@ -283,11 +307,12 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
         item.setChecked(true);
-        if (id == R.id.nav_map_view) {
+        if (id == R.id.nav_dashboard) {
+            fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
+        }
+        else if (id == R.id.nav_map_view) {
             //TODO : If current fragment is NOT Map fragment only replace the fragment
             fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
-        }else if (id == R.id.nav_dashboard) {
-            fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
         }
         else if (id == R.id.nav_search) {
             fm.beginTransaction().replace(R.id.content_frame, new SearchViewFragment()).commit();

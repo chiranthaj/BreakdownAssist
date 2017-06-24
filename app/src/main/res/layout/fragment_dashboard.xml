@@ -163,7 +163,7 @@
                             android:layout_alignParentStart="true"
                             android:layout_below="@+id/test5"
                             android:gravity="center_horizontal"
-                            android:text="24 min"
+                            android:text="Not available"
                             android:textColor="@android:color/holo_orange_dark"
                             android:textSize="60sp"
                             android:textStyle="normal|bold" />
