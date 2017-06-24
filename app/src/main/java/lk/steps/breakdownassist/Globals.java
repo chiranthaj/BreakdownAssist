@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Chirantha on 4/9/2017.
@@ -64,12 +65,31 @@ public class Globals
         Log.d("AreaCodes2",AreaCode1+","+AreaCode2+","+AreaCode3);
     }
 
-    public static String getNightMode(){
+    public static String getNightMode()
+    {
         String sReturn="1";
         SharedPreferences sharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(MainActivity.getAppContext());
 
         sReturn=sharedPrefs.getString("night_mode", "1");
+        return sReturn;
+    }
+
+    public static String getGetDateTime(int year,int month, int day,int hour, int minutes)
+    {
+        String sReturn="";
+/*        try {
+            Date DateTime =timeFormat.parse( Integer.toString(year) + "/"+ Integer.toString(month) + "/"+ Integer.toString(day)+ " "+
+                    Integer.toString(hour)+ ":"+ Integer.toString(minutes) + ":00 ");
+            sReturn=DateTime.toString();
+        }
+        catch (Exception e)
+        {
+
+        }*/
+        sReturn=Integer.toString(year) + "/"+ Integer.toString(month) + "/"+ Integer.toString(day)+ " "+
+                Integer.toString(hour)+ ":"+ Integer.toString(minutes) + ":00 ";
+
         return sReturn;
     }
 }
