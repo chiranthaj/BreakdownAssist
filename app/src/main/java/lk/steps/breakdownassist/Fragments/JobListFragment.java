@@ -20,11 +20,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 import java.util.ArrayList;
 import lk.steps.breakdownassist.Breakdown;
-import lk.steps.breakdownassist.BreakdownView;
+import lk.steps.breakdownassist.JobView;
 import lk.steps.breakdownassist.MainActivity;
 import lk.steps.breakdownassist.DBHandler;
 import lk.steps.breakdownassist.R;
@@ -131,7 +130,7 @@ public class JobListFragment extends Fragment {
             public void onCardViewTap(View view, final int position) {
                 if(TextUtils.isEmpty(BreakdonwList.get(position).get_LATITUDE())) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
-                    BreakdownView.Dialog(fragment,BreakdonwList.get(position),null,null);
+                    JobView.Dialog(fragment,BreakdonwList.get(position),null,null);
                 }else{
                     final FragmentManager fm;
                     fm = fragment.getFragmentManager();

@@ -1,194 +1,203 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialoglayout"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:weightSum="1"
-    android:layout_marginTop="10dp"
-    android:layout_marginLeft="10dp"
-    android:layout_marginRight="10dp"
-    android:layout_marginBottom="10dp">
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
 
-    <TextView
-        android:text="JobNo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/jobno"
-        android:textSize="35sp"
-        android:layout_marginTop="10dp"
-        android:textAlignment="center"
-        android:textStyle="normal" />
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
 
-    <TextView
-        android:id="@+id/received_date_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Received Time"
-        android:textAlignment="center"
-        android:textColor="@android:color/holo_orange_dark"
-        android:textSize="25sp"
-        android:textStyle="normal|bold" />
-    <TextView
-        android:text="AcctNum, Premises ID"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/acctnum"
-        android:textSize="30sp"
-        android:layout_marginTop="10dp"
-        android:textAlignment="center"
-        android:textStyle="normal|bold" />
-
-    <TextView
-        android:text="Name Address"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/name"
-        android:textSize="30sp"
-        android:layout_marginTop="10dp"
-        android:textAlignment="center"
-        android:textStyle="normal|bold"
-        android:maxLines="3"
-        android:layout_weight="0.25" />
-
-    <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center">
-
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center">
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            android:weightSum="1">
 
             <TextView
-                android:id="@+id/phoneno"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-
-                android:text="Phone No"
-                android:textSize="25sp" />
-
-            <ImageButton
-                android:id="@+id/btnMakeCall"
-                android:layout_width="wrap_content"
+                android:id="@+id/jobno"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="JobNo"
+                android:textAlignment="center"
+                android:textSize="35sp"
+                android:textStyle="normal" />
 
-                android:src="@android:drawable/sym_action_call"
-                android:text="COMLTD" />
-        </TableRow>
-
-    </TableLayout>
-    <TextView
-        android:id="@+id/fulldescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Full Description"
-        android:textAlignment="center"
-        android:textColor="@color/wallet_link_text_light"
-        android:textSize="25sp"
-        android:textStyle="italic" />
-
-    <TableLayout
-        android:layout_width="match_parent"
-        android:layout_marginBottom="10dp"
-        android:layout_height="wrap_content">
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
-
-            <ImageButton
-                android:id="@+id/dialogButtonNavigate"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/received_date_time"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.25"
-                android:src="@drawable/ic_navigation"
-                android:text="Nav" />
+                android:layout_marginTop="10dp"
+                android:text="Received Time"
+                android:textAlignment="center"
+                android:textColor="@android:color/holo_orange_dark"
+                android:textSize="25sp"
+                android:textStyle="normal|bold" />
 
-            <ImageButton
-                android:id="@+id/dialogButtonForward"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.25"
-                android:src="@drawable/ic_forward"
-                android:text="FWD" />
-
-            <ImageButton
-                android:id="@+id/dialogButtonVisited"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/acctnum"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_av_timer"
-                android:layout_weight="0.25"
-                android:text="Visited" />
+                android:layout_marginTop="10dp"
+                android:text="AcctNum, Premises ID"
+                android:textAlignment="center"
+                android:textSize="30sp"
+                android:textStyle="normal|bold" />
 
-            <ImageButton
-                android:id="@+id/dialogButtonCompleted"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:layout_weight="0.25"
-                android:src="@drawable/ic_done"
-                android:text="COMLTD" />
-        </TableRow>
+                android:maxLines="3"
+                android:text="Name Address"
+                android:textAlignment="center"
+                android:textSize="30sp"
+                android:textStyle="normal|bold" />
 
-    </TableLayout>
-    <TableLayout
-        android:layout_width="match_parent"
-        android:layout_marginBottom="10dp"
-        android:layout_height="50dp">
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center">
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center">
 
-            <Button
-                android:id="@+id/btnVisted"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.25"
-                android:text="Visited" />
+                    <TextView
+                        android:id="@+id/phoneno"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
 
-            <Button
-                android:id="@+id/btnAttending"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.25"
-                android:text="Attending" />
+                        android:text="Phone No"
+                        android:textSize="25sp" />
 
-            <Button
-                android:id="@+id/btnDone"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.25"
-                android:text="Done" />
+                    <ImageButton
+                        android:id="@+id/btnMakeCall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
 
-            <Button
-                android:id="@+id/btnCompleted"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.25"
-                android:text="Completed" />
-        </TableRow>
+                        android:src="@android:drawable/sym_action_call"
+                        android:text="COMLTD" />
+                </TableRow>
 
-    </TableLayout>
-</LinearLayout>
+            </TableLayout>
+
+            <TextView
+                android:id="@+id/fulldescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Full Description"
+                android:textAlignment="center"
+                android:textColor="@color/wallet_link_text_light"
+                android:textSize="25sp"
+                android:textStyle="italic" />
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageButton
+                        android:id="@+id/dialogButtonNavigate"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.25"
+                        android:src="@drawable/ic_navigation"
+                        android:text="Nav" />
+
+                    <ImageButton
+                        android:id="@+id/dialogButtonForward"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.25"
+                        android:src="@drawable/ic_forward"
+                        android:text="FWD" />
+
+                    <ImageButton
+                        android:id="@+id/dialogButtonVisited"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.25"
+                        android:src="@drawable/ic_av_timer"
+                        android:text="Visited" />
+
+                    <ImageButton
+                        android:id="@+id/dialogButtonCompleted"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.25"
+                        android:src="@drawable/ic_done"
+                        android:text="COMLTD" />
+                </TableRow>
+
+            </TableLayout>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="10dp">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <Button
+                        android:id="@+id/btnVisted"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.25"
+                        android:text="Visited" />
+
+                    <Button
+                        android:id="@+id/btnAttending"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.25"
+                        android:text="Attending" />
+
+                    <Button
+                        android:id="@+id/btnDone"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.25"
+                        android:text="Done" />
+
+                    <Button
+                        android:id="@+id/btnCompleted"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.25"
+                        android:text="Completed" />
+                </TableRow>
+
+            </TableLayout>
+        </LinearLayout>
     </ScrollView>
 
+</LinearLayout>

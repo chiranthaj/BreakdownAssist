@@ -70,49 +70,5 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
 
-
-    <string-array name="failure_type">
-        <item>Please select</item>
-        <item>Service Main System</item>
-        <item>Low Voltage System</item>
-        <item>Medium Voltage System</item>
-    </string-array>
-
-    <string-array name="failure_type_index">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
-    <string-array name="failure_nature">
-        <item>Please select</item>
-        <item>MCCB/ Fuse/ Cut-out blown</item>
-        <item>Meter terminal blown</item>
-        <item>Service wire broken</item>
-    </string-array>
-
-    <string-array name="failure_nature_index">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
-    <string-array name="failure_cause">
-        <item>Please select</item>
-        <item>Way-leaves</item>
-        <item>Overload</item>
-        <item>Loose Connection</item>
-        <item>Animals</item>
-    </string-array>
-
-    <string-array name="failure_cause_index">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-    </string-array>
     <string name="menu_settings">Settings</string>
 </resources>
