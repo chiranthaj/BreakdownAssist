@@ -5,7 +5,7 @@ package lk.steps.breakdownassist;
  */
 
 public class jobstatuschangesRestService {
-    private static final String URL = "http://10.0.2.2/jobstatusapi/";//
+    private static final String URL = "http://222.165.188.234:8080/jobstatusapi/";//10.0.2.2/
     private retrofit.RestAdapter restAdapter;
     private jobstatuschangesService apiService;
 

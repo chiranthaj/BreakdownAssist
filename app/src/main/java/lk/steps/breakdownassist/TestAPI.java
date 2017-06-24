@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.util.Date;
@@ -20,6 +23,9 @@ public class TestAPI extends AppCompatActivity {
     jobstatuschangesRestService restService;
     DBHandler dbHandler;
 
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,6 +35,7 @@ public class TestAPI extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         restService = new jobstatuschangesRestService();
         dbHandler = new DBHandler(this,null,null,1);
+
 
         buttonTest = (Button) findViewById(R.id.buttonTestAPI);
         buttonTest.setOnClickListener(
@@ -59,9 +66,12 @@ public class TestAPI extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         JobChangeStatus myjobstatusRec=new JobChangeStatus();
-                        myjobstatusRec.job_no="J46/P/2017/06/20/1.1";
+
+                        EditText editTextJobNo= (EditText) findViewById(R.id.editTextJobNo);
+                        EditText editTextJobStatus= (EditText) findViewById(R.id.editTextJobStatus);
+                        myjobstatusRec.job_no=editTextJobNo.getText().toString();//"J46/P/2017/06/20/1.1";
                         myjobstatusRec.change_datetime="2017-06-15T00:00:00";
-                        myjobstatusRec.st_code="B";
+                        myjobstatusRec.st_code=editTextJobStatus.getText().toString();//"B";
                         myjobstatusRec.comment="Test comment abcd";
 
 

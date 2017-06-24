@@ -114,10 +114,12 @@ public class MainActivity extends AppCompatActivity
 
         timer = new Timer();
         myTimerTask = new MyTimerTask();
-        startService(new Intent(getBaseContext(), BackgroundService.class));
 
         //delay 1000ms, repeat in 5000ms
         timer.schedule(myTimerTask, 1000, 5000);
+
+        //startService(new Intent(getBaseContext(), BackgroundService.class));
+
 
         Globals.initAreaCodes(getApplicationContext());
     }
