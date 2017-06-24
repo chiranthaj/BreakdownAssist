@@ -3,11 +3,14 @@ package lk.steps.breakdownassist;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -20,6 +23,8 @@ import retrofit.client.Response;
 public class BackgroundService extends Service {
     DBHandler dbHandler;
     jobstatuschangesRestService restService;
+    Timer timer;
+    MyTimerTask myTimerTask;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -32,20 +37,25 @@ public class BackgroundService extends Service {
         dbHandler = new DBHandler(this,null,null,1);
         restService = new jobstatuschangesRestService();
         Toast.makeText(this, "Synch Service Started", Toast.LENGTH_SHORT).show();
-        Sync_JobStatusChangeObj_to_Server();
+
+        timer = new Timer();
+        myTimerTask = new MyTimerTask();
+
+        //delay 1000ms, repeat in 5000ms
+        timer.schedule(myTimerTask, 1000, 5000);
         return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         Toast.makeText(this, "Service Destroyed", Toast.LENGTH_SHORT).show();
     }
 
     private void Sync_JobStatusChangeObj_to_Server()
     {
         List<JobChangeStatus> JobChangeStatusList = dbHandler.getJobStatusChangeObjNotSync_List();
-
         for (final JobChangeStatus obj: JobChangeStatusList)
         {
             restService.getService().addJobStatusRec(obj, new Callback<JobChangeStatus>() {
@@ -63,4 +73,12 @@ public class BackgroundService extends Service {
         }
 
     }
+    class MyTimerTask extends TimerTask {
+        @Override
+        public void run() {
+            Sync_JobStatusChangeObj_to_Server();
+        }
+    }
+
+
 }

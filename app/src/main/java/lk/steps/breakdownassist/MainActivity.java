@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.design.widget.Snackbar;
@@ -113,6 +114,7 @@ public class MainActivity extends AppCompatActivity
 
         timer = new Timer();
         myTimerTask = new MyTimerTask();
+        startService(new Intent(getBaseContext(), BackgroundService.class));
 
         //delay 1000ms, repeat in 5000ms
         timer.schedule(myTimerTask, 1000, 5000);

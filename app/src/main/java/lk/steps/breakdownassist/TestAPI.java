@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.Date;
@@ -35,7 +36,7 @@ public class TestAPI extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
 
-                        restService.getService().getJobStatusRec("DDFDF","F",
+                        restService.getService().getJobStatusRec("J46/P/2017/06/20/1.1","J",
                                 "2017-06-15T00:00:00", new Callback<JobChangeStatus>() {
                             @Override
                             public void success(JobChangeStatus job, Response response) {
@@ -58,9 +59,9 @@ public class TestAPI extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         JobChangeStatus myjobstatusRec=new JobChangeStatus();
-                        myjobstatusRec.job_no="chira";
+                        myjobstatusRec.job_no="J46/P/2017/06/20/1.1";
                         myjobstatusRec.change_datetime="2017-06-15T00:00:00";
-                        myjobstatusRec.st_code="J";
+                        myjobstatusRec.st_code="B";
                         myjobstatusRec.comment="Test comment abcd";
 
 
@@ -81,17 +82,23 @@ public class TestAPI extends AppCompatActivity {
                 }
         );
 
+
+
         buttonSaveToDB= (Button) findViewById(R.id.buttonSaveToDB);
         buttonSaveToDB.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+
+                        EditText editTextJobNo= (EditText) findViewById(R.id.editTextJobNo);
+                        EditText editTextJobStatus= (EditText) findViewById(R.id.editTextJobStatus);
+
                         JobChangeStatus myjobstatusRec=new JobChangeStatus();
-                        myjobstatusRec.job_no="chira";
+                        myjobstatusRec.job_no=editTextJobNo.getText().toString();
 
                         Date callDayTime = new Date( System.currentTimeMillis());
                         myjobstatusRec.change_datetime=Globals.timeFormat.format(callDayTime);
-                        myjobstatusRec.st_code="J";
+                        myjobstatusRec.st_code=editTextJobStatus.getText().toString();
                         myjobstatusRec.comment="Test comment abcd";
 
                         dbHandler.addJobStatusChangeObj(myjobstatusRec);
