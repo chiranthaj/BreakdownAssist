@@ -150,9 +150,9 @@ public class JobListFragment extends Fragment {
                     Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " Locating... ", Toast.LENGTH_LONG).show();
                     new Handler().postDelayed(new Runnable() {
                         public void run() {
-                            Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
-                            if (currentFragment instanceof GmapFragment) {
-                                GmapFragment GmapFrag = (GmapFragment) currentFragment;
+                            Fragment fragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
+                            if (fragment instanceof GmapFragment) {
+                                GmapFragment GmapFrag = (GmapFragment) fragment;
                                 GmapFrag.FocusBreakdown(BreakdownList.get(position));
                             }
                         }

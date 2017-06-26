@@ -19,6 +19,7 @@ public class Globals
     public static String AreaCode3="";
     public static int NoOfAreaCodes=0;
     public static SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
+    public static long AverageTime = 0;
 
     public static void initAreaCodes(Context context)
     {

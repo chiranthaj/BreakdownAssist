@@ -1,11 +1,18 @@
 package lk.steps.breakdownassist;
 
+import android.*;
+import android.app.ActionBar;
 import android.app.Dialog;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Handler;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -20,12 +27,18 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
+import lk.steps.breakdownassist.Fragments.GmapFragment;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.Modules.DirectionFinder;
 import lk.steps.breakdownassist.Modules.DirectionFinderListener;
@@ -396,42 +409,13 @@ public  class JobView {
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*if(spinner1.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure type");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner2.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure nature");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else if(spinner3.getSelectedItemPosition() == 0){
-                    final AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-                    alertDialog.setTitle("Please select a Failure cause");
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }else{
-                    UpdateBreakDown(selectedBreakdown,Breakdown.Status_JOB_COMPLETED);
-                    Log.d("Reason ",spinner1.getSelectedItem().toString());
-                    dialog.dismiss();
-                }*/
                 Toast.makeText(fragment.getActivity().getApplicationContext(),
                         "DateTime="+GetSelectedDateTime(dialog),Toast.LENGTH_LONG).show();
                 //UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_COMPLETED);
                 //Log.d("Reason ",spinner1.getSelectedItem().toString());
+
+                ChangeMarker(fragment);//Change Maker as completed
+
                 dialog.dismiss();
                 //TODO : Use an Undo option
             }
@@ -550,5 +534,21 @@ public  class JobView {
 
         String text = ""+ Globals.timeFormat.format(calendar.getTime());
         return  text;
+    }
+
+
+    private static void ChangeMarker(Fragment fragment){
+        final FragmentManager fm;
+        fm = fragment.getFragmentManager();
+        fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(), MainActivity.MAP_FRAGMENT_TAG).commit();
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                Fragment fragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
+                if (fragment instanceof GmapFragment) {
+                    GmapFragment GmapFrag = (GmapFragment) fragment;
+                    GmapFrag.RefreshJobsFromDB();
+                }
+            }
+        }, 2000);
     }
 }

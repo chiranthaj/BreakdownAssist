@@ -30,6 +30,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /*import com.arlib.floatingsearchview.FloatingSearchView;*/
@@ -102,9 +103,9 @@ public class MainActivity extends AppCompatActivity
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        dbHandler = new DBHandler(this,null,null,1);
+        dbHandler = new DBHandler(this, null, null, 1);
 
-        ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(),this);
+        ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(), this);
 
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
@@ -124,23 +125,24 @@ public class MainActivity extends AppCompatActivity
 
         fm = getFragmentManager();
         fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
-        Log.d("TEST","0");
-        if(savedInstanceState != null){
-            Log.d("TEST","1");
+        Log.d("TEST", "0");
+        if (savedInstanceState != null) {
+            Log.d("TEST", "1");
             String previousFragment = savedInstanceState.getString("CURRENT_FRAGMENT");
-            if(previousFragment!=null){
-                Log.d("TEST","2");
+            if (previousFragment != null) {
+                Log.d("TEST", "2");
                 try {
-                    Class mClass =  Class.forName(previousFragment);
-                    fm.beginTransaction().replace(R.id.content_frame, (Fragment)mClass.newInstance()).commit();
+                    Class mClass = Class.forName(previousFragment);
+                    fm.beginTransaction().replace(R.id.content_frame, (Fragment) mClass.newInstance()).commit();
                 } catch (Exception e) {
-                    Log.d("TEST","10");
+                    Log.d("TEST", "10");
                     e.printStackTrace();
                 }
 
 
             }
         }
+        CalculateAttainedTime();
     }
 
     @Override
@@ -165,6 +167,7 @@ public class MainActivity extends AppCompatActivity
         // The activity is about to become visible.
         Stetho.initializeWithDefaults(this); //TODO : Remove this later, which is a tool for database inspection
     }
+
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         // Save the user's current game state
@@ -172,16 +175,17 @@ public class MainActivity extends AppCompatActivity
 
         //Send current fragment to use in on create
         Fragment currentFragment = this.getFragmentManager().findFragmentById(R.id.content_frame);
-        if(currentFragment!=null){
-            savedInstanceState.putString("CURRENT_FRAGMENT",currentFragment.getClass().getName());
+        if (currentFragment != null) {
+            savedInstanceState.putString("CURRENT_FRAGMENT", currentFragment.getClass().getName());
         }
         // Always call the superclass so it can save the view hierarchy state
         super.onSaveInstanceState(savedInstanceState);
     }
+
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String sID=intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
+            String sID = intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
             //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
         }
     };
@@ -204,8 +208,7 @@ public class MainActivity extends AppCompatActivity
             if (doubleBackToExitPressedOnce) {
                 super.onBackPressed();
                 return;
-            }else if(navigationView.getMenu().findItem(R.id.nav_dashboard).isChecked())
-            {
+            } else if (navigationView.getMenu().findItem(R.id.nav_dashboard).isChecked()) {
                 this.doubleBackToExitPressedOnce = true;
                 Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
 
@@ -214,7 +217,7 @@ public class MainActivity extends AppCompatActivity
 
                     @Override
                     public void run() {
-                        doubleBackToExitPressedOnce=false;
+                        doubleBackToExitPressedOnce = false;
                     }
                 }, 2000);
             } else {
@@ -233,59 +236,59 @@ public class MainActivity extends AppCompatActivity
 
 
         //if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            SearchManager manager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-            SearchView search = (SearchView) menu.findItem(R.id.search).getActionView();
-            search.setSearchableInfo(manager.getSearchableInfo(getComponentName()));
+        SearchManager manager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView search = (SearchView) menu.findItem(R.id.search).getActionView();
+        search.setSearchableInfo(manager.getSearchableInfo(getComponentName()));
 
-            search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             //TODO : Move these to designated fragments and localize them
-                @Override
-                public boolean onQueryTextSubmit(String keyWord) {
-                    List<Breakdown> BreakdownsList = dbHandler.SearchInDatabase(keyWord);
+            @Override
+            public boolean onQueryTextSubmit(String keyWord) {
+                List<Breakdown> BreakdownsList = dbHandler.SearchInDatabase(keyWord);
                     /*if (BreakdownsList.size() == 0) {
                         BreakdownsList = dbHandler.SearchInCustomers(keyWord);
                     }*/
-                    if (BreakdownsList.size() == 0) {
-                        Toast.makeText(MainActivity.getAppContext(), "No match found..!" , Toast.LENGTH_LONG).show();
-                    } else if (BreakdownsList.size() == 1) {
-                        Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
-                        if (currentFragment instanceof GmapFragment) {
-                            GmapFragment GmapFrag= (GmapFragment) currentFragment;
-                            Marker CreatedMarker = GmapFrag.AddBreakDownToMap(BreakdownsList.get(0),
-                                    BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                            if (CreatedMarker!=null){
-                                GmapFrag.mMap.animateCamera(CameraUpdateFactory.newLatLng(CreatedMarker.getPosition()));
-                                CreatedMarker.showInfoWindow();
-                            }
-                        }else{
-                            Bundle arguments = new Bundle();
-                            arguments.putString("KEY_WORD", keyWord);
-                            //arguments.putParcelableArrayList("LIST",BreakdownsList);
-                            SearchViewFragment fragment = new SearchViewFragment();
-                            fragment.setArguments(arguments);
-                            fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
+                if (BreakdownsList.size() == 0) {
+                    Toast.makeText(MainActivity.getAppContext(), "No match found..!", Toast.LENGTH_LONG).show();
+                } else if (BreakdownsList.size() == 1) {
+                    Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
+                    if (currentFragment instanceof GmapFragment) {
+                        GmapFragment GmapFrag = (GmapFragment) currentFragment;
+                        Marker CreatedMarker = GmapFrag.AddBreakDownToMap(BreakdownsList.get(0),
+                                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                        if (CreatedMarker != null) {
+                            GmapFrag.mMap.animateCamera(CameraUpdateFactory.newLatLng(CreatedMarker.getPosition()));
+                            CreatedMarker.showInfoWindow();
                         }
                     } else {
                         Bundle arguments = new Bundle();
                         arguments.putString("KEY_WORD", keyWord);
+                        //arguments.putParcelableArrayList("LIST",BreakdownsList);
                         SearchViewFragment fragment = new SearchViewFragment();
                         fragment.setArguments(arguments);
                         fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
                     }
-                    return true;
+                } else {
+                    Bundle arguments = new Bundle();
+                    arguments.putString("KEY_WORD", keyWord);
+                    SearchViewFragment fragment = new SearchViewFragment();
+                    fragment.setArguments(arguments);
+                    fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
                 }
+                return true;
+            }
 
-                @Override
-                public boolean onQueryTextChange(String s) {
-                    //Log.d("TEST", "onQueryTextChange ");
+            @Override
+            public boolean onQueryTextChange(String s) {
+                //Log.d("TEST", "onQueryTextChange ");
                     /*cursor=studentRepo.getStudentListByKeyword(s);
                     if (cursor!=null){
                         customAdapter.swapCursor(cursor);
                     }*/
-                    return false;
-                }
+                return false;
+            }
 
-            });
+        });
 
         //}
         return true;
@@ -319,39 +322,36 @@ public class MainActivity extends AppCompatActivity
         item.setChecked(true);
         if (id == R.id.nav_dashboard) {
             fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
-        }
-        else if (id == R.id.nav_map_view) {
+        } else if (id == R.id.nav_map_view) {
             //TODO : If current fragment is NOT Map fragment only replace the fragment
-            fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(),MAP_FRAGMENT_TAG).commit();
-        }
-        else if (id == R.id.nav_search) {
+            fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(), MAP_FRAGMENT_TAG).commit();
+        } /*else if (id == R.id.nav_search) {
             fm.beginTransaction().replace(R.id.content_frame, new SearchViewFragment()).commit();
-        } else if (id == R.id.nav_unattained_jobs) {
+        }*/ else if (id == R.id.nav_unattained_jobs) {
             Bundle arguments = new Bundle();
             arguments.putInt("JOB_STATUS", Breakdown.Status_JOB_NOT_ATTENDED);
             JobListFragment fragment = new JobListFragment();
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
             //fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
-        }
-        else if (id == R.id.nav_completed_jobs) {
+        } else if (id == R.id.nav_completed_jobs) {
             Bundle arguments = new Bundle();
             arguments.putInt("JOB_STATUS", Breakdown.Status_JOB_COMPLETED);
             JobListFragment fragment = new JobListFragment();
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
-        }else if (id == R.id.nav_Test_BD_ADD) {
+        } else if (id == R.id.nav_Test_BD_ADD) {
             fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),
                     MAP_ADDTestBREAKDOWN_FRAGMENT_TAG).addToBackStack(MAP_FRAGMENT_TAG).commit();
         } else if (id == R.id.nav_sync_sms_inbox) {
-            Toast.makeText(this, "Please wait.. This will take some time to complete" , Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please wait.. This will take some time to complete", Toast.LENGTH_LONG).show();
             ReadSMS.SyncSMSInbox(this);
-            Toast.makeText(this, "Synced !!" , Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Synced !!", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
-        }else if (id == R.id.about) {
+        } else if (id == R.id.about) {
             Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);
         }
@@ -362,16 +362,18 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void openUnattainedJobFragment(View view){
+    public void openUnattainedJobFragment(View view) {
         MenuItem target = navigationView.getMenu().findItem(R.id.nav_unattained_jobs);
         target.setChecked(true);
         onNavigationItemSelected(target);
     }
-    public void openCompletedJobFragment(View view){
+
+    public void openCompletedJobFragment(View view) {
         MenuItem target = navigationView.getMenu().findItem(R.id.nav_completed_jobs);
         target.setChecked(true);
         onNavigationItemSelected(target);
     }
+
     public static Context getAppContext() {
         return MainActivity.context;
     }
@@ -379,16 +381,33 @@ public class MainActivity extends AppCompatActivity
     class MyTimerTask extends TimerTask {
         @Override
         public void run() {
-            runOnUiThread(new Runnable(){
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
                     if (currentFragment instanceof GmapFragment) {
-                        GmapFragment GmapFrag= (GmapFragment) currentFragment;
+                        GmapFragment GmapFrag = (GmapFragment) currentFragment;
                         GmapFrag.ApplyMapDayNightModeAccordingly();
                     }
-                }});
+                }
+            });
         }
+    }
+
+    private void CalculateAttainedTime() {
+        final Handler handler = new Handler();
+        final Runnable r = new Runnable() {
+            public void run() {
+                try {
+                    DBHandler dbHandler = new DBHandler(getAppContext(), null, null, 1);
+                    Globals.AverageTime = dbHandler.getAttainedTime();
+                    //handler.postDelayed(this, 1000*60*10);//Continue updating 10min
+                } catch (Exception e) {
+
+                }
+            }
+        };
+        handler.postDelayed(r, 2000); //2Sec
     }
 
 }
