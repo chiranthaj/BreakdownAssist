@@ -4,22 +4,22 @@ package lk.steps.breakdownassist;
  * Created by Chirantha on 13/06/2017.
  */
 
-public class jobstatuschangesRestService {
+public class JobStatusChangesRESTService {
     private static final String URL = "http://222.165.188.234:8080/jobstatusapi/";//10.0.2.2/
     private retrofit.RestAdapter restAdapter;
-    private jobstatuschangesService apiService;
+    private JobStatusChangesService apiService;
 
-    public jobstatuschangesRestService()
+    public JobStatusChangesRESTService()
     {
         restAdapter = new retrofit.RestAdapter.Builder()
                 .setEndpoint(URL)
                 .setLogLevel(retrofit.RestAdapter.LogLevel.FULL)
                 .build();
 
-        apiService = restAdapter.create(jobstatuschangesService.class);
+        apiService = restAdapter.create(JobStatusChangesService.class);
     }
 
-    public jobstatuschangesService getService()
+    public JobStatusChangesService getService()
     {
         return apiService;
     }

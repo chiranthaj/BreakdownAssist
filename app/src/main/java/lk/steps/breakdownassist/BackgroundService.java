@@ -3,11 +3,9 @@ package lk.steps.breakdownassist;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -22,7 +20,7 @@ import retrofit.client.Response;
 
 public class BackgroundService extends Service {
     DBHandler dbHandler;
-    jobstatuschangesRestService restService;
+    JobStatusChangesRESTService restService;
     Timer timer;
     MyTimerTask myTimerTask;
     @Nullable
@@ -35,7 +33,7 @@ public class BackgroundService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Let it continue running until it is stopped.
         dbHandler = new DBHandler(this,null,null,1);
-        restService = new jobstatuschangesRestService();
+        restService = new JobStatusChangesRESTService();
         Toast.makeText(this, "Synch Service Started", Toast.LENGTH_SHORT).show();
 
         timer = new Timer();

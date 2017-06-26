@@ -15,7 +15,7 @@ import retrofit.http.PUT;
 import retrofit.http.Path;
 import retrofit.http.Query;
 
-public interface jobstatuschangesService {
+public interface JobStatusChangesService {
     //Retrofit turns the WEB API into a Java interface.
 
     @GET("/api/jobstatuschanges")
