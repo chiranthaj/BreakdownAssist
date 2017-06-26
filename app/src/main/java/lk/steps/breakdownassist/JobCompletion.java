@@ -1,5 +1,7 @@
 package lk.steps.breakdownassist;
 
+import java.util.Date;
+
 /**
  * Created by Chirantha on 25/06/2017.
  */
@@ -17,8 +19,6 @@ public class JobCompletion {
     public String job_completed_by;
     public String action_code;
 
-/*    public String entry_made_by;
-    public String job_assigned_date;*/
 
     public JobCompletion() {
     }
@@ -35,5 +35,7 @@ public class JobCompletion {
         this.type_failure = type_failure;
         this.job_completed_by = job_completed_by;
         this.action_code = action_code;
+        this.device_timestamp=Globals.timeFormat.format(new Date( System.currentTimeMillis()));
+        this.synchro_mobile_db=0;
     }
 }

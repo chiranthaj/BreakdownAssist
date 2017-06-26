@@ -20,6 +20,8 @@ public class JobChangeStatus {
         this.st_code = st_code;
         this.change_datetime = change_datetime;
         this.comment = comment;
+        this.device_timestamp=Globals.timeFormat.format(new Date( System.currentTimeMillis()));
+        this.synchro_mobile_db=0;
     }
 
     public JobChangeStatus() {

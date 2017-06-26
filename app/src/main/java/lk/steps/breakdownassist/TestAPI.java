@@ -110,7 +110,7 @@ public class TestAPI extends AppCompatActivity {
                         myjobstatusRec.st_code=editTextJobStatus.getText().toString();
                         myjobstatusRec.comment="Test comment abcd";
 
-                        dbHandler.addJobStatusChangeObj(myjobstatusRec);
+                        dbHandler.addJobStatusChangeRec(myjobstatusRec);
 
                         Toast.makeText(getApplicationContext(), "OK DB2", Toast.LENGTH_SHORT).show();
 
@@ -128,18 +128,23 @@ public class TestAPI extends AppCompatActivity {
     }
 
     public void SaveCompletedJobtoDB(View view) {
+        JobCompletion myjobJobCompletion=new JobCompletion();
+
         EditText editTextJobNo= (EditText) findViewById(R.id.editTextJobNo);
         EditText editTextJobStatus= (EditText) findViewById(R.id.editTextJobStatus);
+        myjobJobCompletion.job_no=editTextJobNo.getText().toString();//"J46/P/2017/06/20/1.1";
+        myjobJobCompletion.job_completed_datetime="2017-06-15T00:00:00";
+        myjobJobCompletion.st_code=editTextJobStatus.getText().toString();//"B";
+        myjobJobCompletion.comment="Test comment abcd";
+        myjobJobCompletion.detail_reason_code="de";
+        myjobJobCompletion.cause="ca";
+        myjobJobCompletion.type_failure="ty";
+        myjobJobCompletion.job_completed_by="joComBy";
+        myjobJobCompletion.action_code="act";
+        myjobJobCompletion.device_timestamp="2017-06-27T12:13:00";
+        myjobJobCompletion.synchro_mobile_db=0;
 
-/*        JobChangeStatus myjobstatusRec=new JobChangeStatus();
-        myjobstatusRec.job_no=editTextJobNo.getText().toString();
-
-        Date callDayTime = new Date( System.currentTimeMillis());
-        myjobstatusRec.change_datetime=Globals.timeFormat.format(callDayTime);
-        myjobstatusRec.st_code=editTextJobStatus.getText().toString();
-        myjobstatusRec.comment="Test comment abcd";
-
-        dbHandler.addJobStatusChangeObj(myjobstatusRec);*/
+        dbHandler.addJobCompletionRec(myjobJobCompletion);
 
         Toast.makeText(getApplicationContext(), "SaveCompletedJobtoDB", Toast.LENGTH_SHORT).show();
     }

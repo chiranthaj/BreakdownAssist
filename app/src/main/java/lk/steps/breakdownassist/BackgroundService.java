@@ -20,7 +20,8 @@ import retrofit.client.Response;
 
 public class BackgroundService extends Service {
     DBHandler dbHandler;
-    JobStatusChangesRESTService restService;
+    JobStatusChangesRESTService myJobStatusChangesRESTService;
+    JobCompletionRESTService myJobCompletionRESTService;
     Timer timer;
     MyTimerTask myTimerTask;
     @Nullable
@@ -33,7 +34,8 @@ public class BackgroundService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Let it continue running until it is stopped.
         dbHandler = new DBHandler(this,null,null,1);
-        restService = new JobStatusChangesRESTService();
+        myJobStatusChangesRESTService = new JobStatusChangesRESTService();
+        myJobCompletionRESTService = new JobCompletionRESTService();
         Toast.makeText(this, "Synch Service Started", Toast.LENGTH_SHORT).show();
 
         timer = new Timer();
@@ -53,10 +55,11 @@ public class BackgroundService extends Service {
 
     private void Sync_JobStatusChangeObj_to_Server()
     {
+        //Always make sure to upload all the JobChangeStatus records prior to uploading JobCompletion records to avoid abnormalities in informix DB
         List<JobChangeStatus> JobChangeStatusList = dbHandler.getJobStatusChangeObjNotSync_List();
         for (final JobChangeStatus obj: JobChangeStatusList)
         {
-            restService.getService().addJobStatusRec(obj, new Callback<JobChangeStatus>() {
+            myJobStatusChangesRESTService.getService().addJobStatusRec(obj, new Callback<JobChangeStatus>() {
                 @Override
                 public void success(JobChangeStatus job, Response response) {
                     dbHandler.UpdateSyncState_JobStatusChangeObj(obj,1);
@@ -65,11 +68,32 @@ public class BackgroundService extends Service {
                 @Override
                 public void failure(RetrofitError error) {
                     Toast.makeText(getApplicationContext(), error.getMessage().toString(), Toast.LENGTH_LONG).show();
-                    //dbHandler.UpdateSyncState_JobStatusChangeObj(obj,0);
+                    if (!error.isNetworkError()) {
+                        dbHandler.UpdateSyncState_JobStatusChangeObj(obj, -5); //To avoid retry again and again
+                    }
                 }
             });
         }
 
+        List<JobCompletion> JobCompletionList = dbHandler.getJobCompletionObjNotSync_List();
+        for (final JobCompletion obj: JobCompletionList)
+        {
+            myJobCompletionRESTService.getService().addJob_CompletionRec(obj, new Callback<JobCompletion>() {
+
+                @Override
+                public void success(JobCompletion jobCompletion, Response response) {
+                    dbHandler.UpdateSyncState_JobCompletionObj(obj,1);
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    Toast.makeText(getApplicationContext(), error.getMessage().toString(), Toast.LENGTH_LONG).show();
+                    if (!error.isNetworkError()) {
+                        dbHandler.UpdateSyncState_JobCompletionObj(obj,-5);  //To avoid retry again and again
+                    }
+                }
+            });
+        }
     }
     class MyTimerTask extends TimerTask {
         @Override

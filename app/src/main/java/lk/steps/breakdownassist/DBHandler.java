@@ -19,7 +19,7 @@ import java.util.Locale;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version =56;
+    private static final int Database_Version =64;
     private static final String Database_Name = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -31,49 +31,66 @@ public class DBHandler extends SQLiteOpenHelper
     public void onCreate(SQLiteDatabase db)
     {
         String query;
-        query = "CREATE TABLE `BreakdownRecords` (" +
-                "`_id`	                INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "`DateTime`	            TEXT," +
-                "`_Acct_Num`	        TEXT," +
-                "`_Status`	            TEXT," +
-                "`_Job_Num`	            TEXT," +  //TODO : Change to Job_no
-                "`_Contact_Num`	        TEXT," +
-                "`_JOB_Source`	        TEXT," +
-                "`_Description`	        TEXT, " +
-                "`inbox_ref`	        TEXT UNIQUE, " +
-                "`last_timestamp`       TEXT, " +
-                "`completed_timestamp`  TEXT " +
+        query = "CREATE TABLE BreakdownRecords ("+
+                "id	                INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                "DateTime	            TEXT,"+
+                "Acct_Num 	            TEXT,"+
+                "Status	                TEXT,"+
+                "job_no	                TEXT,"+
+                "Contact_No 	        TEXT,"+
+                "JOB_Source	            TEXT,"+
+                "Description	        TEXT,"+
+                "inbox_ref	            TEXT UNIQUE,"+
+                "last_timestamp         TEXT,"+
+                "completed_timestamp    TEXT"+
                 ");";
         db.execSQL(query);
-        query = "CREATE TABLE `Customers` (" +
-                "`_id`          INTEGER PRIMARY KEY," +
-                "`ACCT_NUM`     TEXT," +
-                "`WALK_ORDER`   TEXT," +
-                "`NAME`         TEXT,"+
-                "`ADDRESS`      TEXT," +
-                "`SUB`          TEXT," +
-                "`ECSC`         TEXT," +
-                "`TARIFF_COD`   TEXT," +
-                "`NO_OF_MET`    TEXT,"+
-                "`LATITUDE`     TEXT,"+
-                "`LONGITUDE`    TEXT,"+
-                "`GPS_ACCURACY` TEXT "+
+        query = "CREATE TABLE Customers (" +
+                "id          INTEGER PRIMARY KEY," +
+                "ACCT_NUM               TEXT,"+
+                "WALK_ORDER             TEXT,"+
+                "NAME                   TEXT,"+
+                "ADDRESS                TEXT,"+
+                "SUB                    TEXT,"+
+                "ECSC                   TEXT,"+
+                "TARIFF_COD             TEXT,"+
+                "NO_OF_MET              TEXT,"+
+                "LATITUDE               TEXT,"+
+                "LONGITUDE              TEXT,"+
+                "GPS_ACCURACY           TEXT "+
                 ");";
         db.execSQL(query);
-        query = "CREATE TABLE `PremisesID` (" +
-                "`PremisesID` TEXT PRIMARY KEY," +
-                "`ACCT_NUM` TEXT " +
+        query = "CREATE TABLE PremisesID (" +
+                "PremisesID TEXT PRIMARY KEY,"+
+                "ACCT_NUM               TEXT "+
                 ");";
         db.execSQL(query);
 
         query = "CREATE TABLE JobStatusChange (" +
-                "Job_Num            TEXT," +
-                "st_code            TEXT," +
-                "change_datetime    TEXT," +
-                "comment            TEXT," +
-                "device_timestamp   TEXT," +
-                "synchro_mobile_db  TEXT,"  +
-                "PRIMARY KEY (Job_Num,st_code,change_datetime)" +
+                "job_no                 TEXT,"+
+                "st_code                TEXT,"+
+                "change_datetime        TEXT,"+
+                "comment                TEXT,"+
+                "device_timestamp       TEXT,"+
+                "synchro_mobile_db      TEXT,"+
+                "PRIMARY KEY (job_no,st_code,change_datetime)" +
+                ");";
+        db.execSQL(query);
+
+
+        query = "CREATE TABLE JobCompletion ("+
+                "job_no                 TEXT,"+
+                "type_failure           TEXT,"+
+                "cause                  TEXT,"+
+                "detail_reason_code     TEXT,"+
+                "job_completed_datetime TEXT,"+
+                "job_completed_by       TEXT,"+
+                "st_code                TEXT,"+
+                "comment                TEXT,"+
+                "action_code            TEXT,"+
+                "device_timestamp       TEXT,"+
+                "synchro_mobile_db      TEXT,"+
+                "PRIMARY KEY (job_no)" +
                 ");";
         db.execSQL(query);
     }
@@ -81,41 +98,87 @@ public class DBHandler extends SQLiteOpenHelper
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
     {
-        db.execSQL("DROP TABLE IF EXISTS `BreakdownRecords`");
-        db.execSQL("DROP TABLE IF EXISTS `Customers`");
-        db.execSQL("DROP TABLE IF EXISTS `PremisesID`");
-        db.execSQL("DROP TABLE IF EXISTS `JobStatusChange`");
+        db.execSQL("DROP TABLE IF EXISTS BreakdownRecords");
+        db.execSQL("DROP TABLE IF EXISTS Customers");
+        db.execSQL("DROP TABLE IF EXISTS PremisesID");
+        db.execSQL("DROP TABLE IF EXISTS JobStatusChange");
+        db.execSQL("DROP TABLE IF EXISTS JobCompletion");
         onCreate(db);
     }
 
-    public void addJobStatusChangeRec(String Job_No,String st_code,String change_datetime, String comment)
+    public void addJobCompletionRec(JobCompletion jobcompletion_obj)
     {
         SQLiteDatabase db = getWritableDatabase();
 
-        Date callDayTime = new Date( System.currentTimeMillis());
-        String time = Globals.timeFormat.format(callDayTime);
-
         ContentValues values = new ContentValues();
-        values.put("Job_Num",Job_No);  //TODO : Change to job no
-        values.put("st_code",st_code);
-        values.put("change_datetime",change_datetime);
-        values.put("comment",comment);
-        values.put("synchro_mobile_db","0");
-        values.put("device_timestamp",time);
-        db.insertOrThrow( "JobStatusChange", null,values);
+        values.put("job_no",jobcompletion_obj.job_no);  //TODO : Change to job no
+        values.put("st_code",jobcompletion_obj.st_code);
+        values.put("job_completed_datetime",jobcompletion_obj.job_completed_datetime);
+        values.put("comment",jobcompletion_obj.comment);
+        values.put("detail_reason_code",jobcompletion_obj.detail_reason_code);
+        values.put("cause",jobcompletion_obj.cause);
+        values.put("type_failure",jobcompletion_obj.type_failure);
+        values.put("job_completed_by",jobcompletion_obj.job_completed_by);
+        values.put("action_code",jobcompletion_obj.action_code);
+        values.put("synchro_mobile_db",jobcompletion_obj.synchro_mobile_db);
+        values.put("device_timestamp",jobcompletion_obj.device_timestamp);
+        db.insert( "JobCompletion", null,values); //TODO : Use insertOrThrow
 
         db.close();
-
     }
 
-    public void addJobStatusChangeObj(JobChangeStatus jobchangestatus_obj)
+    public List<JobCompletion> getJobCompletionObjNotSync_List()
     {
-        addJobStatusChangeRec(
-                jobchangestatus_obj.job_no,
-                jobchangestatus_obj.st_code,
-                jobchangestatus_obj.change_datetime,
-                jobchangestatus_obj.comment
-                );
+        JobCompletion _jobcompletion_obj=null;
+        SQLiteDatabase db = getWritableDatabase();
+
+        List<JobCompletion> newJobCompletion = new LinkedList<JobCompletion>();
+
+        String query = "SELECT * " +
+                " FROM JobCompletion " +
+                " WHERE synchro_mobile_db=0;";//
+
+        Cursor c = db.rawQuery(query, null);
+
+        c.moveToFirst();
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
+                _jobcompletion_obj= new JobCompletion();
+                _jobcompletion_obj.job_no=c.getString(c.getColumnIndex("job_no"));
+                _jobcompletion_obj.st_code=c.getString(c.getColumnIndex("st_code"));
+                _jobcompletion_obj.job_completed_datetime=c.getString(c.getColumnIndex("job_completed_datetime"));
+                _jobcompletion_obj.comment=c.getString(c.getColumnIndex("comment"));
+                _jobcompletion_obj.detail_reason_code = c.getString(c.getColumnIndex("detail_reason_code"));
+                _jobcompletion_obj.cause = c.getString(c.getColumnIndex("cause"));
+                _jobcompletion_obj.type_failure = c.getString(c.getColumnIndex("type_failure"));
+                _jobcompletion_obj.job_completed_by = c.getString(c.getColumnIndex("job_completed_by"));
+                _jobcompletion_obj.action_code = c.getString(c.getColumnIndex("action_code"));
+                _jobcompletion_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
+                _jobcompletion_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
+                newJobCompletion.add(_jobcompletion_obj);
+            }
+            c.moveToNext();
+        }
+
+        return newJobCompletion;
+    }
+
+    public void addJobStatusChangeRec(JobChangeStatus jobchangestatus_obj)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("job_no",jobchangestatus_obj.job_no);  //TODO : Change to job no
+        values.put("st_code",jobchangestatus_obj.st_code);
+        values.put("change_datetime",jobchangestatus_obj.change_datetime);
+        values.put("comment",jobchangestatus_obj.comment);
+        values.put("synchro_mobile_db",jobchangestatus_obj.synchro_mobile_db);
+        values.put("device_timestamp",jobchangestatus_obj.device_timestamp);
+        db.insert( "JobStatusChange", null,values); //TODO : Use insertOrThrow
+
+        db.close();
     }
 
     public List<JobChangeStatus> getJobStatusChangeObjNotSync_List()
@@ -137,7 +200,7 @@ public class DBHandler extends SQLiteOpenHelper
             if (c.getString(0) != null)
             {
                 _jobchangestatus_obj= new JobChangeStatus();
-                _jobchangestatus_obj.job_no=c.getString(c.getColumnIndex("Job_Num"));
+                _jobchangestatus_obj.job_no=c.getString(c.getColumnIndex("job_no"));
                 _jobchangestatus_obj.st_code=c.getString(c.getColumnIndex("st_code"));
                 _jobchangestatus_obj.change_datetime=c.getString(c.getColumnIndex("change_datetime"));
                 _jobchangestatus_obj.comment=c.getString(c.getColumnIndex("comment"));
@@ -151,14 +214,28 @@ public class DBHandler extends SQLiteOpenHelper
         return newJobChangeStatus;
     }
 
-     public int UpdateSyncState_JobStatusChangeObj(JobChangeStatus jobchangestatus_obj,int iSynchro_mobile_dbValue)
+    public int UpdateSyncState_JobStatusChangeObj(JobChangeStatus jobchangestatus_obj,int iSynchro_mobile_dbValue)
     {
         int iResult=-1;
 
         SQLiteDatabase db = getWritableDatabase();
         String query = "UPDATE JobStatusChange SET synchro_mobile_db=" + iSynchro_mobile_dbValue +
-                " WHERE Job_Num= '" + jobchangestatus_obj.job_no + "' AND st_code='"+ jobchangestatus_obj.st_code + "' "+
+                " WHERE job_no= '" + jobchangestatus_obj.job_no + "' AND st_code='"+ jobchangestatus_obj.st_code + "' "+
                 " AND change_datetime='" + jobchangestatus_obj.change_datetime +"';";
+        db.execSQL(query);
+        db.close();
+
+        iResult=1; //Return Success
+        return iResult;
+    }
+
+    public int UpdateSyncState_JobCompletionObj(JobCompletion jobCompletion_obj,int iSynchro_mobile_dbValue)
+    {
+        int iResult=-1;
+
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "UPDATE JobCompletion SET synchro_mobile_db=" + iSynchro_mobile_dbValue +
+                " WHERE job_no= '" + jobCompletion_obj.job_no + "';";
         db.execSQL(query);
         db.close();
 
@@ -193,7 +270,38 @@ public class DBHandler extends SQLiteOpenHelper
 
         return _jobchangestatus_obj;
     }
+    public JobCompletion getJobCompletionObj(String job_no)
+    {
+        JobCompletion _jobcompletion_obj=null;
+        SQLiteDatabase db = getWritableDatabase();
 
+        String query = "SELECT * " +
+                " FROM JobCompletion " +
+                " WHERE job_no= '" + job_no +"';";
+
+        Cursor c = db.rawQuery(query, null);
+
+        c.moveToFirst();
+
+        if (!c.isAfterLast() && c.getString(0) != null) //AND and AND only && not &
+        {
+            _jobcompletion_obj= new JobCompletion();
+            _jobcompletion_obj.job_no=c.getString(c.getColumnIndex("job_no"));
+            _jobcompletion_obj.st_code=c.getString(c.getColumnIndex("st_code"));
+            _jobcompletion_obj.job_completed_datetime=c.getString(c.getColumnIndex("job_completed_datetime"));
+            _jobcompletion_obj.comment=c.getString(c.getColumnIndex("comment"));
+            _jobcompletion_obj.detail_reason_code = c.getString(c.getColumnIndex("detail_reason_code"));
+            _jobcompletion_obj.cause = c.getString(c.getColumnIndex("cause"));
+            _jobcompletion_obj.type_failure = c.getString(c.getColumnIndex("type_failure"));
+            _jobcompletion_obj.job_completed_by = c.getString(c.getColumnIndex("job_completed_by"));
+            _jobcompletion_obj.action_code = c.getString(c.getColumnIndex("action_code"));
+            _jobcompletion_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
+            _jobcompletion_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
+        }
+        c.close();
+
+        return _jobcompletion_obj;
+    }
     public void addBreakdown(String id,String ReceiveDateTime,String Acct_Num,String Description,String Job_No,String Phone_No, String JOB_Source)
     {
         SQLiteDatabase db = getWritableDatabase();
@@ -202,12 +310,12 @@ public class DBHandler extends SQLiteOpenHelper
 
             ContentValues values = new ContentValues();
             values.put("DateTime",ReceiveDateTime);
-            values.put("_Acct_Num",Acct_Num);
-            values.put("_Description",Description);
-            values.put("_Job_Num",Job_No);
-            values.put("_Contact_Num",Phone_No);
-            values.put("_JOB_Source",JOB_Source);
-            values.put("_Status",0);
+            values.put("Acct_Num",Acct_Num);
+            values.put("Description",Description);
+            values.put("job_no",Job_No);
+            values.put("Contact_No",Phone_No);
+            values.put("JOB_Source",JOB_Source);
+            values.put("Status",0);
             values.put("inbox_ref", id + " " +ReceiveDateTime); //TODO:No Exception will occur in db.insert for duplicate entries, they will be just omitted
 
             db.insert("BreakdownRecords",null,values); //TODO: Use insertOrthrow
@@ -239,8 +347,8 @@ public class DBHandler extends SQLiteOpenHelper
     {
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT COUNT(*) AS TOTAL," +
-                        "SUM(CASE _Status  WHEN "+Breakdown.Status_JOB_COMPLETED +" THEN 1 ELSE 0 END) AS COMPLETED," +
-                        "SUM(CASE _Status  WHEN "+Breakdown.Status_JOB_NOT_ATTENDED + " THEN 1 ELSE 0 END) AS UNATTAINED" +
+                        "SUM(CASE Status  WHEN "+Breakdown.Status_JOB_COMPLETED +" THEN 1 ELSE 0 END) AS COMPLETED," +
+                        "SUM(CASE Status  WHEN "+Breakdown.Status_JOB_NOT_ATTENDED + " THEN 1 ELSE 0 END) AS UNATTAINED" +
                         " FROM BreakdownRecords;";
 
         Cursor c = db.rawQuery(query, null);
@@ -338,19 +446,19 @@ public class DBHandler extends SQLiteOpenHelper
     public void importGPSdata(String sDBPath)
     {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("Delete From `Customers`;");
+        db.execSQL("Delete From Customers;");
 
         File dbfile = new File(sDBPath);//"/storage/emulated/0/GPS_HOMAGAMA AREA_P_08_08_2016.db"  ///storage/extSdCard/mydb.db
         SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
 
-        String query = "SELECT * FROM `GPS_DATA`;";
+        String query = "SELECT * FROM GPS_DATA;";
         Cursor cursor = db2.rawQuery(query, null);
 
         long i=0;
 
         cursor.moveToFirst();
 
-        String sql = "INSERT INTO Customers (_id, ACCT_NUM,NAME,ADDRESS,SUB,ECSC,TARIFF_COD,NO_OF_MET,LATITUDE,LONGITUDE,GPS_ACCURACY,WALK_ORDER) " +
+        String sql = "INSERT INTO Customers (id, ACCT_NUM,NAME,ADDRESS,SUB,ECSC,TARIFF_COD,NO_OF_MET,LATITUDE,LONGITUDE,GPS_ACCURACY,WALK_ORDER) " +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
         db.beginTransaction();
 
@@ -389,12 +497,12 @@ public class DBHandler extends SQLiteOpenHelper
     public void importPremisesID(String sDBPath)
     {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("Delete From `PremisesID`;");
+        db.execSQL("Delete From PremisesID;");
 
         File dbfile = new File(sDBPath);
         SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
 
-        String query = "SELECT * FROM `PREMISES_DATA`;";
+        String query = "SELECT * FROM PREMISES_DATA;";
         Cursor cursor = db2.rawQuery(query, null);
 
         long i=0;
@@ -430,7 +538,7 @@ public class DBHandler extends SQLiteOpenHelper
     public Cursor ReadBreakdownsToCursor(int iStatus)
     {
         SQLiteDatabase db = getWritableDatabase();
-        //String query = "SELECT `_id` as ID,`NAME`,`LONGITUDE`,`LATITUDE` FROM `Customers` limit 3;";
+        //String query = "SELECT id as ID,NAME,LONGITUDE,LATITUDE FROM Customers limit 3;";
 
         //TODO : Add the breakdowns without location data or account number to the info icon
 
@@ -438,21 +546,21 @@ public class DBHandler extends SQLiteOpenHelper
         if (iStatus==-1){/*All*/
             statusQuery="";
         }else if (iStatus==Breakdown.Status_JOB_COMPLETED){/*Completed*/
-            statusQuery=" AND `B`.`_Status` =  '1' ";
+            statusQuery=" AND B.Status =  '1' ";
         }else if (iStatus==Breakdown.Status_JOB_NOT_ATTENDED){/*"pending"*/
-            statusQuery=" AND (`B`.`_Status` <>  '1' OR  `B`.`_Status` IS NULL)";
+            statusQuery=" AND (B.Status <>  '1' OR  B.Status IS NULL)";
         }else{
-            statusQuery=" AND `B`.`_Status` =  '" + iStatus + "' ";
+            statusQuery=" AND B.Status =  '" + iStatus + "' ";
         }
 
-        String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`,C.`TARIFF_COD` as `TARIFF_COD`," +
-                " C.`LATITUDE` as `LATITUDE`, `B`.`_Status` as `Status`, " +
-                " `B`.`_Acct_Num` as `_Acct_Num`,`C`.`ADDRESS` as `ADDRESS`,   " +
-                " `B`.`_Description` as `Description`, `B`.`_Job_Num` as `_Job_Num`, `B`.`_Contact_Num` as  `_Contact_Num`,  " +
-                " `P`.`PremisesID` as `PremisesID` , `B`.`DateTime` as `DateTime1`, `B`.`completed_timestamp` as `DateTime2` " +
-                " FROM `BreakdownRecords` `B` " +
-                    " LEFT JOIN `Customers` `C` ON `C`.`ACCT_NUM` = `B`.`_Acct_Num` " +
-                    " LEFT JOIN `PremisesID` `P` ON `P`.`ACCT_NUM` = `B`.`_Acct_Num` " +
+        String query = "SELECT B.id AS id ,C.NAME as NAME,C.LONGITUDE as LONGITUDE,C.TARIFF_COD as TARIFF_COD," +
+                " C.LATITUDE as LATITUDE, B.Status as Status, " +
+                " B.Acct_Num as Acct_Num,C.ADDRESS as ADDRESS,   " +
+                " B.Description as Description, B.job_no as job_no, B.Contact_No as  Contact_No,  " +
+                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.completed_timestamp as DateTime2 " +
+                " FROM BreakdownRecords B " +
+                    " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
+                    " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
                 " WHERE 1 " + statusQuery  +
                 " ORDER BY DateTime DESC;";
 
@@ -473,19 +581,19 @@ public class DBHandler extends SQLiteOpenHelper
             if (c.getString(0) != null)
             {
                 Breakdown newBreakdown=new Breakdown();
-                newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
+                newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
                 newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
                 newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 newBreakdown.set_Status(c.getShort(c.getColumnIndex("Status")));
-                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
+                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("Acct_Num")));
                 newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                 newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
                 newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
                 newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
-                newBreakdown.set_Job_No(c.getString(c.getColumnIndex("_Job_Num")));
-                newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("_Contact_Num")));
+                newBreakdown.set_Job_No(c.getString(c.getColumnIndex("job_no")));
+                newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("Contact_No")));
                 newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
                 BreakdownsList.add(newBreakdown);
             }
@@ -499,7 +607,7 @@ public class DBHandler extends SQLiteOpenHelper
     public String getLastBreakdownID()
     {
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT `seq` FROM `sqlite_sequence` where `name`='BreakdownRecords' ;";
+        String query = "SELECT seq FROM sqlite_sequence where name='BreakdownRecords' ;";
 
         Cursor c = db.rawQuery(query, null);
 
@@ -517,8 +625,8 @@ public class DBHandler extends SQLiteOpenHelper
     {
         List<Breakdown> Breakdownslist = new LinkedList<Breakdown>();
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT `_id` as `ID`,`ACCT_NUM` as `_Acct_Num`,`NAME`,`ADDRESS`,`LONGITUDE`,`LATITUDE` " +
-                "FROM `Customers` limit 1000 ;";
+        String query = "SELECT id as ID,ACCT_NUM as Acct_Num,NAME,ADDRESS,LONGITUDE,LATITUDE " +
+                "FROM Customers limit 1000 ;";
 
         Cursor c = db.rawQuery(query, null);
 
@@ -533,7 +641,7 @@ public class DBHandler extends SQLiteOpenHelper
                 newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 newBreakdown.set_Status(0);
-                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
+                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("Acct_Num")));
                 newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description("No Description");
                 Breakdownslist.add(newBreakdown);
@@ -550,9 +658,9 @@ public class DBHandler extends SQLiteOpenHelper
         String sBreakdownID=null;
 
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT `B`.`_id` AS `_id` " +
-                " FROM `BreakdownRecords` `B`,`Customers` `C`  WHERE `B`.`_Acct_Num`='" + sACCT_NUM + "' " +
-                " AND `C`.`ACCT_NUM` = `B`.`_Acct_Num` " +
+        String query = "SELECT B.id AS id " +
+                " FROM BreakdownRecords B,Customers C  WHERE B.Acct_Num='" + sACCT_NUM + "' " +
+                " AND C.ACCT_NUM = B.Acct_Num " +
                 ";";
 
         Cursor c = db.rawQuery(query, null);
@@ -560,7 +668,7 @@ public class DBHandler extends SQLiteOpenHelper
 
         if (!c.isAfterLast() & c.getString(0) != null)
         {
-            sBreakdownID=c.getString(c.getColumnIndex("_id"));
+            sBreakdownID=c.getString(c.getColumnIndex("id"));
         }
         c.close();
         db.close();
@@ -570,15 +678,15 @@ public class DBHandler extends SQLiteOpenHelper
         Breakdown newBreakdown=null;
 
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`," +
-                " C.`LATITUDE` as `LATITUDE`, `B`.`_Status` as `Status`, " +
-                " `B`.`_Acct_Num` as `_Acct_Num`,`C`.`ADDRESS` as `ADDRESS`,   " +
-                " `B`.`_Description` as `Description`, `B`.`_Job_Num` as `_Job_Num`, `B`.`_Contact_Num` as  `_Contact_Num`,  " +
-                " `P`.`PremisesID` as `PremisesID` , `B`.`DateTime` as `DateTime1`, `B`.`completed_timestamp` as `DateTime2` " +
-                " FROM `BreakdownRecords` `B` " +
-                " LEFT JOIN `Customers` `C` ON `C`.`ACCT_NUM` = `B`.`_Acct_Num` " +
-                " LEFT JOIN `PremisesID` `P` ON `P`.`ACCT_NUM` = `B`.`_Acct_Num` " +
-                " WHERE `B`.`_id` = '" + sID + "';";
+        String query = "SELECT B.id AS id ,C.NAME as NAME,C.LONGITUDE as LONGITUDE," +
+                " C.LATITUDE as LATITUDE, B.Status as Status, " +
+                " B.Acct_Num as Acct_Num,C.ADDRESS as ADDRESS,   " +
+                " B.Description as Description, B.job_no as job_no, B.Contact_No as  Contact_No,  " +
+                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.completed_timestamp as DateTime2 " +
+                " FROM BreakdownRecords B " +
+                " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
+                " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
+                " WHERE B.id = '" + sID + "';";
 
         Cursor c = db.rawQuery(query, null);
 
@@ -587,18 +695,18 @@ public class DBHandler extends SQLiteOpenHelper
         if (!c.isAfterLast() && c.getString(0) != null) //AND and AND only && not &
         {
             newBreakdown=new Breakdown();
-            newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
+            newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
             newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
             newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
             newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
             newBreakdown.set_Status(c.getShort(c.getColumnIndex("Status")));
-            newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
+            newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("Acct_Num")));
             newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
             newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
             newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
             newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
-            newBreakdown.set_Job_No(c.getString(c.getColumnIndex("_Job_Num")));
-            newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("_Contact_Num")));
+            newBreakdown.set_Job_No(c.getString(c.getColumnIndex("job_no")));
+            newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("Contact_No")));
             newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
         }
         c.close();
@@ -619,18 +727,18 @@ public class DBHandler extends SQLiteOpenHelper
     private List<Breakdown> SearchInBreakdowns2(String word){
         String WORD = "%" + word.trim().toUpperCase() + "%";
 
-        String query = "SELECT `B`.`_id` AS `_id` ,`C`.`NAME` as `NAME`,C.`LONGITUDE` as `LONGITUDE`,C.`TARIFF_COD` as `TARIFF_COD`," +
-                " C.`LATITUDE` as `LATITUDE`, `B`.`_Status` as `Status`, " +
-                " `B`.`_Acct_Num` as `_Acct_Num`,`C`.`ADDRESS` as `ADDRESS`,   " +
-                " `B`.`_Description` as `Description`, `B`.`_Job_Num` as `_Job_Num`, `B`.`_Contact_Num` as  `_Contact_Num`,  " +
-                " `P`.`PremisesID` as `PremisesID` , `B`.`DateTime` as `DateTime1`, `B`.`completed_timestamp` as `DateTime2` " +
-                " FROM `BreakdownRecords` `B` " +
-                " LEFT JOIN `Customers` `C` ON `C`.`ACCT_NUM` = `B`.`_Acct_Num` " +
-                " LEFT JOIN `PremisesID` `P` ON `P`.`ACCT_NUM` = `B`.`_Acct_Num` " +
+        String query = "SELECT B.id AS id ,C.NAME as NAME,C.LONGITUDE as LONGITUDE,C.TARIFF_COD as TARIFF_COD," +
+                " C.LATITUDE as LATITUDE, B.Status as Status, " +
+                " B.Acct_Num as Acct_Num,C.ADDRESS as ADDRESS,   " +
+                " B.Description as Description, B.job_no as job_no, B.Contact_No as  Contact_No,  " +
+                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.completed_timestamp as DateTime2 " +
+                " FROM BreakdownRecords B " +
+                " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
+                " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
                 " WHERE " +
-                "`B`.`_Acct_Num` LIKE'" + WORD +"' OR " +
-                "`C`.`NAME` LIKE'" + WORD +"' OR " +
-                "`C`.`ADDRESS` LIKE'" + WORD +"'"+
+                "B.Acct_Num LIKE'" + WORD +"' OR " +
+                "C.NAME LIKE'" + WORD +"' OR " +
+                "C.ADDRESS LIKE'" + WORD +"'"+
                 " ORDER BY DateTime DESC;";
 
         SQLiteDatabase db = getWritableDatabase();
@@ -641,19 +749,19 @@ public class DBHandler extends SQLiteOpenHelper
                 c.moveToFirst();
                 do {
                     Breakdown newBreakdown = new Breakdown();
-                    newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
+                    newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
                     newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
                     newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                     newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                     newBreakdown.set_Status(c.getShort(c.getColumnIndex("Status")));
-                    newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
+                    newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("Acct_Num")));
                     newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                     newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
                     newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
                     newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                     newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
-                    newBreakdown.set_Job_No(c.getString(c.getColumnIndex("_Job_Num")));
-                    newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("_Contact_Num")));
+                    newBreakdown.set_Job_No(c.getString(c.getColumnIndex("job_no")));
+                    newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("Contact_No")));
                     newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
                     BreakdownsList.add(newBreakdown);
                 } while (c.moveToNext());
@@ -665,12 +773,12 @@ public class DBHandler extends SQLiteOpenHelper
 
     private List<Breakdown> SearchInCustomers2(String word){
         String WORD = "%" + word.trim().toUpperCase() + "%";
-        String query = "SELECT `_id`,`ACCT_NUM`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
-                "FROM `Customers` " +
+        String query = "SELECT id,ACCT_NUM,NAME,TARIFF_COD, ADDRESS,LONGITUDE,LATITUDE " +
+                "FROM Customers " +
                 "WHERE " +
-                "`ACCT_NUM` LIKE'" + WORD +"' OR " +
-                "`NAME` LIKE'" + WORD +"' OR " +
-                "`ADDRESS` LIKE'" + WORD +"';";
+                "ACCT_NUM LIKE'" + WORD +"' OR " +
+                "NAME LIKE'" + WORD +"' OR " +
+                "ADDRESS LIKE'" + WORD +"';";
         SQLiteDatabase db = getWritableDatabase();
         Cursor c = db.rawQuery(query, null);
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
@@ -679,7 +787,7 @@ public class DBHandler extends SQLiteOpenHelper
                 c.moveToFirst();
                 do {
                     Breakdown newBreakdown = new Breakdown();
-                    newBreakdown.set_id(c.getString(c.getColumnIndex("_id")));
+                    newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
                     newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
                     newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                     newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
@@ -709,8 +817,8 @@ public class DBHandler extends SQLiteOpenHelper
         //TODO : Fix Exception
         SQLiteDatabase db = getWritableDatabase();
 
-        String query = "SELECT `_id` as `ID`,`ACCT_NUM` as `_Acct_Num`,`NAME`,`TARIFF_COD`, `ADDRESS`,`LONGITUDE`,`LATITUDE` " +
-                "FROM `Customers` WHERE `ACCT_NUM`='" + sACCT_NUM +"';";
+        String query = "SELECT id as ID,ACCT_NUM as Acct_Num,NAME,TARIFF_COD, ADDRESS,LONGITUDE,LATITUDE " +
+                "FROM Customers WHERE ACCT_NUM='" + sACCT_NUM +"';";
 
         Cursor c = db.rawQuery(query, null);
 
@@ -725,7 +833,7 @@ public class DBHandler extends SQLiteOpenHelper
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                 newBreakdown.set_Status(0);
-                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("_Acct_Num")));
+                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("Acct_Num")));
                 newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description("No Description");
             }
@@ -747,10 +855,10 @@ public class DBHandler extends SQLiteOpenHelper
         String time = timeFormat.format(System.currentTimeMillis());
 
         SQLiteDatabase db = getWritableDatabase();
-        String query = "UPDATE `BreakdownRecords` SET `_Status`='" +
+        String query = "UPDATE BreakdownRecords SET Status='" +
                 String.valueOf(Breakdown_Status) +
-                "', `completed_timestamp`= '" +  time + "' " +
-                " WHERE `_id`='" +breakdown.get_id() + "';";
+                "', completed_timestamp= '" +  time + "' " +
+                " WHERE id='" +breakdown.get_id() + "';";
 
         db.execSQL(query);
         db.close();
