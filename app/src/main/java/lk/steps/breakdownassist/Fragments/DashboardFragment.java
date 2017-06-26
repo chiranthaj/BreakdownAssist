@@ -16,6 +16,7 @@ import org.eazegraph.lib.models.ValueLinePoint;
 import org.eazegraph.lib.models.ValueLineSeries;
 
 import lk.steps.breakdownassist.DBHandler;
+import lk.steps.breakdownassist.Globals;
 import lk.steps.breakdownassist.R;
 
 public class DashboardFragment extends Fragment {
@@ -28,7 +29,9 @@ public class DashboardFragment extends Fragment {
         mView = inflater.inflate( R.layout.fragment_dashboard,container,false);
         refreshCounts();
         DrawChart();
-        SetAttainedTime();
+
+        final TextView txtAvgTime = (TextView) mView.findViewById(R.id.txtAvgTime);
+        txtAvgTime.setText(Globals.AverageTime+" min");
         return mView;
     }
 
@@ -49,21 +52,6 @@ public class DashboardFragment extends Fragment {
     }
 
 
-    private void SetAttainedTime(){
-
-        final Handler handler = new Handler();
-        final TextView txtAvgTime = (TextView) mView.findViewById(R.id.txtAvgTime);
-        final Runnable r = new Runnable() {
-            public void run() {
-                DBHandler dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
-                long avgTime = dbHandler.getAttainedTime();
-                txtAvgTime.setText(avgTime+" min");
-                //handler.postDelayed(this, 1000*60*10);//Continue updating 10min
-            }
-        };
-
-        handler.postDelayed(r, 2000); //2Sec
-    }
 
     private void DrawChart(){
         DBHandler dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);

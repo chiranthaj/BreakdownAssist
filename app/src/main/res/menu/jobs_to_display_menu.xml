@@ -9,11 +9,11 @@
                     app:showAsAction="never" />
                 <item
                     android:id="@+id/menu_jobs_completed"
-                    android:title="Compeleted Jobs"
+                    android:title="Completed Jobs"
                     android:orderInCategory="2"
                     app:showAsAction="never"/>
                 <item android:id="@+id/menu_jobs_all"
-                    android:title="ALL Jobs"
+                    android:title="All Jobs"
                     android:orderInCategory="3"
                     app:showAsAction="never" />
         </group>

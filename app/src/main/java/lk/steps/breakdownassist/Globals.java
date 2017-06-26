@@ -15,6 +15,7 @@ public class Globals
     public static String AreaCode2="";
     public static String AreaCode3="";
     public static int NoOfAreaCodes=0;
+    public static long AverageTime = 0;
 
     public static void initAreaCodes(Context context)
     {
