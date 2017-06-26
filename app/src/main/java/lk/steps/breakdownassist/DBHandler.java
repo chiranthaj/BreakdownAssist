@@ -19,7 +19,7 @@ import java.util.Locale;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version =32;
+    private static final int Database_Version =55;
     private static final String Database_Name = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -36,7 +36,7 @@ public class DBHandler extends SQLiteOpenHelper
                 "`DateTime`	            TEXT," +
                 "`_Acct_Num`	        TEXT," +
                 "`_Status`	            TEXT," +
-                "`_Job_Num`	            TEXT," +
+                "`_Job_Num`	            TEXT," +  //TODO : Change to Job_no
                 "`_Contact_Num`	        TEXT," +
                 "`_JOB_Source`	        TEXT," +
                 "`_Description`	        TEXT, " +
@@ -65,6 +65,17 @@ public class DBHandler extends SQLiteOpenHelper
                 "`ACCT_NUM` TEXT " +
                 ");";
         db.execSQL(query);
+
+        query = "CREATE TABLE JobStatusChange (" +
+                "Job_Num            TEXT," +
+                "st_code            TEXT," +
+                "change_datetime    TEXT," +
+                "comment            TEXT," +
+                "device_timestamp   TEXT," +
+                "synchro_mobile_db  TEXT,"  +
+                "PRIMARY KEY (Job_Num,st_code,change_datetime)" +
+                ");";
+        db.execSQL(query);
     }
 
     @Override
@@ -73,7 +84,114 @@ public class DBHandler extends SQLiteOpenHelper
         db.execSQL("DROP TABLE IF EXISTS `BreakdownRecords`");
         db.execSQL("DROP TABLE IF EXISTS `Customers`");
         db.execSQL("DROP TABLE IF EXISTS `PremisesID`");
+        db.execSQL("DROP TABLE IF EXISTS `JobStatusChange`");
         onCreate(db);
+    }
+
+    public void addJobStatusChangeRec(String Job_No,String st_code,String change_datetime, String comment)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+
+        Date callDayTime = new Date( System.currentTimeMillis());
+        String time = Globals.timeFormat.format(callDayTime);
+
+        ContentValues values = new ContentValues();
+        values.put("Job_Num",Job_No);  //TODO : Change to job no
+        values.put("st_code",st_code);
+        values.put("change_datetime",change_datetime);
+        values.put("comment",comment);
+        values.put("synchro_mobile_db","0");
+        values.put("device_timestamp",time);
+        db.insertOrThrow( "JobStatusChange", null,values);
+
+        db.close();
+
+    }
+
+    public void addJobStatusChangeObj(JobChangeStatus jobchangestatus_obj)
+    {
+        addJobStatusChangeRec(
+                jobchangestatus_obj.job_no,
+                jobchangestatus_obj.st_code,
+                jobchangestatus_obj.change_datetime,
+                jobchangestatus_obj.comment
+                );
+    }
+
+    public List<JobChangeStatus> getJobStatusChangeObjNotSync_List()
+    {
+        JobChangeStatus _jobchangestatus_obj=null;
+        SQLiteDatabase db = getWritableDatabase();
+
+        List<JobChangeStatus> newJobChangeStatus = new LinkedList<JobChangeStatus>();
+
+        String query = "SELECT * " +
+                " FROM JobStatusChange " +
+                " WHERE synchro_mobile_db=0;";//
+
+        Cursor c = db.rawQuery(query, null);
+
+        c.moveToFirst();
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
+                _jobchangestatus_obj= new JobChangeStatus();
+                _jobchangestatus_obj.job_no=c.getString(c.getColumnIndex("Job_Num"));
+                _jobchangestatus_obj.st_code=c.getString(c.getColumnIndex("st_code"));
+                _jobchangestatus_obj.change_datetime=c.getString(c.getColumnIndex("change_datetime"));
+                _jobchangestatus_obj.comment=c.getString(c.getColumnIndex("comment"));
+                _jobchangestatus_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
+                _jobchangestatus_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
+                newJobChangeStatus.add(_jobchangestatus_obj);
+            }
+            c.moveToNext();
+        }
+
+        return newJobChangeStatus;
+    }
+
+     public int UpdateSyncState_JobStatusChangeObj(JobChangeStatus jobchangestatus_obj,int iSynchro_mobile_dbValue)
+    {
+        int iResult=-1;
+
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "UPDATE JobStatusChange SET synchro_mobile_db=" + iSynchro_mobile_dbValue +
+                " WHERE Job_Num= '" + jobchangestatus_obj.job_no + "' AND st_code='"+ jobchangestatus_obj.st_code + "' "+
+                " AND change_datetime='" + jobchangestatus_obj.change_datetime +"';";
+        db.execSQL(query);
+        db.close();
+
+        iResult=1; //Return Success
+        return iResult;
+    }
+    public JobChangeStatus getJobStatusChangeObj(String job_no,String st_code, String change_datetime)
+    {
+        JobChangeStatus _jobchangestatus_obj=null;
+        SQLiteDatabase db = getWritableDatabase();
+
+        String query = "SELECT * " +
+                " FROM JobStatusChange " +
+                " WHERE job_no= '" + job_no + "' AND st_code='"+ st_code + "' "+
+                " AND change_datetime='" + change_datetime +"';";
+
+        Cursor c = db.rawQuery(query, null);
+
+        c.moveToFirst();
+
+        if (!c.isAfterLast() && c.getString(0) != null) //AND and AND only && not &
+        {
+            _jobchangestatus_obj= new JobChangeStatus();
+            _jobchangestatus_obj.job_no=c.getString(c.getColumnIndex("job_no"));
+            _jobchangestatus_obj.st_code=c.getString(c.getColumnIndex("st_code"));
+            _jobchangestatus_obj.change_datetime=c.getString(c.getColumnIndex("change_datetime"));
+            _jobchangestatus_obj.comment=c.getString(c.getColumnIndex("comment"));
+            _jobchangestatus_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
+            _jobchangestatus_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
+        }
+        c.close();
+
+        return _jobchangestatus_obj;
     }
 
     public void addBreakdown(String id,String ReceiveDateTime,String Acct_Num,String Description,String Job_No,String Phone_No, String JOB_Source)
@@ -92,7 +210,7 @@ public class DBHandler extends SQLiteOpenHelper
             values.put("_Status",0);
             values.put("inbox_ref", id + " " +ReceiveDateTime); //TODO:No Exception will occur in db.insert for duplicate entries, they will be just omitted
 
-            db.insert("BreakdownRecords",null,values);
+            db.insert("BreakdownRecords",null,values); //TODO: Use insertOrthrow
         }
         catch (Exception e)
         {

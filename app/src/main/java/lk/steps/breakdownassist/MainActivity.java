@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.design.widget.Snackbar;
@@ -116,6 +117,9 @@ public class MainActivity extends AppCompatActivity
 
         //delay 1000ms, repeat in 5000ms
         timer.schedule(myTimerTask, 1000, 5000);
+
+        //startService(new Intent(getBaseContext(), BackgroundService.class));
+
 
         Globals.initAreaCodes(getApplicationContext());
 
@@ -299,6 +303,11 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        else if(id == R.id.action_Test_API){
+            Intent intent = new Intent(this, TestAPI.class);
             startActivity(intent);
             return true;
         }
