@@ -21,9 +21,6 @@ public class TestAPI extends AppCompatActivity {
     JobCompletionRESTService myJobCompletionRESTService;
     DBHandler dbHandler;
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
