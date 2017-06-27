@@ -118,8 +118,7 @@ public class MainActivity extends AppCompatActivity
         //delay 1000ms, repeat in 5000ms
         timer.schedule(myTimerTask, 1000, 5000);
 
-        //startService(new Intent(getBaseContext(), BackgroundService.class));
-
+        startService(new Intent(getBaseContext(), BackgroundService.class));
 
         Globals.initAreaCodes(getApplicationContext());
 
@@ -403,7 +402,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
-        handler.postDelayed(r, 2000); //2Sec
+        handler.postDelayed(r, 5000); //2Sec
     }
 
 }

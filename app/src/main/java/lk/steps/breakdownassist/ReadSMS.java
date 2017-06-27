@@ -51,8 +51,8 @@ public class ReadSMS {
                 String sAddress = cursor.getString(1);
                 String sFullMessage = cursor.getString(3);
                 Date callDayTime = new Date(Long.parseLong(cursor.getString(2)));
-                SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
-                String time = timeFormat.format(callDayTime);
+                //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
+                String time = Globals.timeFormat.format(callDayTime);
                 //String sNextID =getNextID(context);
                 String sJob_No = extractJobNo(sFullMessage);
                 String sAcct_num = extractAccountNo(sFullMessage);

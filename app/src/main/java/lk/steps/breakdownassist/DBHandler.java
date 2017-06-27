@@ -562,7 +562,7 @@ public class DBHandler extends SQLiteOpenHelper
                     " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
                     " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
                 " WHERE 1 " + statusQuery  +
-                " ORDER BY DateTime DESC;";
+                " ORDER BY DateTime DESC, Acct_Num ASC;";
 
         Cursor c = db.rawQuery(query, null);
 
