@@ -562,7 +562,7 @@ public class DBHandler extends SQLiteOpenHelper
                     " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
                     " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
                 " WHERE 1 " + statusQuery  +
-                " ORDER BY DateTime DESC;";
+                " ORDER BY DateTime DESC, Acct_Num ASC;";
 
         Cursor c = db.rawQuery(query, null);
 
@@ -851,8 +851,8 @@ public class DBHandler extends SQLiteOpenHelper
     public int UpdateBreakdownStatus(Breakdown breakdown,int Breakdown_Status)
     {// TODO : Maintain to two tables, one for Current status, one for status changed with all the status changes list with timesatamp
         int iResult=-1;
-        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/d h:m:s a");
-        String time = timeFormat.format(System.currentTimeMillis());
+        //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/d h:m:s a");
+        String time = Globals.timeFormat.format(System.currentTimeMillis());
 
         SQLiteDatabase db = getWritableDatabase();
         String query = "UPDATE BreakdownRecords SET Status='" +

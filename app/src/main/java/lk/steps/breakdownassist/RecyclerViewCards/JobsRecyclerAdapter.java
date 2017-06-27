@@ -12,11 +12,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
+import lk.steps.breakdownassist.Globals;
 import lk.steps.breakdownassist.R;
 
 
@@ -50,7 +53,7 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
 
         holder.acc_no.setText(dbList.get(position).get_Acct_Num());
         holder.job_no.setText(dbList.get(position).get_Job_No());
-        holder.received_date_time.setText(dbList.get(position).get_Received_Time());
+        holder.received_date_time.setText(Globals.parseDate(dbList.get(position).get_Received_Time()));
 
         holder.name.setText(dbList.get(position).get_Name());
         holder.address.setText(dbList.get(position).get_ADDRESS());
@@ -58,7 +61,7 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
         if(dbList.get(position).get_Completed_Time() == null){
             holder.completed_date_time.setText("Unattained job");
         }else{
-            holder.completed_date_time.setText(dbList.get(position).get_Completed_Time());
+            holder.completed_date_time.setText(Globals.parseDate(dbList.get(position).get_Completed_Time()));
         }
         String lat = dbList.get(position).get_LATITUDE();
         if(lat==null){
@@ -136,5 +139,7 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
             //Toast.makeText(JobsRecyclerAdapter.context, "you have clicked Row " + getAdapterPosition(), Toast.LENGTH_LONG).show();
         }
     }
+
+
 }
 
