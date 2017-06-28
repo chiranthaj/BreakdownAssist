@@ -1,14 +1,14 @@
 package lk.steps.breakdownassist;
 
-
+import android.*;
+import android.app.ActionBar;
 import android.app.Dialog;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
-import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -23,10 +23,18 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.GregorianCalendar;
+
 import lk.steps.breakdownassist.Fragments.GmapFragment;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.Modules.DirectionFinder;
@@ -328,7 +336,7 @@ public  class JobView {
             txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
-        
+
         //Failure Type Spinner
         final Spinner spinner_type = (Spinner) dialog.findViewById(R.id.spinner_failure_type);
         spinner_type.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
@@ -388,21 +396,40 @@ public  class JobView {
             }
         });
 
+        final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
+        //Spinner
+        final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
+        spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row,R.id.textView, Failure.CompletedComments));
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
+                if(position==0){
+                    etComment.setText("", TextView.BufferType.EDITABLE);
+                }else {
+                    etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
         ImageButton btnCompleted = (ImageButton) dialog.findViewById(R.id.btnCompleted);
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*String fault_type = spinner_type.getSelectedItem().toString();
                 String fault_type = spinner_type.getSelectedItem().toString();
-                String fault_cause = spinner_cause.getSelectedItem().toString();
-                String fault_description = spinner_description.getSelectedItem().toString();
-                Log.d("REASON",fault_type+","+fault_cause+","+fault_description);
+                String fault_type = spinner_type.getSelectedItem().toString();
+*/
+                JobCompletion jobcompletionRec=new JobCompletion(breakdown.get_Job_No(),
+                        "T",GetSelectedDateTime(dialog),etComment.getText().toString(),"SUPLOK","CUSFLT","SMBRDN","completedby","OTHERF");
 
-                //Toast.makeText(fragment.getActivity().getApplicationContext(),
-                //        "DateTime="+GetSelectedDateTime(dialog),Toast.LENGTH_LONG).show();
-                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        "C",GetSelectedDateTime(dialog),"test101");
-                UpdateJobStatusChange(fragment,jobStatusChangeRec, breakdown,Breakdown.Status_JOB_COMPLETED);
-                ChangeMarker(fragment);//Change Maker as completed
+                UpdateCompletedJob(fragment,jobcompletionRec, breakdown);
+                //Log.d("Reason ",spinner1.getSelectedItem().toString());
+
                 dialog.dismiss();
                 //TODO : Use an Undo option
             }
@@ -419,17 +446,33 @@ public  class JobView {
         dialog.show();
         return dialog;
     }
-    
+
     private static void UpdateJobStatusChange(Fragment fragment, JobChangeStatus jobchangestatus, Breakdown breakdown,int iStatus) {
         DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
         dbHandler.addJobStatusChangeRec(jobchangestatus);
         dbHandler.UpdateBreakdownStatus(breakdown,iStatus);
         if (fragment instanceof JobListFragment) {
-            //JobListFragment.RefreshListView(fragment);
-
+            JobListFragment JobFrag=(JobListFragment) fragment;
+            JobFrag.RefreshListView(fragment);
+        } else if (fragment instanceof GmapFragment) {
+            GmapFragment GmapFrag = (GmapFragment) fragment;
+            GmapFrag.RefreshJobsFromDB();
         }
+        dbHandler.close();
     }
-
+    private static void UpdateCompletedJob(Fragment fragment, JobCompletion jobcompletion, Breakdown breakdown) {
+        DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
+        dbHandler.addJobCompletionRec(jobcompletion);
+        dbHandler.UpdateBreakdownStatus(breakdown,Breakdown.Status_JOB_COMPLETED);
+        if (fragment instanceof JobListFragment) {
+            JobListFragment JobFrag=(JobListFragment) fragment;
+            JobFrag.RefreshListView(fragment);
+        } else if (fragment instanceof GmapFragment) {
+            GmapFragment GmapFrag = (GmapFragment) fragment;
+            GmapFrag.RefreshJobsFromDB();
+        }
+        dbHandler.close();
+    }
     private static void getDirections(final Fragment fragment, LatLng origin, LatLng destination) {
         //TODO : Exception when current location is not available
         try {
@@ -441,7 +484,7 @@ public  class JobView {
         }
     }
 
-    
+
     private static void SetCauseSpinners(Fragment fragment,Spinner spinner_type,Spinner spinner_cause, Spinner spinner_description){
         int type = spinner_type.getSelectedItemPosition();
         if(type == 0 | type == 1 ){
@@ -525,17 +568,4 @@ public  class JobView {
     }
 
 
-    private static void ChangeMarker(final Fragment fragment){
-       // final FragmentManager fm = fragment.getFragmentManager();
-        //fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(), MainActivity.MAP_FRAGMENT_TAG).commit();
-        new Handler().postDelayed(new Runnable() {
-            public void run() {
-               // Fragment fragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
-                if (fragment instanceof GmapFragment) {
-                    GmapFragment GmapFrag = (GmapFragment) fragment;
-                    GmapFrag.RefreshJobsFromDB();
-                }
-            }
-        }, 2000);
-    }
 }

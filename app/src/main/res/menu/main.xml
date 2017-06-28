@@ -14,7 +14,11 @@
         android:title="Search"
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="collapseActionView|ifRoom" />-->
-
+    <item
+        android:id="@+id/action_Add_Test_Breakdowns"
+        android:orderInCategory="99"
+        android:title="Add Test Breakdowns"
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_Test_API"
         android:orderInCategory="99"

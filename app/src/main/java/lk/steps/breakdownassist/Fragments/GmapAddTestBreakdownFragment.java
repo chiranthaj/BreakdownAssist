@@ -25,6 +25,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -174,12 +177,15 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
         //send to main activity to update the status after the user confirmation
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         marker.showInfoWindow();
+
         return true;
     }
 
+
+
     @Override
     public void onInfoWindowClick(Marker marker) {
-        String message = "Add as a Breakdown ?" ;
+        String message = "Do you want to create a Test Breakdown which is having a job no with current date and time ?" ;
         marker.hideInfoWindow();
         final Marker selectedMarker =marker;  //to access in Override Methods
         final Breakdown selectedBreakdown=(Breakdown) mBreakdown.get(selectedMarker); //Calling from Harshmap by giving the Marker Ref
@@ -191,6 +197,9 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
                     {//TODO : Use Enum class to to have Breakdownstatus.Done like thing
                         dbHandler.AddTestBreakdownObj(selectedBreakdown,getActivity().getApplicationContext());
                         //TODO : Use an Undo option
+
+
+
                         Toast.makeText(getActivity().getApplicationContext()
                                 , "Added Breakdown"  + selectedBreakdown.get_Name() + ", Undo ? "
                                 , Toast.LENGTH_SHORT).show();

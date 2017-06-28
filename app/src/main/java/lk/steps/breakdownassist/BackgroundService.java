@@ -87,7 +87,7 @@ public class BackgroundService extends Service {
 
                 @Override
                 public void failure(RetrofitError error) {
-                    Toast.makeText(getApplicationContext(), error.getMessage().toString(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"RetrofitError " + error.getMessage().toString(), Toast.LENGTH_LONG).show();
                     if (!error.isNetworkError()) {
                         dbHandler.UpdateSyncState_JobCompletionObj(obj,-5);  //To avoid retry again and again
                     }
