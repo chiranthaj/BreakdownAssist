@@ -4,13 +4,10 @@ import android.*;
 import android.app.ActionBar;
 import android.app.Dialog;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
-import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
@@ -411,10 +408,13 @@ public  class JobView {
             public void onClick(View v) {
                 Toast.makeText(fragment.getActivity().getApplicationContext(),
                         "DateTime="+GetSelectedDateTime(dialog),Toast.LENGTH_LONG).show();
-                //UpdateBreakDown(fragment, breakdown,Breakdown.Status_JOB_COMPLETED);
+
+                JobCompletion jobcompletionRec=new JobCompletion(breakdown.get_Job_No(),
+                        "D",GetSelectedDateTime(dialog),"test comment","Reason","Cause","failurety","compby","actcode");
+                UpdateCompletedJob(fragment,jobcompletionRec, breakdown,Breakdown.Status_JOB_COMPLETED);
                 //Log.d("Reason ",spinner1.getSelectedItem().toString());
 
-                ChangeMarker(fragment);//Change Maker as completed
+                //ChangeMarker(fragment);//Change Maker as completed
 
                 dialog.dismiss();
                 //TODO : Use an Undo option
@@ -439,8 +439,23 @@ public  class JobView {
         if (fragment instanceof JobListFragment) {
             JobListFragment.RefreshListView(fragment);
         }
+        if (fragment instanceof GmapFragment) {
+            GmapFragment GmapFrag = (GmapFragment) fragment;
+            GmapFrag.RefreshJobsFromDB();
+        }
     }
-
+    private static void UpdateCompletedJob(Fragment fragment, JobCompletion jobcompletion, Breakdown breakdown,int iStatus) {
+        DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
+        dbHandler.addJobCompletionRec(jobcompletion);
+        dbHandler.UpdateBreakdownStatus(breakdown,iStatus);
+        if (fragment instanceof JobListFragment) {
+            JobListFragment.RefreshListView(fragment);
+        }
+        if (fragment instanceof GmapFragment) {
+            GmapFragment GmapFrag = (GmapFragment) fragment;
+            GmapFrag.RefreshJobsFromDB();
+        }
+    }
     private static void getDirections(final Fragment fragment, LatLng origin, LatLng destination) {
         //TODO : Exception when current location is not available
         try {
@@ -537,18 +552,4 @@ public  class JobView {
     }
 
 
-    private static void ChangeMarker(Fragment fragment){
-        final FragmentManager fm;
-        fm = fragment.getFragmentManager();
-        fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(), MainActivity.MAP_FRAGMENT_TAG).commit();
-        new Handler().postDelayed(new Runnable() {
-            public void run() {
-                Fragment fragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
-                if (fragment instanceof GmapFragment) {
-                    GmapFragment GmapFrag = (GmapFragment) fragment;
-                    GmapFrag.RefreshJobsFromDB();
-                }
-            }
-        }, 2000);
-    }
 }
