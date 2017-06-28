@@ -81,7 +81,7 @@ public class Globals
     }
 
     public static String parseDate(String time) {
-        String str = null;
+        String str = "-";
         try {
             Date date = Globals.timeFormat.parse(time);
             str = Globals.timeFormat2.format(date);

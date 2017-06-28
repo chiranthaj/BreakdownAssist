@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -40,7 +41,7 @@ public class JobListFragment extends Fragment {
     private static View mView;
     private static DBHandler dbHandler;
     private static int iJobs_to_Display = Breakdown.Status_JOB_NOT_ATTENDED;
-    //private int JOB_STATUS;
+    private static RecyclerView mRecyclerView;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,6 +60,7 @@ public class JobListFragment extends Fragment {
         mView = inflater.inflate(R.layout.job_listview, container, false);
         dbHandler = new DBHandler(getActivity(), null, null, 1); //TODO : Close on exit
         RefreshListView(JobListFragment.this);
+
         return mView;
     }
 
@@ -120,7 +122,7 @@ public class JobListFragment extends Fragment {
 
     public static void RefreshListView(final Fragment fragment) {
         final ArrayList<Breakdown> BreakdownList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
-        final RecyclerView mRecyclerView = (RecyclerView) mView.findViewById(R.id.recycleview);
+        mRecyclerView = (RecyclerView) mView.findViewById(R.id.recycleview);
 
         mRecyclerView.setHasFixedSize(true);
 
@@ -275,6 +277,5 @@ public class JobListFragment extends Fragment {
          */
         void onCheckBox1Click(View view, int position);
     }
-
 
 }
