@@ -147,15 +147,11 @@ public class TestAPI extends AppCompatActivity {
     }
 
     public void PostCompletedJob(View view) {
-        JobCompletion myjobJobCompletion=new JobCompletion();
 
         EditText editTextJobNo= (EditText) findViewById(R.id.editTextJobNo);
-        EditText editTextJobStatus= (EditText) findViewById(R.id.editTextJobStatus);
-        myjobJobCompletion.job_no=editTextJobNo.getText().toString();//"J46/P/2017/06/20/1.1";
-        myjobJobCompletion.job_completed_datetime="2017-06-15T00:00:00";
-        myjobJobCompletion.st_code=editTextJobStatus.getText().toString();//"B";
-        myjobJobCompletion.comment="Test comment abcd";
 
+        JobCompletion myjobJobCompletion=new JobCompletion(editTextJobNo.getText().toString(),
+                "T","2017-06-15T00:00:00","test comment","SUPLOK","CUSFLT","SMBRDN","completedby","OTHERF");
 
         myJobCompletionRESTService.getService().addJob_CompletionRec(myjobJobCompletion, new Callback<JobCompletion>() {
             @Override

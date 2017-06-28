@@ -109,6 +109,7 @@ public class Failure {
             "Comment1",
             "Comment2",
             "Comment3",
+            "test",
             "Other",
     };
 
@@ -117,6 +118,7 @@ public class Failure {
             "Comment1",
             "Comment2",
             "Comment3",
+            "test",
             "Other",
     };
 
@@ -125,6 +127,16 @@ public class Failure {
             "Comment1",
             "Comment2",
             "Comment3",
+            "test",
+            "Other",
+    };
+
+    public static String[] CompletedComments = {
+            "Please select",
+            "Comment1",
+            "Comment2",
+            "Comment3",
+            "test",
             "Other",
     };
 }

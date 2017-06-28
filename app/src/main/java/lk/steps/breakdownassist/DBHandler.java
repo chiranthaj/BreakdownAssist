@@ -8,11 +8,14 @@ import android.content.Context;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -332,13 +335,23 @@ public class DBHandler extends SQLiteOpenHelper
     public int AddTestBreakdownObj(Breakdown breakdown,Context context)
     {
         int iResult=-1;
-        Date callDayTime = new Date( System.currentTimeMillis());
-        //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
-        String time = Globals.timeFormat.format(callDayTime);
+        Date myDayTime = new Date( System.currentTimeMillis());
+        String time = Globals.timeFormat.format(myDayTime);
         String sNextID =ReadSMS.getNextID(context);
         String sAcct_num=breakdown.get_Acct_Num();
 
-        addBreakdown("T " + sNextID,time,sAcct_num,"No Supply to the house","J99/Z/2999/12/12/99.9","0123456789","CEB_Test");
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(myDayTime);
+        int year = calendar.get(Calendar.YEAR);
+        //Add one to month {0 - 11}
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int hour =calendar.get(Calendar.HOUR_OF_DAY);
+        int minute =calendar.get(Calendar.MINUTE);
+        int second =calendar.get(Calendar.SECOND);
+
+        String job_no="T00/Z/" + ((year-2000)*100 +month)+ "/"+ day +"/"+hour+"/"+minute+"."+second;//"J00/Z/1706/12/12/99.9"
+        addBreakdown( "T " + sNextID,time,sAcct_num,"No Supply to the house",job_no, "0123456789","CEB_Test");
 
         iResult=1; //Return Success
         return iResult;

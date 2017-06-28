@@ -307,6 +307,11 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
             return true;
         }
+        else if(id == R.id.action_Add_Test_Breakdowns){
+            fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),
+                    MAP_ADDTestBREAKDOWN_FRAGMENT_TAG).addToBackStack(MAP_FRAGMENT_TAG).commit();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -335,10 +340,6 @@ public class MainActivity extends AppCompatActivity
             JobListFragment fragment = new JobListFragment();
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
-
-        } else if (id == R.id.nav_Test_BD_ADD) {
-            fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),
-                    MAP_ADDTestBREAKDOWN_FRAGMENT_TAG).addToBackStack(MAP_FRAGMENT_TAG).commit();
         } else if (id == R.id.nav_sync_sms_inbox) {
             Toast.makeText(this, "Please wait.. This will take some time to complete", Toast.LENGTH_LONG).show();
             ReadSMS.SyncSMSInbox(this);

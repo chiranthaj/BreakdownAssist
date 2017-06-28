@@ -39,10 +39,6 @@
                     android:icon="@drawable/ic_settings_black_24dp"
                     android:title="Settings" />
                 <item
-                    android:id="@+id/nav_Test_BD_ADD"
-                    android:icon="@drawable/ic_cloud_download"
-                    android:title="Add Test Breakdowns" />
-                <item
                     android:id="@+id/about"
                     android:icon="@drawable/ic_report_black_24dp"
                     android:title="About" />

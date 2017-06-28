@@ -396,6 +396,26 @@ public  class JobView {
             }
         });
 
+        final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
+        //Spinner
+        final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
+        spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row,R.id.textView, Failure.CompletedComments));
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
+                if(position==0){
+                    etComment.setText("", TextView.BufferType.EDITABLE);
+                }else {
+                    etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
         ImageButton btnCompleted = (ImageButton) dialog.findViewById(R.id.btnCompleted);
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -404,15 +424,11 @@ public  class JobView {
                 String fault_type = spinner_type.getSelectedItem().toString();
                 String fault_type = spinner_type.getSelectedItem().toString();
 */
-                Toast.makeText(fragment.getActivity().getApplicationContext(),
-                        "DateTime="+GetSelectedDateTime(dialog),Toast.LENGTH_LONG).show();
-
                 JobCompletion jobcompletionRec=new JobCompletion(breakdown.get_Job_No(),
-                        "D",GetSelectedDateTime(dialog),"test comment","Reason","Cause","failurety","compby","actcode");
-                UpdateCompletedJob(fragment,jobcompletionRec, breakdown,Breakdown.Status_JOB_COMPLETED);
-                //Log.d("Reason ",spinner1.getSelectedItem().toString());
+                        "T",GetSelectedDateTime(dialog),etComment.getText().toString(),"SUPLOK","CUSFLT","SMBRDN","completedby","OTHERF");
 
-                //ChangeMarker(fragment);//Change Maker as completed
+                UpdateCompletedJob(fragment,jobcompletionRec, breakdown);
+                //Log.d("Reason ",spinner1.getSelectedItem().toString());
 
                 dialog.dismiss();
                 //TODO : Use an Undo option
@@ -436,24 +452,26 @@ public  class JobView {
         dbHandler.addJobStatusChangeRec(jobchangestatus);
         dbHandler.UpdateBreakdownStatus(breakdown,iStatus);
         if (fragment instanceof JobListFragment) {
-            JobListFragment.RefreshListView(fragment);
-        }
-        if (fragment instanceof GmapFragment) {
+            JobListFragment JobFrag=(JobListFragment) fragment;
+            JobFrag.RefreshListView(fragment);
+        } else if (fragment instanceof GmapFragment) {
             GmapFragment GmapFrag = (GmapFragment) fragment;
             GmapFrag.RefreshJobsFromDB();
         }
+        dbHandler.close();
     }
-    private static void UpdateCompletedJob(Fragment fragment, JobCompletion jobcompletion, Breakdown breakdown,int iStatus) {
+    private static void UpdateCompletedJob(Fragment fragment, JobCompletion jobcompletion, Breakdown breakdown) {
         DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
         dbHandler.addJobCompletionRec(jobcompletion);
-        dbHandler.UpdateBreakdownStatus(breakdown,iStatus);
+        dbHandler.UpdateBreakdownStatus(breakdown,Breakdown.Status_JOB_COMPLETED);
         if (fragment instanceof JobListFragment) {
-            JobListFragment.RefreshListView(fragment);
-        }
-        if (fragment instanceof GmapFragment) {
+            JobListFragment JobFrag=(JobListFragment) fragment;
+            JobFrag.RefreshListView(fragment);
+        } else if (fragment instanceof GmapFragment) {
             GmapFragment GmapFrag = (GmapFragment) fragment;
             GmapFrag.RefreshJobsFromDB();
         }
+        dbHandler.close();
     }
     private static void getDirections(final Fragment fragment, LatLng origin, LatLng destination) {
         //TODO : Exception when current location is not available
