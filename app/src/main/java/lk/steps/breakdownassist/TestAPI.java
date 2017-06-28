@@ -122,10 +122,6 @@ public class TestAPI extends AppCompatActivity {
     }
     public void stopSyncService(View view) {
         stopService(new Intent(getBaseContext(), BackgroundService.class));
-/*
-        Toast.makeText(getApplicationContext(),Integer.toString(ReadSMS.extractPriority("J41/H/2016/09/08/4.1, , N, 0112098250, D.R. GABADAGE, NO: 126/A,,STATION RD, ,HOMAGAMA., Supply fails only in house, 4108481003"))
-                , Toast.LENGTH_SHORT).show();*/
-
     }
 
     public void SaveCompletedJobtoDB(View view) {
