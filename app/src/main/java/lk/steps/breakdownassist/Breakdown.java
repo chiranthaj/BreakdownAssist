@@ -15,6 +15,11 @@ public class Breakdown {
     public static final int Status_JOB_ATTENDING = 3;
     public static final int Status_JOB_NOT_FOUND = 10;
 
+    public static final int Priority_URGENT = 1;
+    public static final int Priority_HIGH = 2;
+    public static final int Priority_NORMAL = 3;
+
+
 
     private String _id;
     private String _Received_Time;

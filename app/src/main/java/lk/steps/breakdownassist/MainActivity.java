@@ -249,8 +249,7 @@ public class MainActivity extends AppCompatActivity
                     Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
                     if (currentFragment instanceof GmapFragment) {
                         GmapFragment GmapFrag = (GmapFragment) currentFragment;
-                        Marker CreatedMarker = GmapFrag.AddBreakDownToMap(BreakdownsList.get(0),
-                                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                        Marker CreatedMarker = GmapFrag.AddBreakDownToMap(BreakdownsList.get(0));
                         if (CreatedMarker != null) {
                             GmapFrag.mMap.animateCamera(CameraUpdateFactory.newLatLng(CreatedMarker.getPosition()));
                             CreatedMarker.showInfoWindow();

@@ -61,6 +61,7 @@ import lk.steps.breakdownassist.Failure;
 import lk.steps.breakdownassist.JobView;
 import lk.steps.breakdownassist.Globals;
 import lk.steps.breakdownassist.ManagePermissions;
+import lk.steps.breakdownassist.MapMarker;
 import lk.steps.breakdownassist.Modules.DirectionFinder;
 import lk.steps.breakdownassist.Modules.DirectionFinderListener;
 import lk.steps.breakdownassist.Modules.Route;
@@ -372,7 +373,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         });
     }
 //TODO: DO not show the normal dialog for marker click
-    public void AddCustomerLocationToMap(String Account_Num) {
+    /*public void AddCustomerLocationToMap(String Account_Num) {
         Breakdown newBreakdown = dbHandler.ReadCustomer_by_ACCT_NUM(Account_Num);
         if (newBreakdown!=null){
             Marker CreatedMarker = AddBreakDownToMap(newBreakdown,
@@ -384,49 +385,14 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         }
         else
             Toast.makeText(getActivity().getApplicationContext(),"Search Failed, Try again",Toast.LENGTH_SHORT);
-    }
+    }*/
 
 
 
-    public Marker AddBreakDownToMap(Breakdown breakdown){
-        //TODO : Check this later @Jagath
-        /*int icon = R.drawable.factory;
-        if(breakdown.get_TARIFF_COD()=="11"){
-            icon = R.drawable.factory;
-        }
-        return AddBreakDownToMap(breakdown,icon);*/
 
-        BitmapDescriptor MarkerICON;//TODO : Depending on the priority,and current status mark the colour  and the shape
-        if (breakdown.get_Status()==Breakdown.Status_JOB_COMPLETED){
-            if(breakdown.get_TARIFF_COD() == null)
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house2);
-            else if(breakdown.get_TARIFF_COD().equals("11") | breakdown.get_TARIFF_COD().equals("13")) // Domestic
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house2);
-            else if(breakdown.get_TARIFF_COD().equals("21") | breakdown.get_TARIFF_COD().equals("22")) // Industrial
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.factory2);
-            else if(breakdown.get_TARIFF_COD().equals("31") | breakdown.get_TARIFF_COD().equals("32")) // General
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.shop2);
-            else
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house2);
-        }else{
-            if(breakdown.get_TARIFF_COD() == null)
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house);
-            else if(breakdown.get_TARIFF_COD().equals("11") | breakdown.get_TARIFF_COD().equals("13")) // Domestic
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house);
-            else if(breakdown.get_TARIFF_COD().equals("21") | breakdown.get_TARIFF_COD().equals("22")) // Industrial
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.factory);
-            else if(breakdown.get_TARIFF_COD().equals("31") | breakdown.get_TARIFF_COD().equals("32")) // General
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.shop);
-            else
-                MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.house);
-        }
-        return AddBreakDownToMap(breakdown,MarkerICON);
-
-    }
-
-    public Marker AddBreakDownToMap(Breakdown breakdown, BitmapDescriptor MarkerICON) /*int icon*/ {
+    public Marker AddBreakDownToMap(Breakdown breakdown) /*int icon*/ {
         Marker CreatedMarker=null;//For Return
-
+        BitmapDescriptor MarkerICON = MapMarker.GetBitmap(breakdown);
 
         Marker bdMarker;
         //To Avoid adding a same BD marker more than once to the map, may be check with the hash map
