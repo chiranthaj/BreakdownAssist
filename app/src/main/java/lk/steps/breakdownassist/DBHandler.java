@@ -353,8 +353,14 @@ public class DBHandler extends SQLiteOpenHelper
         int minute =calendar.get(Calendar.MINUTE);
         int second =calendar.get(Calendar.SECOND);
 
+        int iPriority=Breakdown.Priority_Normal;
+
+        //Double iAcc_num=Double.parseDouble(sAcct_num);
+
+        //iPriority=(iAcc_num%3)+1;
+
         String job_no="T00/Z/" + ((year-2000)*100 +month)+ "/"+ day +"/"+hour+"/"+minute+"."+second;//"J00/Z/1706/12/12/99.9"
-        addBreakdown( "T " + sNextID,time,sAcct_num,"No Supply to the house",job_no, "0123456789","CEB_Test",Breakdown.Priority_Normal);
+        addBreakdown( "T " + sNextID,time,sAcct_num,"No Supply to the house",job_no, "0123456789","CEB_Test",iPriority);
 
         iResult=1; //Return Success
         return iResult;
