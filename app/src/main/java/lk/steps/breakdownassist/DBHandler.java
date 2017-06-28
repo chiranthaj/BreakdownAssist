@@ -164,7 +164,7 @@ public class DBHandler extends SQLiteOpenHelper
             }
             c.moveToNext();
         }
-
+        c.close();
         return newJobCompletion;
     }
 
@@ -213,7 +213,7 @@ public class DBHandler extends SQLiteOpenHelper
             }
             c.moveToNext();
         }
-
+        c.close();
         return newJobChangeStatus;
     }
 
@@ -247,7 +247,7 @@ public class DBHandler extends SQLiteOpenHelper
     }
     public JobChangeStatus getJobStatusChangeObj(String job_no,String st_code, String change_datetime)
     {
-        JobChangeStatus _jobchangestatus_obj=null;
+        JobChangeStatus _jobChangeStatus_obj=null;
         SQLiteDatabase db = getWritableDatabase();
 
         String query = "SELECT * " +
@@ -261,17 +261,17 @@ public class DBHandler extends SQLiteOpenHelper
 
         if (!c.isAfterLast() && c.getString(0) != null) //AND and AND only && not &
         {
-            _jobchangestatus_obj= new JobChangeStatus();
-            _jobchangestatus_obj.job_no=c.getString(c.getColumnIndex("job_no"));
-            _jobchangestatus_obj.st_code=c.getString(c.getColumnIndex("st_code"));
-            _jobchangestatus_obj.change_datetime=c.getString(c.getColumnIndex("change_datetime"));
-            _jobchangestatus_obj.comment=c.getString(c.getColumnIndex("comment"));
-            _jobchangestatus_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
-            _jobchangestatus_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
+            _jobChangeStatus_obj= new JobChangeStatus();
+            _jobChangeStatus_obj.job_no=c.getString(c.getColumnIndex("job_no"));
+            _jobChangeStatus_obj.st_code=c.getString(c.getColumnIndex("st_code"));
+            _jobChangeStatus_obj.change_datetime=c.getString(c.getColumnIndex("change_datetime"));
+            _jobChangeStatus_obj.comment=c.getString(c.getColumnIndex("comment"));
+            _jobChangeStatus_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
+            _jobChangeStatus_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
         }
         c.close();
 
-        return _jobchangestatus_obj;
+        return _jobChangeStatus_obj;
     }
     public JobCompletion getJobCompletionObj(String job_no)
     {
