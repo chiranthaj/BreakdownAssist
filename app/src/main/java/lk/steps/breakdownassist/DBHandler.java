@@ -333,8 +333,8 @@ public class DBHandler extends SQLiteOpenHelper
     {
         int iResult=-1;
         Date callDayTime = new Date( System.currentTimeMillis());
-        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
-        String time = timeFormat.format(callDayTime);
+        //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
+        String time = Globals.timeFormat.format(callDayTime);
         String sNextID =ReadSMS.getNextID(context);
         String sAcct_num=breakdown.get_Acct_Num();
 
@@ -386,13 +386,11 @@ public class DBHandler extends SQLiteOpenHelper
         return avgTime;
     }
     public static long GetTimeDifference(String day1, String day2) {
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a", Locale.US);
-
+        //SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a", Locale.US);
         long duration = 0;
         try {
-            Date d1 = dateFormat.parse(day1);
-            Date d2 = dateFormat.parse(day2);
+            Date d1 = Globals.timeFormat.parse(day1);
+            Date d2 = Globals.timeFormat.parse(day2);
 
             duration = (d2.getTime() - d1.getTime()) / 1000 / 60 ; // In Minutes
         } catch (ParseException e) {
@@ -562,7 +560,7 @@ public class DBHandler extends SQLiteOpenHelper
                     " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
                     " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
                 " WHERE 1 " + statusQuery  +
-                " ORDER BY DateTime DESC;";
+                " ORDER BY DateTime DESC, Acct_Num ASC;";
 
         Cursor c = db.rawQuery(query, null);
 
@@ -851,8 +849,8 @@ public class DBHandler extends SQLiteOpenHelper
     public int UpdateBreakdownStatus(Breakdown breakdown,int Breakdown_Status)
     {// TODO : Maintain to two tables, one for Current status, one for status changed with all the status changes list with timesatamp
         int iResult=-1;
-        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/d h:m:s a");
-        String time = timeFormat.format(System.currentTimeMillis());
+        //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/d h:m:s a");
+        String time = Globals.timeFormat.format(System.currentTimeMillis());
 
         SQLiteDatabase db = getWritableDatabase();
         String query = "UPDATE BreakdownRecords SET Status='" +

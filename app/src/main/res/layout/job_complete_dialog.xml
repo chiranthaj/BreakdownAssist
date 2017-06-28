@@ -67,10 +67,10 @@
 
             <TextView
                 android:id="@+id/text1"
-                android:layout_width="250dp"
+                android:layout_width="150dp"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
-                android:text="Failure Type :"
+                android:text="Type :"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
                 android:textStyle="normal" />
@@ -90,9 +90,9 @@
 
             <TextView
                 android:id="@+id/text2"
-                android:layout_width="250dp"
+                android:layout_width="150dp"
                 android:layout_height="match_parent"
-                android:text="Failure Cause :"
+                android:text="Cause :"
                 android:gravity="center_vertical"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
@@ -113,9 +113,9 @@
 
             <TextView
                 android:id="@+id/text3"
-                android:layout_width="250dp"
+                android:layout_width="150dp"
                 android:layout_height="match_parent"
-                android:text="Failure Description :"
+                android:text="Description :"
                 android:gravity="center_vertical"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"

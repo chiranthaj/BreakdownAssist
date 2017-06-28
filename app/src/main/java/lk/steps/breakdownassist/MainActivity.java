@@ -118,31 +118,26 @@ public class MainActivity extends AppCompatActivity
         //delay 1000ms, repeat in 5000ms
         timer.schedule(myTimerTask, 1000, 5000);
 
-        //startService(new Intent(getBaseContext(), BackgroundService.class));
-
+        startService(new Intent(getBaseContext(), BackgroundService.class));
 
         Globals.initAreaCodes(getApplicationContext());
 
         fm = getFragmentManager();
         fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
-        Log.d("TEST", "0");
         if (savedInstanceState != null) {
-            Log.d("TEST", "1");
             String previousFragment = savedInstanceState.getString("CURRENT_FRAGMENT");
             if (previousFragment != null) {
-                Log.d("TEST", "2");
                 try {
                     Class mClass = Class.forName(previousFragment);
                     fm.beginTransaction().replace(R.id.content_frame, (Fragment) mClass.newInstance()).commit();
                 } catch (Exception e) {
-                    Log.d("TEST", "10");
                     e.printStackTrace();
                 }
-
-
             }
         }
         CalculateAttainedTime();
+        // Show the "What's New" screen once for each new release of the application
+        new WhatsNewScreen(this).show();
     }
 
     @Override
@@ -407,7 +402,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
-        handler.postDelayed(r, 2000); //2Sec
+        handler.postDelayed(r, 5000); //2Sec
     }
 
 }

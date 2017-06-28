@@ -40,6 +40,7 @@ import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.Modules.DirectionFinder;
 import lk.steps.breakdownassist.Modules.DirectionFinderListener;
 
+
 /**
  * Created by JagathPrasanga on 5/22/2017.
  */
@@ -58,12 +59,12 @@ public  class JobView {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        dialog.setCancelable(false);
+        //dialog.setCancelable(false);
 
         TextView txtJobno = (TextView) dialog.findViewById(R.id.jobno);
         txtJobno.setText(breakdown.get_Job_No().trim());
         TextView txtRecTime = (TextView) dialog.findViewById(R.id.received_date_time);
-        txtRecTime.setText("Received time : " + breakdown.get_Received_Time().trim());
+        txtRecTime.setText("Received time : " + Globals.parseDate(breakdown.get_Received_Time().trim()));
         TextView txtAcctNum = (TextView) dialog.findViewById(R.id.acctnum);
         txtAcctNum.setText("Acc. No. : "+breakdown.get_Acct_Num().trim());
         TextView txtName = (TextView) dialog.findViewById(R.id.name);
@@ -165,12 +166,11 @@ public  class JobView {
 
 
     private static void JobVisitedDialog(final Fragment fragment, final Breakdown breakdown){
-
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_visited_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        dialog.setCancelable(false);
+        //dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
@@ -201,9 +201,9 @@ public  class JobView {
         btnVisited.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobChangeStatus jobstatusChangeRec=new JobChangeStatus(breakdown.get_Job_No(),
+                JobChangeStatus jobStatusChangeRec=new JobChangeStatus(breakdown.get_Job_No(),
                         "V",GetSelectedDateTime(dialog),etComment.getText().toString());
-                UpdateJobStatusChange(fragment,jobstatusChangeRec, breakdown,Breakdown.Status_JOB_VISITED );
+                UpdateJobStatusChange(fragment,jobStatusChangeRec, breakdown,Breakdown.Status_JOB_VISITED );
                 dialog.dismiss();
             }
         });
@@ -218,12 +218,11 @@ public  class JobView {
     }
 
     private static void JobAttendingDialog(final Fragment fragment, final Breakdown breakdown){
-
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_attending_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        dialog.setCancelable(false);
+        //dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
@@ -253,9 +252,9 @@ public  class JobView {
         btnAttending.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobChangeStatus jobstatusChangeRec=new JobChangeStatus(breakdown.get_Job_No(),
+                JobChangeStatus jobStatusChangeRec=new JobChangeStatus(breakdown.get_Job_No(),
                         "A",GetSelectedDateTime(dialog),etComment.getText().toString());
-                UpdateJobStatusChange(fragment,jobstatusChangeRec, breakdown,Breakdown.Status_JOB_ATTENDING );
+                UpdateJobStatusChange(fragment,jobStatusChangeRec, breakdown,Breakdown.Status_JOB_ATTENDING );
                 dialog.dismiss();
             }
         });
@@ -270,12 +269,11 @@ public  class JobView {
     }
 
     private static void JobDoneDialog(final Fragment fragment, final Breakdown breakdown){
-
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_done_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        dialog.setCancelable(false);
+        //dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
@@ -307,9 +305,9 @@ public  class JobView {
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobChangeStatus jobstatusChangeRec=new JobChangeStatus(breakdown.get_Job_No(),
+                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
                         "D",GetSelectedDateTime(dialog),etComment.getText().toString());
-                UpdateJobStatusChange(fragment,jobstatusChangeRec, breakdown,Breakdown.Status_JOB_DONE );
+                UpdateJobStatusChange(fragment,jobStatusChangeRec, breakdown,Breakdown.Status_JOB_DONE );
                 dialog.dismiss();
             }
         });
@@ -327,19 +325,17 @@ public  class JobView {
 
 
     public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown){
-
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_complete_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        dialog.setCancelable(false);
-        //TODO : Use date time picker
+        //dialog.setCancelable(false);
+
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if(breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
-
 
         //Failure Type Spinner
         final Spinner spinner_type = (Spinner) dialog.findViewById(R.id.spinner_failure_type);
@@ -401,11 +397,13 @@ public  class JobView {
         });
 
         ImageButton btnCompleted = (ImageButton) dialog.findViewById(R.id.btnCompleted);
-
-        // if button is clicked, close the job_dialog dialog
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*String fault_type = spinner_type.getSelectedItem().toString();
+                String fault_type = spinner_type.getSelectedItem().toString();
+                String fault_type = spinner_type.getSelectedItem().toString();
+*/
                 Toast.makeText(fragment.getActivity().getApplicationContext(),
                         "DateTime="+GetSelectedDateTime(dialog),Toast.LENGTH_LONG).show();
 
@@ -432,6 +430,7 @@ public  class JobView {
         dialog.show();
         return dialog;
     }
+
     private static void UpdateJobStatusChange(Fragment fragment, JobChangeStatus jobchangestatus, Breakdown breakdown,int iStatus) {
         DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
         dbHandler.addJobStatusChangeRec(jobchangestatus);
@@ -466,7 +465,6 @@ public  class JobView {
             e.printStackTrace();
         }
     }
-
 
 
     private static void SetCauseSpinners(Fragment fragment,Spinner spinner_type,Spinner spinner_cause, Spinner spinner_description){

@@ -235,6 +235,7 @@ public class JobListFragment extends Fragment {
                         });
 
         mRecyclerView.addOnItemTouchListener(swipeTouchListener);
+        Log.d("RefreshListView","done");
     }
 
 
