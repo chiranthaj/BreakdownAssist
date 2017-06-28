@@ -22,7 +22,7 @@ import java.util.Locale;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version =64;
+    private static final int Database_Version =65;
     private static final String Database_Name = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -41,6 +41,7 @@ public class DBHandler extends SQLiteOpenHelper
                 "Status	                TEXT,"+
                 "job_no	                TEXT,"+
                 "Contact_No 	        TEXT,"+
+                "Priority    	        INTEGER,"+
                 "JOB_Source	            TEXT,"+
                 "Description	        TEXT,"+
                 "inbox_ref	            TEXT UNIQUE,"+
@@ -305,7 +306,8 @@ public class DBHandler extends SQLiteOpenHelper
 
         return _jobcompletion_obj;
     }
-    public void addBreakdown(String id,String ReceiveDateTime,String Acct_Num,String Description,String Job_No,String Phone_No, String JOB_Source)
+    public void addBreakdown(String id,String ReceiveDateTime,String Acct_Num,String Description,
+                             String Job_No,String Phone_No, String JOB_Source,int Priority)
     {
         SQLiteDatabase db = getWritableDatabase();
         //Using Try Catch to suppress duplicate entries warnings, when Synching Inbox
@@ -317,6 +319,7 @@ public class DBHandler extends SQLiteOpenHelper
             values.put("Description",Description);
             values.put("job_no",Job_No);
             values.put("Contact_No",Phone_No);
+            values.put("Priority",Priority);
             values.put("JOB_Source",JOB_Source);
             values.put("Status",0);
             values.put("inbox_ref", id + " " +ReceiveDateTime); //TODO:No Exception will occur in db.insert for duplicate entries, they will be just omitted
@@ -350,8 +353,14 @@ public class DBHandler extends SQLiteOpenHelper
         int minute =calendar.get(Calendar.MINUTE);
         int second =calendar.get(Calendar.SECOND);
 
+        int iPriority=Breakdown.Priority_Normal;
+
+        //Double iAcc_num=Double.parseDouble(sAcct_num);
+
+        //iPriority=(iAcc_num%3)+1;
+
         String job_no="T00/Z/" + ((year-2000)*100 +month)+ "/"+ day +"/"+hour+"/"+minute+"."+second;//"J00/Z/1706/12/12/99.9"
-        addBreakdown( "T " + sNextID,time,sAcct_num,"No Supply to the house",job_no, "0123456789","CEB_Test");
+        addBreakdown( "T " + sNextID,time,sAcct_num,"No Supply to the house",job_no, "0123456789","CEB_Test",iPriority);
 
         iResult=1; //Return Success
         return iResult;
@@ -376,7 +385,7 @@ public class DBHandler extends SQLiteOpenHelper
         db.close();
         return counts;
     }
-    public long getAttainedTime()
+    public long getAttendedTime()
     {
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT completed_timestamp AS Date2 ,DateTime AS Date1 FROM BreakdownRecords";
@@ -411,7 +420,7 @@ public class DBHandler extends SQLiteOpenHelper
         }
         return duration;
     }
-    /*public void getAttainedTime()
+    /*public void getAttendedTime()
     {
         Log.d("TEST","Start");
         SQLiteDatabase db = getWritableDatabase();
@@ -568,7 +577,8 @@ public class DBHandler extends SQLiteOpenHelper
                 " C.LATITUDE as LATITUDE, B.Status as Status, " +
                 " B.Acct_Num as Acct_Num,C.ADDRESS as ADDRESS,   " +
                 " B.Description as Description, B.job_no as job_no, B.Contact_No as  Contact_No,  " +
-                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.completed_timestamp as DateTime2 " +
+                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.completed_timestamp as DateTime2, " +
+                " B.Priority as Priority " +
                 " FROM BreakdownRecords B " +
                     " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
                     " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
@@ -605,6 +615,7 @@ public class DBHandler extends SQLiteOpenHelper
                 newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
                 newBreakdown.set_Job_No(c.getString(c.getColumnIndex("job_no")));
                 newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("Contact_No")));
+                newBreakdown.set_Priority(c.getInt(c.getColumnIndex("Priority")));
                 newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
                 BreakdownsList.add(newBreakdown);
             }
@@ -693,7 +704,8 @@ public class DBHandler extends SQLiteOpenHelper
                 " C.LATITUDE as LATITUDE, B.Status as Status, " +
                 " B.Acct_Num as Acct_Num,C.ADDRESS as ADDRESS,   " +
                 " B.Description as Description, B.job_no as job_no, B.Contact_No as  Contact_No,  " +
-                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.completed_timestamp as DateTime2 " +
+                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.completed_timestamp as DateTime2, " +
+                " B.Priority as Priority " +
                 " FROM BreakdownRecords B " +
                 " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
                 " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
@@ -718,6 +730,7 @@ public class DBHandler extends SQLiteOpenHelper
             newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
             newBreakdown.set_Job_No(c.getString(c.getColumnIndex("job_no")));
             newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("Contact_No")));
+            newBreakdown.set_Priority(c.getInt(c.getColumnIndex("Priority")));
             newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
         }
         c.close();
@@ -742,7 +755,8 @@ public class DBHandler extends SQLiteOpenHelper
                 " C.LATITUDE as LATITUDE, B.Status as Status, " +
                 " B.Acct_Num as Acct_Num,C.ADDRESS as ADDRESS,   " +
                 " B.Description as Description, B.job_no as job_no, B.Contact_No as  Contact_No,  " +
-                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.completed_timestamp as DateTime2 " +
+                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.completed_timestamp as DateTime2, " +
+                " B.Priority as Priority " +
                 " FROM BreakdownRecords B " +
                 " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
                 " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
@@ -773,6 +787,7 @@ public class DBHandler extends SQLiteOpenHelper
                     newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("Description")));
                     newBreakdown.set_Job_No(c.getString(c.getColumnIndex("job_no")));
                     newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("Contact_No")));
+                    newBreakdown.set_Priority(c.getInt(c.getColumnIndex("Priority")));
                     newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
                     BreakdownsList.add(newBreakdown);
                 } while (c.moveToNext());
@@ -810,6 +825,7 @@ public class DBHandler extends SQLiteOpenHelper
                     newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                     newBreakdown.set_Full_Description("-");
                     newBreakdown.set_Job_No("No breakdown entries found");
+                    newBreakdown.set_Priority(Breakdown.Priority_Not_Assigned);
                     newBreakdown.set_Contact_No("");
                     newBreakdown.set_PremisesID("");
                     BreakdownsList.add(newBreakdown);

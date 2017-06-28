@@ -57,10 +57,11 @@ public class ReadSMS {
                 String sJob_No = extractJobNo(sFullMessage);
                 String sAcct_num = extractAccountNo(sFullMessage);
                 String sPhone_No = extractPhoneNo(sFullMessage);
+                int iPriority=extractPriority(sFullMessage);
 
                 if (IsValidJobNo(sJob_No)) {// Added on 2017/05/22 to prevent irrelevant sms to add as a breakdown
                     DBHandler dbHandler = new DBHandler(context, null, null, 1);
-                    dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress);
+                    dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
                     dbHandler.close();
                 }
             }
@@ -163,6 +164,38 @@ public class ReadSMS {
             sPhoneNo = m.group(1);
         }
         return sPhoneNo;
+    }
+
+    public static int extractPriority(String sInputText)//To detect Priority N,U,V,H,L
+    {
+        String sPriority = "";
+        int iPriority = Breakdown.Priority_Normal;
+        String ProbableAreaCodesMask = "";
+
+        ProbableAreaCodesMask = ", ([NUVHL]),";
+
+        String patternString = ProbableAreaCodesMask;
+        Matcher m = Pattern.compile(patternString).matcher(sInputText);
+
+        if (m.find()) {
+            sPriority = m.group(1);
+        }
+
+        if (sPriority.equals("N")){
+            iPriority=Breakdown.Priority_Normal;
+        }else if (sPriority.equals("U")){
+            iPriority=Breakdown.Priority_Urgent;
+        }else if (sPriority.equals("V")){
+            iPriority=Breakdown.Priority_High;
+        }else if (sPriority.equals("H")){
+            iPriority=Breakdown.Priority_High;
+        }else if (sPriority.equals("L")){
+            iPriority=Breakdown.Priority_Normal;
+        }else {
+            iPriority=Breakdown.Priority_Normal;
+        }
+
+        return iPriority;
     }
 
 }

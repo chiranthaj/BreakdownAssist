@@ -21,6 +21,11 @@ public class Breakdown {
 
 
 
+    public static final int Priority_Normal = 3;
+    public static final int Priority_High = 2;
+    public static final int Priority_Urgent = 1;
+    public static final int Priority_Not_Assigned = 0;
+
     private String _id;
     private String _Received_Time;
     private String _Completed_Time;

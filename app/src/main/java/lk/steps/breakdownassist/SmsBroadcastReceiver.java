@@ -46,9 +46,10 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                 String sAcct_num=ReadSMS.extractAccountNo(smsBody);
                 String sJob_No=ReadSMS.extractJobNo(smsBody);
                 String sPhone_No=ReadSMS.extractPhoneNo(smsBody);
+                int iPriority=ReadSMS.extractPriority(smsBody);
 
                 DBHandler dbHandler = new DBHandler(context,null,null,1);
-                dbHandler.addBreakdown(sNextID,time,sAcct_num,smsBody,sJob_No,sPhone_No,address);
+                dbHandler.addBreakdown(sNextID,time,sAcct_num,smsBody,sJob_No,sPhone_No,address,iPriority);
                 String sIssuedBreadownID=dbHandler.getLastBreakdownID();
                 dbHandler.close();
 

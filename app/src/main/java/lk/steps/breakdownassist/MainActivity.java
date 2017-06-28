@@ -9,18 +9,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import android.database.Cursor;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -30,7 +25,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /*import com.arlib.floatingsearchview.FloatingSearchView;*/
@@ -39,7 +33,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -395,7 +388,7 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 try {
                     DBHandler dbHandler = new DBHandler(getAppContext(), null, null, 1);
-                    Globals.AverageTime = dbHandler.getAttainedTime();
+                    Globals.AverageTime = dbHandler.getAttendedTime();
                     //handler.postDelayed(this, 1000*60*10);//Continue updating 10min
                 } catch (Exception e) {
 
