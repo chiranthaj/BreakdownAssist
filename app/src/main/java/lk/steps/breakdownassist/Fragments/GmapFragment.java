@@ -367,7 +367,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             public void onInfoWindowClick(Marker marker) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
                 final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(marker));
-                JobView.DialogInfo(GmapFragment.this,selectedBreakdown,marker,getLastLocation());
+                JobView.DialogInfo(GmapFragment.this,selectedBreakdown,marker,getLastLocation(),0);
                 marker.hideInfoWindow();
             }
         });
@@ -581,7 +581,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         //Calling from Harshmap by giving the Marker Ref
         final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(marker));
 
-        JobView.DialogInfo(this,selectedBreakdown,marker,getLastLocation());
+        JobView.DialogInfo(this,selectedBreakdown,marker,getLastLocation(),0);
         marker.hideInfoWindow();
 
         return true;
