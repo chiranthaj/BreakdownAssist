@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:src="@drawable/cover2" />
+        android:src="@drawable/cover" />
 
     <TextView
         android:layout_width="match_parent"
