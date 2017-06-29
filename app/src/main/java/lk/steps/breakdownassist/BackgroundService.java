@@ -73,14 +73,17 @@ public class BackgroundService extends Service {
 
                 @Override
                 public void failure(RetrofitError error) {
-                    Toast.makeText(getApplicationContext()," RetrofitError " + error.getMessage().toString(), Toast.LENGTH_LONG).show();
+                    //Toast.makeText(getApplicationContext()," RetrofitError " + error.getMessage().toString(), Toast.LENGTH_LONG).show();
                     if (!error.isNetworkError()) {
                         if (error.getResponse().getStatus()==409){
                             dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 1); //Already record is there, may be due to timeout
                         }else {
                             dbHandler.UpdateSyncState_JobStatusChangeObj(obj, -5); //To avoid retry again and again
                         }
+                    }else if(error.isNetworkError()){
+                        dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0);//Not Uploaded due to no network
                     }
+
                 }
             });
         }
@@ -98,12 +101,18 @@ public class BackgroundService extends Service {
 
                 @Override
                 public void failure(RetrofitError error) {
-                    Toast.makeText(getApplicationContext(),"RetrofitError " + error.getMessage().toString(), Toast.LENGTH_LONG).show();
-                    if (error.getResponse().getStatus()==409){
-                        dbHandler.UpdateSyncState_JobCompletionObj(obj, 1); //Already record is there, may be due to timeout
-                    }else {
-                        dbHandler.UpdateSyncState_JobCompletionObj(obj, -5); //To avoid retry again and again
+                    //Toast.makeText(getApplicationContext(),"RetrofitError " + error.getMessage().toString(), Toast.LENGTH_LONG).show();
+                    if (!error.isNetworkError()) {
+                        if (error.getResponse().getStatus()==409){
+                            dbHandler.UpdateSyncState_JobCompletionObj(obj, 1); //Already record is there, may be due to timeout
+                        }else {
+                            dbHandler.UpdateSyncState_JobCompletionObj(obj, -5); //To avoid retry again and again
+                        }
+                    }else if(error.isNetworkError()){
+                        dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     }
+
+
                 }
             });
         }
