@@ -445,9 +445,9 @@ public class JobView {
             @Override
             public void onClick(View v) {
 
-                if (spinner_type.getSelectedItemPosition() > 0 &
+                /*if (spinner_type.getSelectedItemPosition() > 0 &
                         spinner_cause.getSelectedItemPosition() > 0 &
-                        spinner_description.getSelectedItemPosition() > 0) {
+                        spinner_description.getSelectedItemPosition() > 0) {*/
                     /*String type = spinner_type.getSelectedItem().toString();
                         String cause = spinner_cause.getSelectedItem().toString();
                     String description = spinner_description.getSelectedItem().toString();*/
@@ -456,10 +456,10 @@ public class JobView {
                             "SUPLOK", "CUSFLT", "SMBRDN", "completedby", "OTHERF");
                     UpdateCompletedJob(fragment, jobcompletionRec, breakdown);
                     dialog.dismiss();
-                } else {
+                /*} else {
                     Toast.makeText(fragment.getActivity().getApplicationContext(),
                             "Please provide feedback information..", Toast.LENGTH_LONG).show();
-                }
+                }*/
             }
         });
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
