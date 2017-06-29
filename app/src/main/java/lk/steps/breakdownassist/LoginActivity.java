@@ -216,7 +216,7 @@ public class LoginActivity extends AppCompatActivity  {
 
             try {
                 // Simulate network access.
-                Thread.sleep(100);
+                Thread.sleep(500);
             } catch (Exception e) {
                 return false;
             }
