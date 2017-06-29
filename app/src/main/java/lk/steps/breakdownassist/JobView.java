@@ -47,7 +47,7 @@ import lk.steps.breakdownassist.Modules.DirectionFinderListener;
 
 public  class JobView {
 
-    public static Dialog DialogInfo(final Fragment fragment, final Breakdown breakdown, final Marker marker, final Location currentLocation){
+    public static Dialog DialogInfo(final Fragment fragment, final Breakdown breakdown, final Marker marker, final Location currentLocation, final int position){
 
         if(breakdown == null){
             Toast.makeText(fragment.getActivity().getApplicationContext(),
@@ -82,6 +82,10 @@ public  class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (fragment instanceof JobListFragment) {
+                    JobListFragment jobListFragment=(JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown,position);
+                }
                 dialog.dismiss();
             }
         });
@@ -132,7 +136,7 @@ public  class JobView {
         btnVisted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobVisitedDialog(fragment,breakdown);
+                JobVisitedDialog(fragment,breakdown,position);
                 dialog.dismiss();
             }
         });
@@ -140,7 +144,7 @@ public  class JobView {
         btnAttending.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobAttendingDialog(fragment,breakdown);
+                JobAttendingDialog(fragment,breakdown,position);
                 dialog.dismiss();
             }
         });
@@ -148,7 +152,7 @@ public  class JobView {
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobDoneDialog(fragment,breakdown);
+                JobDoneDialog(fragment,breakdown,position);
                 dialog.dismiss();
             }
         });
@@ -156,7 +160,7 @@ public  class JobView {
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobCompleteDialog(fragment,breakdown);
+                JobCompleteDialog(fragment,breakdown,position);
                 dialog.dismiss();
             }
         });
@@ -165,7 +169,7 @@ public  class JobView {
     }
 
 
-    private static void JobVisitedDialog(final Fragment fragment, final Breakdown breakdown){
+    private static void JobVisitedDialog(final Fragment fragment, final Breakdown breakdown, final int position){
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_visited_dialog);
@@ -211,13 +215,17 @@ public  class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (fragment instanceof JobListFragment) {
+                    JobListFragment jobListFragment=(JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown,position);
+                }
                 dialog.dismiss();
             }
         });
         dialog.show();
     }
 
-    private static void JobAttendingDialog(final Fragment fragment, final Breakdown breakdown){
+    private static void JobAttendingDialog(final Fragment fragment, final Breakdown breakdown, final int position){
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_attending_dialog);
@@ -262,13 +270,17 @@ public  class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (fragment instanceof JobListFragment) {
+                    JobListFragment jobListFragment=(JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown,position);
+                }
                 dialog.dismiss();
             }
         });
         dialog.show();
     }
 
-    private static void JobDoneDialog(final Fragment fragment, final Breakdown breakdown){
+    private static void JobDoneDialog(final Fragment fragment, final Breakdown breakdown, final int position){
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_done_dialog);
@@ -315,6 +327,10 @@ public  class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (fragment instanceof JobListFragment) {
+                    JobListFragment jobListFragment=(JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown,position);
+                }
                 dialog.dismiss();
             }
         });
@@ -324,7 +340,7 @@ public  class JobView {
 
 
 
-    public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown){
+    public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown, final int position){
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_complete_dialog);
@@ -434,12 +450,15 @@ public  class JobView {
                 //TODO : Use an Undo option
             }
         });
-        ImageButton dialogButton_visited = (ImageButton) dialog.findViewById(R.id.btnCancel);
+        ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
         // if button is clicked, close the job_dialog dialog
-        dialogButton_visited.setOnClickListener(new View.OnClickListener() {
+        btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO : Use an Undo option
+                if (fragment instanceof JobListFragment) {
+                    JobListFragment jobListFragment=(JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown,position);
+                }
                 dialog.dismiss();
             }
         });
@@ -453,7 +472,8 @@ public  class JobView {
         dbHandler.UpdateBreakdownStatus(breakdown,iStatus);
         if (fragment instanceof JobListFragment) {
             JobListFragment JobFrag=(JobListFragment) fragment;
-            JobFrag.RefreshListView(fragment);
+            //JobFrag.CreateListView(fragment);
+            JobFrag.mAdapter.notifyDataSetChanged();
         } else if (fragment instanceof GmapFragment) {
             GmapFragment GmapFrag = (GmapFragment) fragment;
             GmapFrag.RefreshJobsFromDB();
@@ -466,7 +486,8 @@ public  class JobView {
         dbHandler.UpdateBreakdownStatus(breakdown,Breakdown.Status_JOB_COMPLETED);
         if (fragment instanceof JobListFragment) {
             JobListFragment JobFrag=(JobListFragment) fragment;
-            JobFrag.RefreshListView(fragment);
+            //JobFrag.CreateListView(fragment);
+            JobFrag.mAdapter.notifyDataSetChanged();
         } else if (fragment instanceof GmapFragment) {
             GmapFragment GmapFrag = (GmapFragment) fragment;
             GmapFrag.RefreshJobsFromDB();
