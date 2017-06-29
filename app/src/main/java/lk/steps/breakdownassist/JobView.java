@@ -45,13 +45,13 @@ import lk.steps.breakdownassist.Modules.DirectionFinderListener;
  * Created by JagathPrasanga on 5/22/2017.
  */
 
-public  class JobView {
+public class JobView {
 
-    public static Dialog DialogInfo(final Fragment fragment, final Breakdown breakdown, final Marker marker, final Location currentLocation, final int position){
+    public static Dialog DialogInfo(final Fragment fragment, final Breakdown breakdown, final Marker marker, final Location currentLocation, final int position) {
 
-        if(breakdown == null){
+        if (breakdown == null) {
             Toast.makeText(fragment.getActivity().getApplicationContext(),
-                    "Breakdown details not available..",Toast.LENGTH_LONG).show();
+                    "Breakdown details not available..", Toast.LENGTH_LONG).show();
             return null;
         }
 
@@ -66,13 +66,13 @@ public  class JobView {
         TextView txtRecTime = (TextView) dialog.findViewById(R.id.received_date_time);
         txtRecTime.setText("Received time : " + Globals.parseDate(breakdown.get_Received_Time().trim()));
         TextView txtAcctNum = (TextView) dialog.findViewById(R.id.acctnum);
-        txtAcctNum.setText("Acc. No. : "+breakdown.get_Acct_Num().trim());
+        txtAcctNum.setText("Acc. No. : " + breakdown.get_Acct_Num().trim());
         TextView txtName = (TextView) dialog.findViewById(R.id.name);
-        if(breakdown.get_Name() != null)
+        if (breakdown.get_Name() != null)
             txtName.setText(breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
 
         TextView txtPhoneNo = (TextView) dialog.findViewById(R.id.phoneno);
-        if(breakdown.get_Contact_No() != null)
+        if (breakdown.get_Contact_No() != null)
             txtPhoneNo.setText(breakdown.get_Contact_No().trim());
 
         TextView txtFullDescription = (TextView) dialog.findViewById(R.id.fulldescription);
@@ -83,37 +83,37 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment=(JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown,position);
+                    JobListFragment jobListFragment = (JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown, position);
                 }
                 dialog.dismiss();
             }
         });
 
         ImageButton btnNavigate = (ImageButton) dialog.findViewById(R.id.btnNavigate);
-        if(marker == null)btnNavigate.setEnabled(false);
+        if (marker == null) btnNavigate.setEnabled(false);
         btnNavigate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(fragment.getActivity().getApplicationContext(),"Press and Hold for Google Navigation !!",
+                Toast.makeText(fragment.getActivity().getApplicationContext(), "Press and Hold for Google Navigation !!",
                         Toast.LENGTH_SHORT).show();
-                if (currentLocation!=null){
-                    getDirections(fragment, new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()),marker.getPosition() );
-                }else{
+                if (currentLocation != null) {
+                    getDirections(fragment, new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), marker.getPosition());
+                } else {
                     Toast.makeText(fragment.getActivity().getApplicationContext(),
-                            "Current location is not available, Please try again",Toast.LENGTH_LONG).show();
+                            "Current location is not available, Please try again", Toast.LENGTH_LONG).show();
                 }
                 dialog.dismiss();
             }
         });
-        btnNavigate.setOnLongClickListener(new View.OnLongClickListener(){
+        btnNavigate.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Toast.makeText(fragment.getActivity().getApplicationContext(),"Opening Google Map Navigation...",
+                Toast.makeText(fragment.getActivity().getApplicationContext(), "Opening Google Map Navigation...",
                         Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
                         Uri.parse("http://maps.google.com/maps?daddr=" + marker.getPosition().latitude + "," +
-                                marker.getPosition().longitude ));
+                                marker.getPosition().longitude));
                 fragment.getActivity().startActivity(intent);
                 dialog.dismiss();
                 return true;
@@ -127,7 +127,7 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse("tel:"+breakdown.get_Contact_No().trim()));
+                intent.setData(Uri.parse("tel:" + breakdown.get_Contact_No().trim()));
                 fragment.getActivity().startActivity(intent);
             }
         });
@@ -136,7 +136,7 @@ public  class JobView {
         btnVisted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobVisitedDialog(fragment,breakdown,position);
+                JobVisitedDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -144,7 +144,7 @@ public  class JobView {
         btnAttending.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobAttendingDialog(fragment,breakdown,position);
+                JobAttendingDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -152,7 +152,7 @@ public  class JobView {
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobDoneDialog(fragment,breakdown,position);
+                JobDoneDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -160,7 +160,7 @@ public  class JobView {
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobCompleteDialog(fragment,breakdown,position);
+                JobCompleteDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -169,32 +169,33 @@ public  class JobView {
     }
 
 
-    private static void JobVisitedDialog(final Fragment fragment, final Breakdown breakdown, final int position){
+    private static void JobVisitedDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_visited_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         //dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if(breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
+        if (breakdown.get_Name() != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row,R.id.textView, Failure.VisitedComments));
+        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, Failure.VisitedComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
-                if(position==0){
+                if (position == 0) {
                     etComment.setText("", TextView.BufferType.EDITABLE);
-                }else {
+                } else {
                     etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
                 }
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
                 // TODO Auto-generated method stub
@@ -205,9 +206,9 @@ public  class JobView {
         btnVisited.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobChangeStatus jobStatusChangeRec=new JobChangeStatus(breakdown.get_Job_No(),
-                        "V",GetSelectedDateTime(dialog),etComment.getText().toString());
-                UpdateJobStatusChange(fragment,jobStatusChangeRec, breakdown,Breakdown.Status_JOB_VISITED );
+                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                        "V", GetSelectedDateTime(dialog), etComment.getText().toString());
+                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.Status_JOB_VISITED);
                 dialog.dismiss();
             }
         });
@@ -216,8 +217,8 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment=(JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown,position);
+                    JobListFragment jobListFragment = (JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown, position);
                 }
                 dialog.dismiss();
             }
@@ -225,32 +226,33 @@ public  class JobView {
         dialog.show();
     }
 
-    private static void JobAttendingDialog(final Fragment fragment, final Breakdown breakdown, final int position){
+    private static void JobAttendingDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_attending_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         //dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if(breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
+        if (breakdown.get_Name() != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row,R.id.textView, Failure.AttendingComments));
+        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, Failure.AttendingComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
-                if(position==0){
+                if (position == 0) {
                     etComment.setText("", TextView.BufferType.EDITABLE);
-                }else {
+                } else {
                     etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
                 }
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
                 // TODO Auto-generated method stub
@@ -260,9 +262,9 @@ public  class JobView {
         btnAttending.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobChangeStatus jobStatusChangeRec=new JobChangeStatus(breakdown.get_Job_No(),
-                        "A",GetSelectedDateTime(dialog),etComment.getText().toString());
-                UpdateJobStatusChange(fragment,jobStatusChangeRec, breakdown,Breakdown.Status_JOB_ATTENDING );
+                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                        "A", GetSelectedDateTime(dialog), etComment.getText().toString());
+                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.Status_JOB_ATTENDING);
                 dialog.dismiss();
             }
         });
@@ -271,8 +273,8 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment=(JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown,position);
+                    JobListFragment jobListFragment = (JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown, position);
                 }
                 dialog.dismiss();
             }
@@ -280,33 +282,34 @@ public  class JobView {
         dialog.show();
     }
 
-    private static void JobDoneDialog(final Fragment fragment, final Breakdown breakdown, final int position){
+    private static void JobDoneDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_done_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         //dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if(breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
+        if (breakdown.get_Name() != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
 
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row,R.id.textView, Failure.DoneComments));
+        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, Failure.DoneComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
-                if(position==0){
+                if (position == 0) {
                     etComment.setText("", TextView.BufferType.EDITABLE);
-                }else {
+                } else {
                     etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
                 }
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
                 // TODO Auto-generated method stub
@@ -318,8 +321,8 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        "D",GetSelectedDateTime(dialog),etComment.getText().toString());
-                UpdateJobStatusChange(fragment,jobStatusChangeRec, breakdown,Breakdown.Status_JOB_DONE );
+                        "D", GetSelectedDateTime(dialog), etComment.getText().toString());
+                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.Status_JOB_DONE);
                 dialog.dismiss();
             }
         });
@@ -328,8 +331,8 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment=(JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown,position);
+                    JobListFragment jobListFragment = (JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown, position);
                 }
                 dialog.dismiss();
             }
@@ -338,9 +341,7 @@ public  class JobView {
     }
 
 
-
-
-    public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown, final int position){
+    public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_complete_dialog);
@@ -348,34 +349,36 @@ public  class JobView {
         //dialog.setCancelable(false);
 
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if(breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No()+"\n"+breakdown.get_Name().trim()+"\n"+breakdown.get_ADDRESS().trim());
+        if (breakdown.get_Name() != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
         else
             txtView.setText(breakdown.get_Job_No());
 
         //Failure Type Spinner
         final Spinner spinner_type = (Spinner) dialog.findViewById(R.id.spinner_failure_type);
-        spinner_type.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row,R.id.textView, Failure.Type));
+        spinner_type.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, Failure.Type));
 
         final Spinner spinner_cause = (Spinner) dialog.findViewById(R.id.spinner_failure_cause);
         spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row,R.id.textView, Failure.Cause1));
+                R.layout.spinner_row, R.id.textView, Failure.Cause1));
 
         final Spinner spinner_description = (Spinner) dialog.findViewById(R.id.spinner_failure_description);
         spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row,R.id.textView, Failure.Description1));
+                R.layout.spinner_row, R.id.textView, Failure.Description1));
 
         spinner_type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
-                SetCauseSpinners(fragment,spinner_type,spinner_cause,spinner_description);
-                if(view != null){
+                SetCauseSpinners(fragment, spinner_type, spinner_cause, spinner_description);
+                if (view != null) {
                     TextView textView = (TextView) view.findViewById(R.id.textView);
-                    if(position>0)textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    if (position > 0)
+                        textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
                     else textView.setTextColor(Color.RED);
                 }
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
                 // TODO Auto-generated method stub
@@ -384,13 +387,15 @@ public  class JobView {
         spinner_cause.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
-                SetDescriptionSpinners(fragment,spinner_type,spinner_cause,spinner_description);
-                if(view != null){
+                SetDescriptionSpinners(fragment, spinner_type, spinner_cause, spinner_description);
+                if (view != null) {
                     TextView textView = (TextView) view.findViewById(R.id.textView);
-                    if(position>0)textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    if (position > 0)
+                        textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
                     else textView.setTextColor(Color.RED);
                 }
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
                 // TODO Auto-generated method stub
@@ -400,12 +405,14 @@ public  class JobView {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 //SetDescriptionSpinners(fragment,spinner_type,spinner_cause,spinner_description);
-                if(view != null){
+                if (view != null) {
                     TextView textView = (TextView) view.findViewById(R.id.textView);
-                    if(position>0)textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                    if (position > 0)
+                        textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
                     else textView.setTextColor(Color.RED);
                 }
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
                 // TODO Auto-generated method stub
@@ -415,18 +422,19 @@ public  class JobView {
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner.setAdapter( new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row,R.id.textView, Failure.CompletedComments));
+        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, Failure.CompletedComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
-                if(position==0){
+                if (position == 0) {
                     etComment.setText("", TextView.BufferType.EDITABLE);
-                }else {
+                } else {
                     etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
                 }
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
                 // TODO Auto-generated method stub
@@ -436,18 +444,22 @@ public  class JobView {
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*String fault_type = spinner_type.getSelectedItem().toString();
-                String fault_type = spinner_type.getSelectedItem().toString();
-                String fault_type = spinner_type.getSelectedItem().toString();
-*/
-                JobCompletion jobcompletionRec=new JobCompletion(breakdown.get_Job_No(),
-                        "T",GetSelectedDateTime(dialog),etComment.getText().toString(),"SUPLOK","CUSFLT","SMBRDN","completedby","OTHERF");
 
-                UpdateCompletedJob(fragment,jobcompletionRec, breakdown);
-                //Log.d("Reason ",spinner1.getSelectedItem().toString());
-
-                dialog.dismiss();
-                //TODO : Use an Undo option
+                if (spinner_type.getSelectedItemPosition() > 0 &
+                        spinner_cause.getSelectedItemPosition() > 0 &
+                        spinner_description.getSelectedItemPosition() > 0) {
+                    /*String type = spinner_type.getSelectedItem().toString();
+                        String cause = spinner_cause.getSelectedItem().toString();
+                    String description = spinner_description.getSelectedItem().toString();*/
+                    JobCompletion jobcompletionRec = new JobCompletion(breakdown.get_Job_No(),
+                            "T", GetSelectedDateTime(dialog), etComment.getText().toString(),
+                            "SUPLOK", "CUSFLT", "SMBRDN", "completedby", "OTHERF");
+                    UpdateCompletedJob(fragment, jobcompletionRec, breakdown);
+                    dialog.dismiss();
+                } else {
+                    Toast.makeText(fragment.getActivity().getApplicationContext(),
+                            "Please provide feedback information..", Toast.LENGTH_LONG).show();
+                }
             }
         });
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
@@ -456,8 +468,8 @@ public  class JobView {
             @Override
             public void onClick(View v) {
                 if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment=(JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown,position);
+                    JobListFragment jobListFragment = (JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown, position);
                 }
                 dialog.dismiss();
             }
@@ -466,12 +478,12 @@ public  class JobView {
         return dialog;
     }
 
-    private static void UpdateJobStatusChange(Fragment fragment, JobChangeStatus jobchangestatus, Breakdown breakdown,int iStatus) {
+    private static void UpdateJobStatusChange(Fragment fragment, JobChangeStatus jobchangestatus, Breakdown breakdown, int iStatus) {
         DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
         dbHandler.addJobStatusChangeRec(jobchangestatus);
-        dbHandler.UpdateBreakdownStatus(breakdown,iStatus);
+        dbHandler.UpdateBreakdownStatus(breakdown, iStatus);
         if (fragment instanceof JobListFragment) {
-            JobListFragment JobFrag=(JobListFragment) fragment;
+            JobListFragment JobFrag = (JobListFragment) fragment;
             //JobFrag.CreateListView(fragment);
             JobFrag.mAdapter.notifyDataSetChanged();
         } else if (fragment instanceof GmapFragment) {
@@ -480,12 +492,13 @@ public  class JobView {
         }
         dbHandler.close();
     }
+
     private static void UpdateCompletedJob(Fragment fragment, JobCompletion jobcompletion, Breakdown breakdown) {
         DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
         dbHandler.addJobCompletionRec(jobcompletion);
-        dbHandler.UpdateBreakdownStatus(breakdown,Breakdown.Status_JOB_COMPLETED);
+        dbHandler.UpdateBreakdownStatus(breakdown, Breakdown.Status_JOB_COMPLETED);
         if (fragment instanceof JobListFragment) {
-            JobListFragment JobFrag=(JobListFragment) fragment;
+            JobListFragment JobFrag = (JobListFragment) fragment;
             //JobFrag.CreateListView(fragment);
             JobFrag.mAdapter.notifyDataSetChanged();
         } else if (fragment instanceof GmapFragment) {
@@ -494,98 +507,99 @@ public  class JobView {
         }
         dbHandler.close();
     }
+
     private static void getDirections(final Fragment fragment, LatLng origin, LatLng destination) {
         //TODO : Exception when current location is not available
         try {
-            String sOrigin=String.valueOf(origin.latitude) + ","+ String.valueOf(origin.longitude);
-            String sDestination=String.valueOf(destination.latitude) + ","+ String.valueOf(destination.longitude);
-            new DirectionFinder((DirectionFinderListener)fragment,sOrigin , sDestination).execute();
+            String sOrigin = String.valueOf(origin.latitude) + "," + String.valueOf(origin.longitude);
+            String sDestination = String.valueOf(destination.latitude) + "," + String.valueOf(destination.longitude);
+            new DirectionFinder((DirectionFinderListener) fragment, sOrigin, sDestination).execute();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }
 
 
-    private static void SetCauseSpinners(Fragment fragment,Spinner spinner_type,Spinner spinner_cause, Spinner spinner_description){
+    private static void SetCauseSpinners(Fragment fragment, Spinner spinner_type, Spinner spinner_cause, Spinner spinner_description) {
         int type = spinner_type.getSelectedItemPosition();
-        if(type == 0 | type == 1 ){
+        if (type == 0 | type == 1) {
             spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row,R.id.textView, Failure.Cause1));
+                    R.layout.spinner_row, R.id.textView, Failure.Cause1));
             spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row,R.id.textView, Failure.Description1));
-        }else if(type == 2){
+                    R.layout.spinner_row, R.id.textView, Failure.Description1));
+        } else if (type == 2) {
             spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row,R.id.textView, Failure.Cause2));
+                    R.layout.spinner_row, R.id.textView, Failure.Cause2));
             spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row,R.id.textView, Failure.Description4));
-        }else if(type == 3){
+                    R.layout.spinner_row, R.id.textView, Failure.Description4));
+        } else if (type == 3) {
             spinner_cause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row,R.id.textView, Failure.Cause3));
+                    R.layout.spinner_row, R.id.textView, Failure.Cause3));
             spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row,R.id.textView, Failure.Description6));
+                    R.layout.spinner_row, R.id.textView, Failure.Description6));
         }
         spinner_cause.setSelection(0);
         spinner_description.setSelection(0);
 
-        if(type == 0){
+        if (type == 0) {
             spinner_cause.setEnabled(false);
             spinner_description.setEnabled(false);
-        }else{
+        } else {
             spinner_cause.setEnabled(true);
             spinner_description.setEnabled(true);
         }
     }
 
-    private static void SetDescriptionSpinners(Fragment fragment,Spinner spinner_type,Spinner spinner_cause, Spinner spinner_description){
+    private static void SetDescriptionSpinners(Fragment fragment, Spinner spinner_type, Spinner spinner_cause, Spinner spinner_description) {
         int type = spinner_type.getSelectedItemPosition();
         int cause = spinner_cause.getSelectedItemPosition();
 
-        if((type == 0 | type == 1 ) ){
-            if(cause == 1){
+        if ((type == 0 | type == 1)) {
+            if (cause == 1) {
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row,R.id.textView, Failure.Description1));
-            }else if(cause == 2){
+                        R.layout.spinner_row, R.id.textView, Failure.Description1));
+            } else if (cause == 2) {
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row,R.id.textView, Failure.Description2));
-            }else if(cause == 3){
+                        R.layout.spinner_row, R.id.textView, Failure.Description2));
+            } else if (cause == 3) {
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row,R.id.textView, Failure.Description3));
+                        R.layout.spinner_row, R.id.textView, Failure.Description3));
             }
-        }else if(type == 2){
-            if(cause == 1){
+        } else if (type == 2) {
+            if (cause == 1) {
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row,R.id.textView, Failure.Description4));
-            }else if(cause == 2){
+                        R.layout.spinner_row, R.id.textView, Failure.Description4));
+            } else if (cause == 2) {
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row,R.id.textView, Failure.Description5));
+                        R.layout.spinner_row, R.id.textView, Failure.Description5));
             }
-        }else if(type == 3){
-            if(cause == 1){
+        } else if (type == 3) {
+            if (cause == 1) {
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row,R.id.textView, Failure.Description6));
-            }else if(cause == 2){
+                        R.layout.spinner_row, R.id.textView, Failure.Description6));
+            } else if (cause == 2) {
                 spinner_description.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                        R.layout.spinner_row,R.id.textView, Failure.Description7));
+                        R.layout.spinner_row, R.id.textView, Failure.Description7));
             }
         }
         spinner_description.setSelection(0);
-        if(cause == 0){
+        if (cause == 0) {
             spinner_description.setEnabled(false);
-        }else{
+        } else {
             spinner_description.setEnabled(true);
         }
     }
 
 
-    private static String GetSelectedDateTime(Dialog view){
+    private static String GetSelectedDateTime(Dialog view) {
         DatePicker datePicker = (DatePicker) view.findViewById(R.id.datePicker);
         TimePicker timePicker = (TimePicker) view.findViewById(R.id.timePicker);
-        GregorianCalendar calendar=new GregorianCalendar(datePicker.getYear(),
-                datePicker.getMonth(),datePicker.getDayOfMonth(),
-                timePicker.getCurrentHour(),timePicker.getCurrentMinute());
+        GregorianCalendar calendar = new GregorianCalendar(datePicker.getYear(),
+                datePicker.getMonth(), datePicker.getDayOfMonth(),
+                timePicker.getCurrentHour(), timePicker.getCurrentMinute());
 
-        String text = ""+ Globals.timeFormat.format(calendar.getTime());
-        return  text;
+        String text = "" + Globals.timeFormat.format(calendar.getTime());
+        return text;
     }
 
 
