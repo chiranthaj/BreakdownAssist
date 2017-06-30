@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
+import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -36,29 +37,40 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                     smsMessage = SmsMessage.createFromPdu((byte[]) sms[i]);
                 }
 
-                String smsBody = smsMessage.getMessageBody().toString();
-                String address = smsMessage.getOriginatingAddress();
+                String sFullMessage = smsMessage.getMessageBody().toString();
+                String sAddress = smsMessage.getOriginatingAddress();
 
                 Date callDayTime = new Date(smsMessage.getTimestampMillis());
                 //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
                 String time = Globals.timeFormat.format(callDayTime);
-                String sNextID =ReadSMS.getNextID(context);
-                String sAcct_num=ReadSMS.extractAccountNo(smsBody);
-                String sJob_No=ReadSMS.extractJobNo(smsBody);
-                String sPhone_No=ReadSMS.extractPhoneNo(smsBody);
-                int iPriority=ReadSMS.extractPriority(smsBody);
+                String sID =ReadSMS.getNextID(context);
+                String sAcct_num=ReadSMS.extractAccountNo(sFullMessage);
+                String sJob_No=ReadSMS.extractJobNo(sFullMessage);
+                String sPhone_No=ReadSMS.extractPhoneNo(sFullMessage);
+                int iPriority=ReadSMS.extractPriority(sFullMessage);
 
-                DBHandler dbHandler = new DBHandler(context,null,null,1);
+                /*DBHandler dbHandler = new DBHandler(context,null,null,1);
                 dbHandler.addBreakdown(sNextID,time,sAcct_num,smsBody,sJob_No,sPhone_No,address,iPriority);
                 String sIssuedBreadownID=dbHandler.getLastBreakdownID();
-                dbHandler.close();
+                dbHandler.close();*/
 
-                //Informing the Map view about the new bd, then it can add it
-                Intent myintent=new Intent();
-                myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
+                if (ReadSMS.IsValidJobNo(sJob_No)) {// Added on 2017/06/30 to prevent irrelevant sms to add as a breakdown
+                    DBHandler dbHandler = new DBHandler(context, null, null, 1);
+                    dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
+                    String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
+                    dbHandler.close();
 
-                myintent.putExtra("_id",sIssuedBreadownID);
-                context.sendBroadcast(myintent);
+                    //Informing the Map view about the new bd, then it can add it
+                    Intent myintent=new Intent();
+                    myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
+
+                    myintent.putExtra("_id",sIssuedBreakdownID);
+                    context.sendBroadcast(myintent);
+                }else{
+                    Log.d("SmsReceiver","NOt a breakdown sms");
+                }
+
+
 
 /*                MediaPlayer mPlayer2;
                 mPlayer2= MediaPlayer.create(context, R.raw.crash);

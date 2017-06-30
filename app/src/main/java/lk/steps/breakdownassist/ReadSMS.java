@@ -74,7 +74,7 @@ public class ReadSMS {
         }
     }
 
-    private static boolean IsValidJobNo(String jobNo) {
+    public static boolean IsValidJobNo(String jobNo) {
         if (jobNo == null) return false;
         return jobNo.trim().length() >= 20;
     }
