@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,6 +13,17 @@
         android:id="@+id/login_form"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:scaleType="center"
+            app:srcCompat="@drawable/login" />
         <LinearLayout
             android:id="@+id/layout1"
             android:layout_width="match_parent"
@@ -19,7 +31,7 @@
             android:focusableInTouchMode="true"
             android:gravity="center"
             android:orientation="vertical"
-            android:layout_above="@+id/textView2"
+            android:layout_above="@+id/txt_app_name"
             android:layout_alignParentTop="true">
 
             <ImageView
@@ -40,6 +52,8 @@
                 android:orientation="vertical">
 
                 <android.support.design.widget.TextInputLayout
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -59,6 +73,8 @@
                 </android.support.design.widget.TextInputLayout>
 
                 <android.support.design.widget.TextInputLayout
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -80,17 +96,22 @@
 
                 </android.support.design.widget.TextInputLayout>
 
-                <Button
-                    android:id="@+id/email_sign_in_button"
-                    style="?android:textAppearanceSmall"
+
+                <mehdi.sakout.fancybuttons.FancyButton
+                    android:id="@+id/sign_in_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:textColor="@color/colorPrimaryDark"
-                    android:text="@string/action_login"
-                    android:textSize="25sp"
-                    android:textStyle="bold" />
-
+                    android:layout_marginTop="60dp"
+                    android:padding="8dp"
+                    fancy:fb_borderColor="@color/colorPrimaryDark"
+                    fancy:fb_borderWidth="2dp"
+                    fancy:fb_defaultColor="@android:color/transparent"
+                    fancy:fb_focusColor="@color/colorPrimaryDark"
+                    fancy:fb_iconPosition="left"
+                    fancy:fb_radius="30dp"
+                    fancy:fb_textSize="25sp"
+                    fancy:fb_text="@string/action_login"
+                    fancy:fb_textColor="@color/colorPrimaryDark" />
             </LinearLayout>
 
         </LinearLayout>
@@ -107,7 +128,7 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentStart="true"
-            android:id="@+id/textView2" />
+            android:id="@+id/txt_app_name" />
     </RelativeLayout>
 
     <ProgressBar

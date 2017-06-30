@@ -44,38 +44,39 @@ public class ReadSMS {
 
         String[] reqCols = new String[]{"_id", "address", "date_sent", "body"};
         Cursor cursor = context.getContentResolver().query(Uri.parse("content://sms/inbox"), reqCols, null, null, null);
+        if(cursor != null){
+            if (cursor.moveToFirst()) { // must check the result to prevent exception
+                do {
+                    String sID = cursor.getString(0);
+                    String sAddress = cursor.getString(1);
+                    String sFullMessage = cursor.getString(3);
+                    Date callDayTime = new Date(Long.parseLong(cursor.getString(2)));
+                    //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
+                    String time = Globals.timeFormat.format(callDayTime);
+                    //String sNextID =getNextID(context);
+                    String sJob_No = extractJobNo(sFullMessage);
+                    String sAcct_num = extractAccountNo(sFullMessage);
+                    String sPhone_No = extractPhoneNo(sFullMessage);
+                    int iPriority=extractPriority(sFullMessage);
 
-        if (cursor.moveToFirst()) { // must check the result to prevent exception
-            do {
-                String sID = cursor.getString(0);
-                String sAddress = cursor.getString(1);
-                String sFullMessage = cursor.getString(3);
-                Date callDayTime = new Date(Long.parseLong(cursor.getString(2)));
-                //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
-                String time = Globals.timeFormat.format(callDayTime);
-                //String sNextID =getNextID(context);
-                String sJob_No = extractJobNo(sFullMessage);
-                String sAcct_num = extractAccountNo(sFullMessage);
-                String sPhone_No = extractPhoneNo(sFullMessage);
-                int iPriority=extractPriority(sFullMessage);
-
-                if (IsValidJobNo(sJob_No)) {// Added on 2017/05/22 to prevent irrelevant sms to add as a breakdown
-                    DBHandler dbHandler = new DBHandler(context, null, null, 1);
-                    dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
-                    dbHandler.close();
+                    if (IsValidJobNo(sJob_No)) {// Added on 2017/05/22 to prevent irrelevant sms to add as a breakdown
+                        DBHandler dbHandler = new DBHandler(context, null, null, 1);
+                        dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
+                        dbHandler.close();
+                    }
                 }
+                while (cursor.moveToNext());
+            } else {
+                // empty box, no SMS
             }
-            while (cursor.moveToNext());
-        } else {
-            // empty box, no SMS
+            progress.dismiss();
+            cursor.close();
         }
-        progress.dismiss();
-        cursor.close();
     }
 
     private static boolean IsValidJobNo(String jobNo) {
         if (jobNo == null) return false;
-        return jobNo.length() >= 20;
+        return jobNo.trim().length() >= 20;
     }
 
     static String extractAccountNo(String sInputText)//To detect area codes part (41, 42 ) in the account no
@@ -174,27 +175,30 @@ public class ReadSMS {
 
         ProbableAreaCodesMask = ", ([NUVHL]),";
 
-        String patternString = ProbableAreaCodesMask;
-        Matcher m = Pattern.compile(patternString).matcher(sInputText);
+        try{
+            Matcher m = Pattern.compile(ProbableAreaCodesMask).matcher(sInputText);
 
-        if (m.find()) {
-            sPriority = m.group(1);
+            if (m.find()) {
+                sPriority = m.group(1);
+            }
+
+            if (sPriority.equals("N")){
+                iPriority=Breakdown.Priority_Normal;
+            }else if (sPriority.equals("U")){
+                iPriority=Breakdown.Priority_Urgent;
+            }else if (sPriority.equals("V")){
+                iPriority=Breakdown.Priority_High;
+            }else if (sPriority.equals("H")){
+                iPriority=Breakdown.Priority_High;
+            }else if (sPriority.equals("L")){
+                iPriority=Breakdown.Priority_Normal;
+            }else {
+                iPriority=Breakdown.Priority_Normal;
+            }
+
+        }catch(Exception e){
+
         }
-
-        if (sPriority.equals("N")){
-            iPriority=Breakdown.Priority_Normal;
-        }else if (sPriority.equals("U")){
-            iPriority=Breakdown.Priority_Urgent;
-        }else if (sPriority.equals("V")){
-            iPriority=Breakdown.Priority_High;
-        }else if (sPriority.equals("H")){
-            iPriority=Breakdown.Priority_High;
-        }else if (sPriority.equals("L")){
-            iPriority=Breakdown.Priority_Normal;
-        }else {
-            iPriority=Breakdown.Priority_Normal;
-        }
-
         return iPriority;
     }
 
