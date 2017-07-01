@@ -489,6 +489,16 @@ public class DBHandler extends SQLiteOpenHelper
         {
             if (cursor.getString(0) != null)
             {
+                String LATITUDE = "";
+                String LONGITUDE = "";
+                String GPS_ACCURACY = "";
+                if(!cursor.isNull(cursor.getColumnIndex("LATITUDE")))
+                    LATITUDE=cursor.getString(cursor.getColumnIndex("LATITUDE"));
+                if(!cursor.isNull(cursor.getColumnIndex("LONGITUDE")))
+                    LONGITUDE=cursor.getString(cursor.getColumnIndex("LONGITUDE"));
+                if(!cursor.isNull(cursor.getColumnIndex("LATITUDE")))
+                    GPS_ACCURACY=cursor.getString(cursor.getColumnIndex("GPS_ACCURACY"));
+
                 stmt.bindString(1, cursor.getString(cursor.getColumnIndex("_id")));
                 stmt.bindString(2, cursor.getString(cursor.getColumnIndex("ACCT_NUM")));
                 stmt.bindString(3, cursor.getString(cursor.getColumnIndex("NAME")));
@@ -497,9 +507,9 @@ public class DBHandler extends SQLiteOpenHelper
                 stmt.bindString(6, cursor.getString(cursor.getColumnIndex("ECSC")));
                 stmt.bindString(7, cursor.getString(cursor.getColumnIndex("TARIFF_COD")));
                 stmt.bindString(8, cursor.getString(cursor.getColumnIndex("NO_OF_MET")));
-                stmt.bindString(9, cursor.getString(cursor.getColumnIndex("LATITUDE")));
-                stmt.bindString(10, cursor.getString(cursor.getColumnIndex("LONGITUDE")));
-                stmt.bindString(11, cursor.getString(cursor.getColumnIndex("GPS_ACCURACY")));
+                stmt.bindString(9, LATITUDE);
+                stmt.bindString(10, LONGITUDE);
+                stmt.bindString(11, GPS_ACCURACY);
                 stmt.bindString(12, cursor.getString(cursor.getColumnIndex("WALK_ORDER")));
 
                 stmt.execute();
