@@ -26,7 +26,30 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
 
         if (intentExtras != null)
         {
-            Object[] sms = (Object[]) intentExtras.get(SMS_BUNDLE);
+            String msgBody = "";
+            String msg_from = "";
+            try {
+                Object[] pdus = (Object[]) intentExtras.get(SMS_BUNDLE);
+                SmsMessage[] msgs = new SmsMessage[pdus.length];
+
+                for (int i = 0; i < msgs.length; i++) {
+                    msgs[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
+                    msg_from = msgs[i].getOriginatingAddress();
+                    msgBody += msgs[i].getMessageBody();
+                }
+
+            } catch (Exception e) {
+                //                            Log.d("Exception caught",e.getMessage());
+            }
+
+
+
+
+
+
+
+
+            /*Object[] sms = (Object[]) intentExtras.get(SMS_BUNDLE);
             for (int i = 0; i < sms.length; ++i)
             {
                 SmsMessage smsMessage;
@@ -35,7 +58,10 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                     smsMessage = SmsMessage.createFromPdu((byte[]) sms[i], format);
                 } else {
                     smsMessage = SmsMessage.createFromPdu((byte[]) sms[i]);
-                }
+                }*/
+
+
+
 
                 String sFullMessage = smsMessage.getMessageBody().toString();
                 String sAddress = smsMessage.getOriginatingAddress();
@@ -75,7 +101,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
 /*                MediaPlayer mPlayer2;
                 mPlayer2= MediaPlayer.create(context, R.raw.crash);
                 mPlayer2.start();*/
-            }
+           // }
 
         }
     }

@@ -95,13 +95,19 @@
                         android:textSize="25sp" />
 
                 </android.support.design.widget.TextInputLayout>
-
+                <ProgressBar
+                    android:id="@+id/login_progress"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:visibility="invisible" />
 
                 <mehdi.sakout.fancybuttons.FancyButton
                     android:id="@+id/sign_in_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="60dp"
+                    android:layout_marginTop="40dp"
                     android:padding="8dp"
                     fancy:fb_borderColor="@color/colorPrimaryDark"
                     fancy:fb_borderWidth="2dp"
@@ -131,12 +137,6 @@
             android:id="@+id/txt_app_name" />
     </RelativeLayout>
 
-    <ProgressBar
-        android:id="@+id/login_progress"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone" />
+
 
 </LinearLayout>
