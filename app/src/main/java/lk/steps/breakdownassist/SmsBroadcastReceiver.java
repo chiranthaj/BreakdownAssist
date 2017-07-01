@@ -26,56 +26,57 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
 
         if (intentExtras != null)
         {
-            Object[] sms = (Object[]) intentExtras.get(SMS_BUNDLE);
-            for (int i = 0; i < sms.length; ++i)
-            {
-                SmsMessage smsMessage;
+
+            Object[] pdus = (Object[]) intentExtras.get(SMS_BUNDLE);
+            SmsMessage[] smsMessages = new SmsMessage[pdus.length];
+
+            String sFullMessage="";
+            String sAddress="";
+            Date smsDayTime=new Date();
+
+            for (int i = 0; i < pdus.length; ++i) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     String format = intentExtras.getString("format");
-                    smsMessage = SmsMessage.createFromPdu((byte[]) sms[i], format);
+                    smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i], format);
+                    sAddress = smsMessages[i].getOriginatingAddress();
+                    sFullMessage += smsMessages[i].getMessageBody();
+                    smsDayTime = new Date(smsMessages[i].getTimestampMillis());
                 } else {
-                    smsMessage = SmsMessage.createFromPdu((byte[]) sms[i]);
+                    smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
+                    sAddress = smsMessages[i].getOriginatingAddress();
+                    sFullMessage += smsMessages[i].getMessageBody();
+                    smsDayTime = new Date(smsMessages[i].getTimestampMillis());
                 }
+            }
 
-                String sFullMessage = smsMessage.getMessageBody().toString();
-                String sAddress = smsMessage.getOriginatingAddress();
-
-                Date callDayTime = new Date(smsMessage.getTimestampMillis());
-                //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
-                String time = Globals.timeFormat.format(callDayTime);
-                String sID =ReadSMS.getNextID(context);
-                String sAcct_num=ReadSMS.extractAccountNo(sFullMessage);
-                String sJob_No=ReadSMS.extractJobNo(sFullMessage);
-                String sPhone_No=ReadSMS.extractPhoneNo(sFullMessage);
-                int iPriority=ReadSMS.extractPriority(sFullMessage);
-
-                /*DBHandler dbHandler = new DBHandler(context,null,null,1);
-                dbHandler.addBreakdown(sNextID,time,sAcct_num,smsBody,sJob_No,sPhone_No,address,iPriority);
-                String sIssuedBreadownID=dbHandler.getLastBreakdownID();
-                dbHandler.close();*/
-
-                if (ReadSMS.IsValidJobNo(sJob_No)) {// Added on 2017/06/30 to prevent irrelevant sms to add as a breakdown
-                    DBHandler dbHandler = new DBHandler(context, null, null, 1);
-                    dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
-                    String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
-                    dbHandler.close();
-
-                    //Informing the Map view about the new bd, then it can add it
-                    Intent myintent=new Intent();
-                    myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
-
-                    myintent.putExtra("_id",sIssuedBreakdownID);
-                    context.sendBroadcast(myintent);
-                }else{
-                    Log.d("SmsReceiver","NOt a breakdown sms");
-                }
+            String time = Globals.timeFormat.format(smsDayTime);
+            String sID =ReadSMS.getNextID(context);
+            String sAcct_num=ReadSMS.extractAccountNo(sFullMessage);
+            String sJob_No=ReadSMS.extractJobNo(sFullMessage);
+            String sPhone_No=ReadSMS.extractPhoneNo(sFullMessage);
+            int iPriority=ReadSMS.extractPriority(sFullMessage);
 
 
+            if (ReadSMS.IsValidJobNo(sJob_No)) {// Added on 2017/06/30 to prevent irrelevant sms to add as a breakdown
+                DBHandler dbHandler = new DBHandler(context, null, null, 1);
+                dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
+                String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
+                dbHandler.close();
+
+                //Informing the Map view about the new bd, then it can add it
+                Intent myintent=new Intent();
+                myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
+
+                myintent.putExtra("_id",sIssuedBreakdownID);
+                context.sendBroadcast(myintent);
+            }else{
+                Log.d("SmsReceiver","NOt a breakdown sms");
+            }
 
 /*                MediaPlayer mPlayer2;
-                mPlayer2= MediaPlayer.create(context, R.raw.crash);
-                mPlayer2.start();*/
-            }
+            mPlayer2= MediaPlayer.create(context, R.raw.crash);
+            mPlayer2.start();*/
+
 
         }
     }
