@@ -3,11 +3,14 @@ package lk.steps.breakdownassist;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PersistableBundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -24,6 +27,8 @@ import android.widget.Toast;
 import java.util.List;
 
 import lk.steps.breakdownassist.FileExplorer.FileChooser;
+
+import static java.security.AccessController.getContext;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -276,19 +281,45 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent resultData) {
-        DBHandler dbHandler;
-        dbHandler = new DBHandler(this,null,null,1);
+
 
         if (requestCode == READ_REQUEST_CODE_CUSTOMER_DATA && resultCode == Activity.RESULT_OK) {
-            String curFileName = resultData.getStringExtra("GetFullPathFileName") ;
-            dbHandler.importGPSdata(curFileName);
-            Toast.makeText(this, "Finished uploading Customer data from "+ curFileName, Toast.LENGTH_SHORT).show();
+            final String curFileName = resultData.getStringExtra("GetFullPathFileName") ;
+            final ProgressDialog progressdialog = new ProgressDialog(SettingsActivity.this);
+            progressdialog.setMessage("Please Wait....");
+            progressdialog.setCancelable(false);
+            progressdialog.show();
+
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        DBHandler dbHandler;
+                        dbHandler = new DBHandler(SettingsActivity.this,null,null,1);
+                        dbHandler.importGPSdata(curFileName);
+                        dbHandler.close();
+                        progressdialog.dismiss();
+                        //Toast.makeText(SettingsActivity.this, "Finished uploading Customer data from "+ curFileName, Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            thread.start();
+
         }else if(requestCode == READ_REQUEST_CODE_PREMISES_DATA && resultCode == Activity.RESULT_OK) {
-            String curFileName = resultData.getStringExtra("GetFullPathFileName") ;
-            dbHandler.importPremisesID(curFileName);
-            Toast.makeText(this, "Finished uploading Premises data from "+ curFileName, Toast.LENGTH_SHORT).show();
+            try {
+                String curFileName = resultData.getStringExtra("GetFullPathFileName") ;
+                DBHandler dbHandler;
+                dbHandler = new DBHandler(this,null,null,1);
+                dbHandler.importPremisesID(curFileName);
+                Toast.makeText(this, "Finished uploading Premises data from "+ curFileName, Toast.LENGTH_SHORT).show();
+                dbHandler.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        dbHandler.close();
+
     }
 
     @Nullable

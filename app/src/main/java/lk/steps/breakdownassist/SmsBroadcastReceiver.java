@@ -28,6 +28,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
         {
             String msgBody = "";
             String msg_from = "";
+            Date rxTime  = null;
             try {
                 Object[] pdus = (Object[]) intentExtras.get(SMS_BUNDLE);
                 SmsMessage[] msgs = new SmsMessage[pdus.length];
@@ -36,44 +37,15 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                     msgs[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                     msg_from = msgs[i].getOriginatingAddress();
                     msgBody += msgs[i].getMessageBody();
+                    rxTime = new Date(msgs[i].getTimestampMillis());
                 }
 
-            } catch (Exception e) {
-                //                            Log.d("Exception caught",e.getMessage());
-            }
-
-
-
-
-
-
-
-
-            /*Object[] sms = (Object[]) intentExtras.get(SMS_BUNDLE);
-            for (int i = 0; i < sms.length; ++i)
-            {
-                SmsMessage smsMessage;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    String format = intentExtras.getString("format");
-                    smsMessage = SmsMessage.createFromPdu((byte[]) sms[i], format);
-                } else {
-                    smsMessage = SmsMessage.createFromPdu((byte[]) sms[i]);
-                }*/
-
-
-
-
-                String sFullMessage = smsMessage.getMessageBody().toString();
-                String sAddress = smsMessage.getOriginatingAddress();
-
-                Date callDayTime = new Date(smsMessage.getTimestampMillis());
-                //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a");
-                String time = Globals.timeFormat.format(callDayTime);
+                String time = Globals.timeFormat.format(rxTime);
                 String sID =ReadSMS.getNextID(context);
-                String sAcct_num=ReadSMS.extractAccountNo(sFullMessage);
-                String sJob_No=ReadSMS.extractJobNo(sFullMessage);
-                String sPhone_No=ReadSMS.extractPhoneNo(sFullMessage);
-                int iPriority=ReadSMS.extractPriority(sFullMessage);
+                String sAcct_num=ReadSMS.extractAccountNo(msgBody);
+                String sJob_No=ReadSMS.extractJobNo(msgBody);
+                String sPhone_No=ReadSMS.extractPhoneNo(msgBody);
+                int iPriority=ReadSMS.extractPriority(msgBody);
 
                 /*DBHandler dbHandler = new DBHandler(context,null,null,1);
                 dbHandler.addBreakdown(sNextID,time,sAcct_num,smsBody,sJob_No,sPhone_No,address,iPriority);
@@ -82,7 +54,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
 
                 if (ReadSMS.IsValidJobNo(sJob_No)) {// Added on 2017/06/30 to prevent irrelevant sms to add as a breakdown
                     DBHandler dbHandler = new DBHandler(context, null, null, 1);
-                    dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
+                    dbHandler.addBreakdown(sID, time, sAcct_num, msgBody, sJob_No, sPhone_No, msg_from,iPriority);
                     String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
                     dbHandler.close();
 
@@ -95,6 +67,12 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                 }else{
                     Log.d("SmsReceiver","NOt a breakdown sms");
                 }
+
+            } catch (Exception e) {
+                //                            Log.d("Exception caught",e.getMessage());
+            }
+
+
 
 
 
