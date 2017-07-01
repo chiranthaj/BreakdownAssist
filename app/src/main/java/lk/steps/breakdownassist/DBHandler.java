@@ -22,7 +22,7 @@ import java.util.Locale;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version =68;
+    private static final int Database_Version =69;
     private static final String Database_Name = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -44,6 +44,7 @@ public class DBHandler extends SQLiteOpenHelper
                 "Priority    	        INTEGER,"+
                 "JOB_Source	            TEXT,"+
                 "Description	        TEXT,"+
+                "Reason                 TEXT,"+
                 "inbox_ref	            TEXT UNIQUE,"+
                 "last_timestamp         TEXT,"+
                 "completed_timestamp    TEXT"+
