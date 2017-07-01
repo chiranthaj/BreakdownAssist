@@ -489,9 +489,9 @@ public class DBHandler extends SQLiteOpenHelper
         {
             if (cursor.getString(0) != null)
             {
-                String LATITUDE = "";
-                String LONGITUDE = "";
-                String GPS_ACCURACY = "";
+                String LATITUDE = "0";
+                String LONGITUDE = "0";
+                String GPS_ACCURACY = "0";
                 if(!cursor.isNull(cursor.getColumnIndex("LATITUDE")))
                     LATITUDE=cursor.getString(cursor.getColumnIndex("LATITUDE"));
                 if(!cursor.isNull(cursor.getColumnIndex("LONGITUDE")))
