@@ -22,7 +22,7 @@ import java.util.Locale;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version =68;
+    private static final int Database_Version =67;
     private static final String Database_Name = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -39,7 +39,7 @@ public class DBHandler extends SQLiteOpenHelper
                 "DateTime	            TEXT,"+
                 "Acct_Num 	            TEXT,"+
                 "Status	                TEXT,"+
-                "job_no	                TEXT UNIQUE,"+
+                "job_no	                TEXT,"+
                 "Contact_No 	        TEXT,"+
                 "Priority    	        INTEGER,"+
                 "JOB_Source	            TEXT,"+
@@ -489,9 +489,9 @@ public class DBHandler extends SQLiteOpenHelper
         {
             if (cursor.getString(0) != null)
             {
-                String LATITUDE = "0";
-                String LONGITUDE = "0";
-                String GPS_ACCURACY = "0";
+                String LATITUDE = "";
+                String LONGITUDE = "";
+                String GPS_ACCURACY = "";
                 if(!cursor.isNull(cursor.getColumnIndex("LATITUDE")))
                     LATITUDE=cursor.getString(cursor.getColumnIndex("LATITUDE"));
                 if(!cursor.isNull(cursor.getColumnIndex("LONGITUDE")))
