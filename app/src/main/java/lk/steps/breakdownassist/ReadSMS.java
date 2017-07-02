@@ -58,16 +58,17 @@ public class ReadSMS {
                     String sAcct_num = extractAccountNo(sFullMessage);
                     String sPhone_No = extractPhoneNo(sFullMessage);
                     int iPriority=extractPriority(sFullMessage);
-
+                    Log.d("SmsReceiver","="+sJob_No);// empty box, no SMS
                     if (IsValidJobNo(sJob_No)) {// Added on 2017/05/22 to prevent irrelevant sms to add as a breakdown
                         DBHandler dbHandler = new DBHandler(context, null, null, 1);
                         dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
                         dbHandler.close();
+                        Log.d("SmsReceiver",sJob_No);// empty box, no SMS
                     }
                 }
                 while (cursor.moveToNext());
             } else {
-                // empty box, no SMS
+                Log.d("Breakdown added","Not a breakdown sms");// empty box, no SMS
             }
             progress.dismiss();
             cursor.close();
