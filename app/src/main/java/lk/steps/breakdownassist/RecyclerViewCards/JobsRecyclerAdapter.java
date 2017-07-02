@@ -75,13 +75,15 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
         }
         int status = dbList.get(position).get_Status();
         if(status == Breakdown.Status_JOB_COMPLETED){
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#e0e1e2"));
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#f4f4f4"));
         }else if(status == Breakdown.Status_JOB_DONE){
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#f2fca6"));
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#f9ffce"));
         }else if(status == Breakdown.Status_JOB_ATTENDING){
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#a8ffab"));
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#c9ffcb"));
+        }else if(status == Breakdown.Status_JOB_VISITED){
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#dbfffb"));
         }else {
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#faceff"));
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#fbddff"));
         }
     }
 
