@@ -435,7 +435,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             BD_Id_by_Marker_OnMap.clear();
             Marker_by_BD_Id_OnMap.clear();
         }
-        AddBreakDownListToMap(dbHandler.ReadBreakdowns(iJobs_to_Display));
+        AddBreakDownListToMap(dbHandler.ReadBreakdowns(iJobs_to_Display, true));
     }
 
     protected synchronized void buildGoogleApiClient() {
