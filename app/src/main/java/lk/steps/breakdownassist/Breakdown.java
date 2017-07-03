@@ -153,7 +153,9 @@ public class Breakdown {
     }
 
     public LatLng get_location() {
-        return _location;
+        double latCentre = Double.parseDouble(_LATITUDE);
+        double lonCentre= Double.parseDouble(_LONGITUDE);
+        return new LatLng(latCentre,lonCentre);
     }
 
     public void set_location(LatLng _location) {

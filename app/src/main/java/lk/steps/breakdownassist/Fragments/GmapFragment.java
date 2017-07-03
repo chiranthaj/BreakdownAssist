@@ -35,6 +35,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -43,6 +44,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -80,7 +82,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     long lMap_lastUserInteractionTime = 0;
 
-    Map Marker_by_BD_Id_OnMap = new WeakHashMap<String, Marker>(); //BD_Id is the key
+    Map Marker_by_BD_Id_OnMap = new WeakHashMap<String,Marker>(); //BD_Id is the key
     Map BD_Id_by_Marker_OnMap = new WeakHashMap<Marker,String>(); //Marker is the key
 
     LatLng lastlocation = new LatLng(7, 80);
@@ -299,11 +301,11 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         }else {
             iJobs_to_Display=Breakdown.Status_JOB_ANY;
         }
-        Log.d("GMAP","4");
+        //Log.d("GMAP","4");
         RefreshJobsFromDB();
         Marker selectedMarker = (Marker) Marker_by_BD_Id_OnMap.get(breakdown.get_id());
         if(selectedMarker!=null){
-            Log.d("GMAP","3");
+            //Log.d("GMAP","3");
             mMap.moveCamera(CameraUpdateFactory.newLatLng(selectedMarker.getPosition()));
             MapManuallyMoved();
             selectedMarker.showInfoWindow();
@@ -420,16 +422,30 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         return CreatedMarker;
     }
 
-    public void AddBreakDownListToMap(List<Breakdown> breakdownlist) {
-        //double latCentre = Double.parseDouble(breakdownlist.get(0).get_LATITUDE());
-        //double lonCentre = Double.parseDouble(breakdownlist.get(0).get_LONGITUDE());
-        for (Breakdown bd : breakdownlist) {
-            //latCentre = (latCentre + Double.parseDouble(bd.get_LATITUDE()))/2;
-            //lonCentre= (lonCentre + Double.parseDouble(bd.get_LONGITUDE()))/2;
+    public void AddBreakDownListToMap(List<Breakdown> breakdownList) {
+        for (Breakdown bd : breakdownList) {
             AddBreakDownToMap(bd);
         }
-        //LatLng latLng = new LatLng(latCentre,lonCentre);
-        //if (mMap != null)mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        //SetMapBound(breakdownList);
+    }
+
+    private void SetMapBound(List<Breakdown> breakdownList){
+        //the include method will calculate the min and max bound.
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (Breakdown bd : breakdownList) {
+            double latCentre = Double.parseDouble(bd.get_LATITUDE());
+            double lonCentre= Double.parseDouble(bd.get_LONGITUDE());
+            builder.include(new LatLng(latCentre,lonCentre));
+        }
+
+        LatLngBounds bounds = builder.build();
+
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int padding = (int) (width * 0.10); // offset from edges of the map 10% of screen
+
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+        mMap.animateCamera(cu);
     }
 
     public void RefreshJobsFromDB() {

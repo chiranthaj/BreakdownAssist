@@ -3,69 +3,64 @@ package lk.steps.breakdownassist.RecyclerViewCards;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
+import com.google.android.gms.maps.MapView;
+import java.util.HashSet;
 import java.util.List;
-
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.Globals;
 import lk.steps.breakdownassist.R;
 
 
-public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapter.ViewHolder> {
-
-    static   List<Breakdown> dbList;
+public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHolder>  {
+    protected HashSet<MapView> mMapViews = new HashSet<>();
+    static   List<Breakdown> breakdownList;
     static  Context context;
     public static JobListFragment.OnItemTouchListener onItemTouchListener;
+    //protected GoogleMap mGoogleMap;
+    //public MapView mapView;
 
     public JobsRecyclerAdapter(Context context, List<Breakdown> data, JobListFragment.OnItemTouchListener onItemTouchListener ){
-        this.dbList = new ArrayList<Breakdown>();
+       // this.breakdownList = new ArrayList<Breakdown>();
         this.context = context;
-        this.dbList = data;
+        this.breakdownList = data;
         this.onItemTouchListener = onItemTouchListener;
     }
 
     @Override
-    public JobsRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-        View itemLayoutView = LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.job_listview_row, null);
+    public MapLocationViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        //View itemLayoutView = LayoutInflater.from(parent.getContext()).inflate(
+        //        R.layout.job_listview_row,parent, false);
+        final View itemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.job_listview_row, parent, false);
 
         // create ViewHolder
+        MapLocationViewHolder viewHolder = new MapLocationViewHolder(context, itemLayoutView);
+        mMapViews.add(viewHolder.mapView);
 
-        ViewHolder viewHolder = new ViewHolder(itemLayoutView);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(JobsRecyclerAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(MapLocationViewHolder holder, int position) {
 
-        holder.acc_no.setText(dbList.get(position).get_Acct_Num());
-        holder.job_no.setText(dbList.get(position).get_Job_No());
-        holder.received_date_time.setText(Globals.parseDate(dbList.get(position).get_Received_Time()));
+        holder.acc_no.setText(breakdownList.get(position).get_Acct_Num());
+        holder.job_no.setText(breakdownList.get(position).get_Job_No().trim());
+        holder.received_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Received_Time()));
 
-        holder.name.setText(dbList.get(position).get_Name());
-        holder.address.setText(dbList.get(position).get_ADDRESS());
-        //holder.description.setText(dbList.get(position).get_Full_Description());
-        if(dbList.get(position).get_Completed_Time() == null){
+        holder.name.setText(breakdownList.get(position).get_Name());
+        holder.address.setText(breakdownList.get(position).get_ADDRESS());
+        //holder.description.setText(breakdownList.get(position).get_Full_Description());
+        holder.description.setText("-");
+        if(breakdownList.get(position).get_Completed_Time() == null){
             holder.completed_date_time.setText("Unattained job");
         }else{
-            holder.completed_date_time.setText(Globals.parseDate(dbList.get(position).get_Completed_Time()));
+            holder.completed_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Completed_Time()));
         }
-        String lat = dbList.get(position).get_LATITUDE();
+        String lat = breakdownList.get(position).get_LATITUDE();
         if(lat==null){
             holder.imgMap.setVisibility(View.INVISIBLE);
         }else if(lat.trim().length()>3){
@@ -73,7 +68,7 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
         }else{
             holder.imgMap.setVisibility(View.INVISIBLE);
         }
-        int status = dbList.get(position).get_Status();
+        int status = breakdownList.get(position).get_Status();
         if(status == Breakdown.Status_JOB_COMPLETED){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#f4f4f4"));
         }else if(status == Breakdown.Status_JOB_DONE){
@@ -85,20 +80,24 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
         }else {
             holder.cardView.setCardBackgroundColor(Color.parseColor("#fbddff"));
         }
+        holder.setBreakdown(breakdownList.get(position));
+
     }
 
     @Override
     public int getItemCount() {
-        return dbList.size();
+        return breakdownList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+    /*public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView acc_no,job_no,received_date_time,completed_date_time,name,address,description;
         private Button button1,button2;
         private CheckBox checkBox1;
         private ImageView imgMap;
         private CardView cardView;
+        private MapView mapView;
 
         public ViewHolder(View itemLayoutView) {
             super(itemLayoutView);
@@ -110,7 +109,8 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
             name = (TextView) itemLayoutView.findViewById(R.id.name);
             address = (TextView) itemLayoutView.findViewById(R.id.address);
             imgMap = (ImageView) itemLayoutView.findViewById(R.id.imgMap);
-            // description = (TextView)itemLayoutView.findViewById(R.id.description);
+            description = (TextView)itemLayoutView.findViewById(R.id.description);
+            mapView = (MapView) itemView.findViewById(R.id.map_view);
 
             button1 = (Button) itemView.findViewById(R.id.card_view_button1);
             button2 = (Button) itemView.findViewById(R.id.card_view_button2);
@@ -145,16 +145,17 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
 
         @Override
         public void onClick(View v) {
-            /*Intent intent = new Intent(context,DetailsActivity.class);
-            Bundle extras = new Bundle();
-            extras.putInt("position",getAdapterPosition());
-            intent.putExtras(extras);
+           // Intent intent = new Intent(context,DetailsActivity.class);
+           // Bundle extras = new Bundle();
+           // extras.putInt("position",getAdapterPosition());
+           // intent.putExtras(extras);
 
-            context.startActivity(intent);*/
+           // context.startActivity(intent);
             //Toast.makeText(JobsRecyclerAdapter.context, "you have clicked Row " + getAdapterPosition(), Toast.LENGTH_LONG).show();
         }
-    }
 
+
+    }*/
 
 }
 

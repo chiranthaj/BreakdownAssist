@@ -5,7 +5,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
@@ -117,8 +117,8 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="0.25"
-                        android:textSize="18sp"
-                        android:text="Visited" />
+                        android:text="Visited"
+                        android:textSize="18sp" />
 
                     <Button
                         android:id="@+id/btnAttending"
@@ -126,8 +126,8 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="0.25"
-                        android:textSize="18sp"
-                        android:text="Attending" />
+                        android:text="Attending"
+                        android:textSize="18sp" />
 
                     <Button
                         android:id="@+id/btnDone"
@@ -135,8 +135,8 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="0.25"
-                        android:textSize="18sp"
-                        android:text="Done" />
+                        android:text="Done"
+                        android:textSize="18sp" />
 
                     <Button
                         android:id="@+id/btnCompleted"
@@ -144,8 +144,8 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="0.25"
-                        android:textSize="18sp"
-                        android:text="Completed" />
+                        android:text="Completed"
+                        android:textSize="18sp" />
                 </TableRow>
 
             </TableLayout>

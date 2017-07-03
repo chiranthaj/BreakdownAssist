@@ -164,6 +164,16 @@ public class JobView {
                 dialog.dismiss();
             }
         });
+        if(breakdown.get_Status() == Breakdown.Status_JOB_COMPLETED){
+            btnCompleted.setTextColor(Color.RED);
+        }else if(breakdown.get_Status() == Breakdown.Status_JOB_DONE){
+            btnDone.setTextColor(Color.RED);
+        }else if(breakdown.get_Status() == Breakdown.Status_JOB_VISITED){
+            btnVisted.setTextColor(Color.RED);
+        }else if(breakdown.get_Status() == Breakdown.Status_JOB_ATTENDING){
+            btnAttending.setTextColor(Color.RED);
+        }
+
         dialog.show();
         return dialog;
     }
