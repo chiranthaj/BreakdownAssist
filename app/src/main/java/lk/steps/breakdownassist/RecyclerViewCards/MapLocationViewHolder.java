@@ -1,6 +1,7 @@
 package lk.steps.breakdownassist.RecyclerViewCards;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -17,10 +19,25 @@ import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import lk.steps.breakdownassist.Breakdown;
+import lk.steps.breakdownassist.Fragments.JobListFragment;
+import lk.steps.breakdownassist.MapMarker;
+import lk.steps.breakdownassist.Modules.DirectionFinder;
+import lk.steps.breakdownassist.Modules.DirectionFinderListener;
+import lk.steps.breakdownassist.Modules.Route;
 import lk.steps.breakdownassist.R;
 
 import static lk.steps.breakdownassist.RecyclerViewCards.JobsRecyclerAdapter.onItemTouchListener;
@@ -29,13 +46,13 @@ import static lk.steps.breakdownassist.RecyclerViewCards.JobsRecyclerAdapter.onI
  * Created by JagathPrasanga on 2017-07-02.
  */
 
-public class MapLocationViewHolder extends RecyclerView.ViewHolder implements OnMapReadyCallback {
+public class MapLocationViewHolder extends RecyclerView.ViewHolder implements OnMapReadyCallback , DirectionFinderListener {
 
     protected GoogleMap mGoogleMap;
     protected Breakdown mBreakdown;
     public Context mContext;
-    public TextView acc_no,job_no,received_date_time,completed_date_time,name,address,description;
-    public Button button1,button2;
+    public TextView acc_no,job_no,received_date_time,completed_date_time,name,address,description, txtTripInfo;
+    private Button button1,button2;
     public CheckBox checkBox1;
     public ImageView imgMap;
     public CardView cardView;
@@ -54,7 +71,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         imgMap = (ImageView) itemLayoutView.findViewById(R.id.imgMap);
         description = (TextView)itemLayoutView.findViewById(R.id.description);
         mapView = (MapView) itemView.findViewById(R.id.map_view);
-
+        txtTripInfo = (TextView) itemLayoutView.findViewById(R.id.txtTripInfo);
         button1 = (Button) itemView.findViewById(R.id.card_view_button1);
         button2 = (Button) itemView.findViewById(R.id.card_view_button2);
         checkBox1 = (CheckBox) itemView.findViewById(R.id.card_view_checkBox1);
@@ -120,14 +137,50 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
 
         if(mBreakdown.get_LATITUDE()== null){
             mapView.setVisibility(View.GONE);
+            txtTripInfo.setVisibility(View.GONE);
         }else if(mBreakdown.get_LATITUDE().equals("0")){
             mapView.setVisibility(View.GONE);
+            txtTripInfo.setVisibility(View.GONE);
         }else{
-            // Update the mapView feature data and camera position.
-            mGoogleMap.addMarker(new MarkerOptions().position(mBreakdown.get_location()));
+            BitmapDescriptor icon = MapMarker.GetBitmap(mBreakdown);
+            BitmapDescriptor iconBk = BitmapDescriptorFactory.fromResource(R.drawable.breakdown_vehicle);
+            getDirections(JobListFragment.currentLocation,mBreakdown.get_location());
+            mGoogleMap.addMarker(new MarkerOptions().position(mBreakdown.get_location()).icon(icon));
+            mGoogleMap.addMarker(new MarkerOptions().position(JobListFragment.currentLocation).icon(iconBk));
+        }
+    }
 
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(mBreakdown.get_location(), 15f);
-            mGoogleMap.moveCamera(cameraUpdate);
+    @Override
+    public void onDirectionFinderStart() {
+
+    }
+
+    @Override
+    public void onDirectionFinderSuccess(List<Route> routes) {
+        List<Polyline> polylinePaths = new ArrayList<>();
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        builder.include(JobListFragment.currentLocation);
+        builder.include(mBreakdown.get_location());
+
+        PolylineOptions polylineOptions = new PolylineOptions().geodesic(true).color(Color.BLUE).width(4);
+        for (Route route : routes) {
+            for (int i = 0; i < route.points.size(); i=i+10){//Remove some points
+                polylineOptions.add(route.points.get(i));
+                builder.include(route.points.get(i));
+            }
+        }
+        txtTripInfo.setText("Distance : "+routes.get(0).distance.text + "\nTime : "+routes.get(0).duration.text);
+        polylinePaths.add(mGoogleMap.addPolyline(polylineOptions));
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
+    }
+
+    public void getDirections(LatLng origin, LatLng destination) {
+        try {
+            String sOrigin=String.valueOf(origin.latitude) + ","+ String.valueOf(origin.longitude);
+            String sDestination=String.valueOf(destination.latitude) + ","+ String.valueOf(destination.longitude);
+            new DirectionFinder(this,sOrigin , sDestination).execute();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
     }
 }

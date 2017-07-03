@@ -173,6 +173,7 @@
             android:text="button2"
             android:visibility="gone" />
 
+
         <com.google.android.gms.maps.MapView
             xmlns:map="http://schemas.android.com/apk/res-auto"
             android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -184,5 +185,17 @@
             android:layout_height="200dp"
             android:layout_below="@+id/address"/>
 
+        <TextView
+            android:text=""
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="10dp"
+            android:padding="5dp"
+            android:layout_below="@+id/address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txtTripInfo"
+            android:textColor="@android:color/black"
+            android:background="@android:color/white"
+            android:textSize="16sp" />
     </RelativeLayout>
 </lk.steps.breakdownassist.RecyclerViewCards.MapCardView>

@@ -82,6 +82,7 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         }
         holder.setBreakdown(breakdownList.get(position));
 
+       // holder.getDirections(JobListFragment.currentLocation,breakdownList.get(position).get_location());
     }
 
     @Override
