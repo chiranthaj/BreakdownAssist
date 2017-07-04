@@ -118,12 +118,10 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
         mGoogleMap = googleMap;
 
         MapsInitializer.initialize(mContext);
         googleMap.getUiSettings().setMapToolbarEnabled(false);
-        //googleMap.getUiSettings().setAllGesturesEnabled(false);
 
         // If we have map data, update the map content.
         if (mBreakdown != null) {
@@ -131,20 +129,24 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         }
     }
 
-    protected void updateMapContents() {
+    private void updateMapContents() {
         // Since the mapView is re-used, need to remove pre-existing mapView features.
-        mGoogleMap.clear();
 
-        if(mBreakdown.get_LATITUDE()== null){
+        mGoogleMap.clear();
+        if(mBreakdown.get_Status()== Breakdown.Status_JOB_COMPLETED){
             mapView.setVisibility(View.GONE);
             txtTripInfo.setVisibility(View.GONE);
-        }else if(mBreakdown.get_LATITUDE().equals("0")){
+        }else
+            if(mBreakdown.get_LATITUDE()== null | mBreakdown.get_LONGITUDE()== null){
+            mapView.setVisibility(View.GONE);
+            txtTripInfo.setVisibility(View.GONE);
+        }else if(mBreakdown.get_LATITUDE().equals("0") | mBreakdown.get_LONGITUDE().equals("0")){
             mapView.setVisibility(View.GONE);
             txtTripInfo.setVisibility(View.GONE);
         }else{
             BitmapDescriptor icon = MapMarker.GetBitmap(mBreakdown);
             BitmapDescriptor iconBk = BitmapDescriptorFactory.fromResource(R.drawable.breakdown_vehicle);
-            getDirections(JobListFragment.currentLocation,mBreakdown.get_location());
+            setDirections(JobListFragment.currentLocation,mBreakdown.get_location());
             mGoogleMap.addMarker(new MarkerOptions().position(mBreakdown.get_location()).icon(icon));
             mGoogleMap.addMarker(new MarkerOptions().position(JobListFragment.currentLocation).icon(iconBk));
         }
@@ -169,12 +171,12 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
                 builder.include(route.points.get(i));
             }
         }
-        txtTripInfo.setText("Distance : "+routes.get(0).distance.text + "\nTime : "+routes.get(0).duration.text);
         polylinePaths.add(mGoogleMap.addPolyline(polylineOptions));
+        txtTripInfo.setText("Distance : "+routes.get(0).distance.text + "\nTime : "+routes.get(0).duration.text);
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
     }
 
-    public void getDirections(LatLng origin, LatLng destination) {
+    private void setDirections(LatLng origin, LatLng destination) {
         try {
             String sOrigin=String.valueOf(origin.latitude) + ","+ String.valueOf(origin.longitude);
             String sDestination=String.valueOf(destination.latitude) + ","+ String.valueOf(destination.longitude);

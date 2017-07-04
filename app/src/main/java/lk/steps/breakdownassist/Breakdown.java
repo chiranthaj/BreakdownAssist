@@ -12,7 +12,7 @@ public class Breakdown {
     public static final int Status_JOB_COMPLETED = 1;
     public static final int Status_JOB_VISITED = 2;
     public static final int Status_JOB_DONE = 3;
-    public static final int Status_JOB_ATTENDING = 3;
+    public static final int Status_JOB_ATTENDING = 4; // previous value was 3(=Status_JOB_DONE)
     public static final int Status_JOB_NOT_FOUND = 10;
 
     public static final int Priority_URGENT = 1;
@@ -153,9 +153,9 @@ public class Breakdown {
     }
 
     public LatLng get_location() {
-        double latCentre = Double.parseDouble(_LATITUDE);
-        double lonCentre= Double.parseDouble(_LONGITUDE);
-        return new LatLng(latCentre,lonCentre);
+        if(_LATITUDE != null & _LONGITUDE != null)
+        return new LatLng(Double.parseDouble(_LATITUDE),Double.parseDouble(_LONGITUDE));
+        else return new LatLng(0,0);
     }
 
     public void set_location(LatLng _location) {

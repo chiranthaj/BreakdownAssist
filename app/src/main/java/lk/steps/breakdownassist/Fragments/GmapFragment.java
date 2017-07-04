@@ -30,6 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -50,6 +51,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,6 +60,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.Failure;
 import lk.steps.breakdownassist.JobView;
@@ -82,16 +85,16 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     long lMap_lastUserInteractionTime = 0;
 
-    Map Marker_by_BD_Id_OnMap = new WeakHashMap<String,Marker>(); //BD_Id is the key
-    Map BD_Id_by_Marker_OnMap = new WeakHashMap<Marker,String>(); //Marker is the key
+    Map Marker_by_BD_Id_OnMap = new WeakHashMap<String, Marker>(); //BD_Id is the key
+    Map BD_Id_by_Marker_OnMap = new WeakHashMap<Marker, String>(); //Marker is the key
 
     LatLng lastlocation = new LatLng(7, 80);
     DBHandler dbHandler;
 
-    final public int MAP_STYLE_NIGHT=1;
-    final public int MAP_STYLE_NORMAL =2;
+    final public int MAP_STYLE_NIGHT = 1;
+    final public int MAP_STYLE_NORMAL = 2;
 
-    private int iMap_Style= MAP_STYLE_NORMAL;
+    private int iMap_Style = MAP_STYLE_NORMAL;
 
     private List<Marker> originMarkers = new ArrayList<>();
     private List<Marker> destinationMarkers = new ArrayList<>();
@@ -106,7 +109,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     private Context mContext;
 
-    private int iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+    private int iJobs_to_Display = Breakdown.Status_JOB_NOT_ATTENDED;
 
     @Nullable
     @Override
@@ -154,7 +157,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         MapFragment fragment = (MapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         fragment.getMapAsync(this);
 
-
         buttonRestoreMap = (Button) getActivity().findViewById(R.id.buttonReCenterMap);
         buttonRestoreMap.setOnClickListener(
                 new View.OnClickListener() {
@@ -165,27 +167,43 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 }
         );
     }
+
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            String sID=intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
+            String sID = intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
             //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
             RefreshJobsFromDB();
         }
     };
 
-    public void MapManuallyMoved()
-    {
+    public void MapManuallyMoved() {
         bReCenterMap = false; //for the button
-        bDontReCenterMap=true;
+        bDontReCenterMap = true;
         buttonRestoreMap.setVisibility(View.VISIBLE);   //Shows a Re-Center Button like in Google Navigation
         // and stop map current location track temporary, after timeout start again and hide the button
     }
-    public void ReCenterMap(){
+
+    public void ReBoundMap(){
+        Location currentLocation = getLastLocation();
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (Object item : BD_Id_by_Marker_OnMap.keySet()) {
+            if (item != null) { // <- Is this test necessary?
+                Marker marker = (Marker) item;
+                builder.include(marker.getPosition());
+            }
+        }
+        if (currentLocation != null) {
+            builder.include(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
+        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
+    }
+
+    public void ReCenterMap() {
 
         bReCenterMap = true;
-        bDontReCenterMap=false;
+        bDontReCenterMap = false;
         buttonRestoreMap.setVisibility(View.INVISIBLE);
 
         Location currentLocation = getLastLocation();
@@ -200,6 +218,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
             //TODO : Try to keep the zoomed values if possible within a given range
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(latLng, zoom, tilt, bearing)));
+
         }
     }
 
@@ -216,19 +235,19 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         if (id == R.id.menu_jobs_all) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display=Breakdown.Status_JOB_ANY;
+            iJobs_to_Display = Breakdown.Status_JOB_ANY;
             RefreshJobsFromDB();
             return true;
-        }else if (id == R.id.menu_jobs_completed) {
+        } else if (id == R.id.menu_jobs_completed) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display=Breakdown.Status_JOB_COMPLETED;
+            iJobs_to_Display = Breakdown.Status_JOB_COMPLETED;
             RefreshJobsFromDB();
             return true;
-        }else if (id == R.id.menu_jobs_unatended) {
+        } else if (id == R.id.menu_jobs_unatended) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
+            iJobs_to_Display = Breakdown.Status_JOB_NOT_ATTENDED;
             RefreshJobsFromDB();
             return true;
         }
@@ -269,49 +288,53 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     }
 
     public void ApplyNightMode() {
-        if (iMap_Style!=MAP_STYLE_NIGHT){
+        if (iMap_Style != MAP_STYLE_NIGHT) {
             //TODO Depending upon the time or user preference
             MapStyleOptions NightMode_style = MapStyleOptions.loadRawResourceStyle(
                     getActivity().getApplicationContext(), R.raw.style_json_nightmode);
             mMap.setMapStyle(NightMode_style);
-            iMap_Style=MAP_STYLE_NIGHT;
+            iMap_Style = MAP_STYLE_NIGHT;
         }
     }
+
     public void ApplyDayMode() {
         //TODO Depending upon the time or user preference
-        if (iMap_Style!= MAP_STYLE_NORMAL){
+        if (iMap_Style != MAP_STYLE_NORMAL) {
             MapStyleOptions DayMode_style = MapStyleOptions.loadRawResourceStyle(
                     getActivity().getApplicationContext(), R.raw.style_json_normal);
             mMap.setMapStyle(DayMode_style);
-            iMap_Style= MAP_STYLE_NORMAL;
+            iMap_Style = MAP_STYLE_NORMAL;
         }
     }
-    public void SetTrafficON(){
+
+    public void SetTrafficON() {
         mMap.setTrafficEnabled(true);
     }
-    public void SetTrafficOFF(){
+
+    public void SetTrafficOFF() {
         mMap.setTrafficEnabled(false);
     }
 
-    public void FocusBreakdown(Breakdown breakdown){
-        if (breakdown.get_Status()==Breakdown.Status_JOB_NOT_ATTENDED){
-            iJobs_to_Display=Breakdown.Status_JOB_NOT_ATTENDED;
-        }else if (breakdown.get_Status()==Breakdown.Status_JOB_COMPLETED){
-            iJobs_to_Display=Breakdown.Status_JOB_COMPLETED;
-        }else {
-            iJobs_to_Display=Breakdown.Status_JOB_ANY;
+    public void FocusBreakdown(Breakdown breakdown) {
+        if (breakdown.get_Status() == Breakdown.Status_JOB_NOT_ATTENDED) {
+            iJobs_to_Display = Breakdown.Status_JOB_NOT_ATTENDED;
+        } else if (breakdown.get_Status() == Breakdown.Status_JOB_COMPLETED) {
+            iJobs_to_Display = Breakdown.Status_JOB_COMPLETED;
+        } else {
+            iJobs_to_Display = Breakdown.Status_JOB_ANY;
         }
         //Log.d("GMAP","4");
         RefreshJobsFromDB();
         Marker selectedMarker = (Marker) Marker_by_BD_Id_OnMap.get(breakdown.get_id());
-        if(selectedMarker!=null){
+        if (selectedMarker != null) {
             //Log.d("GMAP","3");
             mMap.moveCamera(CameraUpdateFactory.newLatLng(selectedMarker.getPosition()));
             MapManuallyMoved();
             selectedMarker.showInfoWindow();
         }
     }
-    public void ApplyMapDayNightModeAccordingly(){
+
+    public void ApplyMapDayNightModeAccordingly() {
         //Change only if the AutoMode in ON and apply once if not already applied the Night/Day mode
         if (Globals.getNightMode().equalsIgnoreCase("1")) {//Automatic
             Calendar calendar = Calendar.getInstance();
@@ -331,11 +354,9 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 }
 
             } catch (Exception e) {/* Invalid date was entered*/}
-        }
-        else if (Globals.getNightMode().equalsIgnoreCase("0")) {//Always
+        } else if (Globals.getNightMode().equalsIgnoreCase("0")) {//Always
             ApplyNightMode();
-        }
-        else if (Globals.getNightMode().equalsIgnoreCase("-1")) {//Never
+        } else if (Globals.getNightMode().equalsIgnoreCase("-1")) {//Never
             ApplyDayMode();
         }
     }
@@ -359,17 +380,17 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
         mMap.setOnCameraMoveStartedListener(this);
         mMap.setOnMarkerClickListener(this);
-       // mMap.setOnInfoWindowClickListener(this);
+        // mMap.setOnInfoWindowClickListener(this);
         RefreshJobsFromDB();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastlocation));
-       // mMap.setInfoWindowAdapter(new InfoWindowAdapter(getActivity().getLayoutInflater()));
+        // mMap.setInfoWindowAdapter(new InfoWindowAdapter(getActivity().getLayoutInflater()));
 
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
-                final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(marker));
-                JobView.DialogInfo(GmapFragment.this,selectedBreakdown,marker,getLastLocation(),0);
+                final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID((String) BD_Id_by_Marker_OnMap.get(marker));
+                JobView.DialogInfo(GmapFragment.this, selectedBreakdown, marker, getLastLocation(), 0);
                 marker.hideInfoWindow();
             }
         });
@@ -390,10 +411,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     }*/
 
 
-
-
     public Marker AddBreakDownToMap(Breakdown breakdown) /*int icon*/ {
-        Marker CreatedMarker=null;//For Return
+        Marker CreatedMarker = null;//For Return
         BitmapDescriptor MarkerICON = MapMarker.GetBitmap(breakdown);
 
         Marker bdMarker;
@@ -410,11 +429,11 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                         .snippet(breakdown.get_ADDRESS().trim()));
 
                 //We have two HarshMaps for search either from Marker or breakdown.ID
-                Marker_by_BD_Id_OnMap.put(breakdown.get_id(), bdMarker) ; //(key,marker)
-                BD_Id_by_Marker_OnMap.put(bdMarker,breakdown.get_id())  ; //(key,data)
+                Marker_by_BD_Id_OnMap.put(breakdown.get_id(), bdMarker); //(key,marker)
+                BD_Id_by_Marker_OnMap.put(bdMarker, breakdown.get_id()); //(key,data)
 
                 lastlocation = breakdown.getLocation();
-                CreatedMarker=bdMarker;
+                CreatedMarker = bdMarker;
             }
         } else {
             //Add to ICON/Widget for No location
@@ -429,13 +448,13 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         //SetMapBound(breakdownList);
     }
 
-    private void SetMapBound(List<Breakdown> breakdownList){
+    private void SetMapBound(List<Breakdown> breakdownList) {
         //the include method will calculate the min and max bound.
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         for (Breakdown bd : breakdownList) {
             double latCentre = Double.parseDouble(bd.get_LATITUDE());
-            double lonCentre= Double.parseDouble(bd.get_LONGITUDE());
-            builder.include(new LatLng(latCentre,lonCentre));
+            double lonCentre = Double.parseDouble(bd.get_LONGITUDE());
+            builder.include(new LatLng(latCentre, lonCentre));
         }
 
         LatLngBounds bounds = builder.build();
@@ -458,6 +477,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             Marker_by_BD_Id_OnMap.clear();
         }
         AddBreakDownListToMap(dbHandler.ReadBreakdowns(iJobs_to_Display, true));
+        ReBoundMap();
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -468,7 +488,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 .build();
         mGoogleApiClient.connect();
 
-        mContext=getActivity().getApplicationContext(); // To use in the startLocationUpdates(), otherwise it crashes when
+        mContext = getActivity().getApplicationContext(); // To use in the startLocationUpdates(), otherwise it crashes when
         //getActivity().getApplicationContext() is used
     }
 
@@ -496,7 +516,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         super.onResume();
         mContext.registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassist.NewBreakdownBroadcast"));
         // Resuming the periodic location updates
-        if (mGoogleApiClient != null &&  mGoogleApiClient.isConnected() ) {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             startLocationUpdates();
         }
     }
@@ -524,13 +544,13 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     /**
      * Starting the location updates
-     * */
+     */
     protected void startLocationUpdates() {
         if (ContextCompat.checkSelfPermission(mContext,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
 
-            if (mGoogleApiClient !=null && mGoogleApiClient.isConnected())
+            if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
                 LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
     }
@@ -542,7 +562,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            if (mGoogleApiClient !=null && mGoogleApiClient.isConnected())
+            if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         }
     }
@@ -564,7 +584,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
             // if (last_update_time/ user last interacted time with map - current_time)>1min Zoom and move back to current location
             // TODO :else update only the Vehicle Icon (if exists)
-            if (((Math.abs(lCurTime - lMap_lastUserInteractionTime) > 60000) || bReCenterMap ) && !bDontReCenterMap) {
+            if (((Math.abs(lCurTime - lMap_lastUserInteractionTime) > 60000) || bReCenterMap) && !bDontReCenterMap) {
 
                 LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
@@ -601,18 +621,17 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         //final Marker selectedMarker = marker;  //to access in Override Methods
         //Calling from Harshmap by giving the Marker Ref
-        final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID ((String) BD_Id_by_Marker_OnMap.get(marker));
+        final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID((String) BD_Id_by_Marker_OnMap.get(marker));
 
-        JobView.DialogInfo(this,selectedBreakdown,marker,getLastLocation(),0);
+        JobView.DialogInfo(this, selectedBreakdown, marker, getLastLocation(), 0);
         marker.hideInfoWindow();
 
         return true;
     }
 
 
-
-    public void UpdateBreakDown(Breakdown selectedBreakdown,int iStatus) {
-        dbHandler.UpdateBreakdownStatus(selectedBreakdown,iStatus);
+    public void UpdateBreakDown(Breakdown selectedBreakdown, int iStatus) {
+        dbHandler.UpdateBreakdownStatus(selectedBreakdown, iStatus);
         RefreshJobsFromDB();
         //TODO : Add methods to handle other status like Visited etc may be with custom time, then change the marker
     }
@@ -638,7 +657,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             ((LinearLayout) getActivity().findViewById(R.id.directions)).setVisibility(View.VISIBLE);
 
             ((TextView) getActivity().findViewById(R.id.tvDuration)).setText("Duration : " + route.duration.text);
-            ((TextView) getActivity().findViewById(R.id.tvDistance)).setText("Distance : "+route.distance.text);
+            ((TextView) getActivity().findViewById(R.id.tvDistance)).setText("Distance : " + route.distance.text);
             Button buttonClearDirection = (Button) getActivity().findViewById(R.id.buttonCLR);
             buttonClearDirection.setOnClickListener(
                     new View.OnClickListener() {
@@ -667,12 +686,12 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 polylineOptions.add(route.points.get(i));
 
             polylinePaths.add(mMap.addPolyline(polylineOptions));
-            isDirectionsJustStarted=true;
+            isDirectionsJustStarted = true;
             ReCenterMap();
         }
     }
 
-    public void clearDirections(){
+    public void clearDirections() {
         ((LinearLayout) getActivity().findViewById(R.id.directions)).setVisibility(View.INVISIBLE);
 
         if (originMarkers != null) {
@@ -687,7 +706,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             }
         }
         if (polylinePaths != null) {
-            for (Polyline polyline:polylinePaths ) {
+            for (Polyline polyline : polylinePaths) {
                 polyline.remove();
             }
         }
@@ -696,9 +715,9 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public void getDirections(LatLng origin, LatLng destination) {
         //TODO : Exception when current location is not available
         try {
-            String sOrigin=String.valueOf(origin.latitude) + ","+ String.valueOf(origin.longitude);
-            String sDestination=String.valueOf(destination.latitude) + ","+ String.valueOf(destination.longitude);
-            new DirectionFinder(this,sOrigin , sDestination).execute();
+            String sOrigin = String.valueOf(origin.latitude) + "," + String.valueOf(origin.longitude);
+            String sDestination = String.valueOf(destination.latitude) + "," + String.valueOf(destination.longitude);
+            new DirectionFinder(this, sOrigin, sDestination).execute();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
