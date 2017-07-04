@@ -40,21 +40,21 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                     rxTime = new Date(msgs[i].getTimestampMillis());
                 }
 
+
+
+
                 String time = Globals.timeFormat.format(rxTime);
                 String sID =ReadSMS.getNextID(context);
                 String sAcct_num=ReadSMS.extractAccountNo(msgBody);
                 String sJob_No=ReadSMS.extractJobNo(msgBody);
                 String sPhone_No=ReadSMS.extractPhoneNo(msgBody);
                 int iPriority=ReadSMS.extractPriority(msgBody);
-
-                /*DBHandler dbHandler = new DBHandler(context,null,null,1);
-                dbHandler.addBreakdown(sNextID,time,sAcct_num,smsBody,sJob_No,sPhone_No,address,iPriority);
-                String sIssuedBreadownID=dbHandler.getLastBreakdownID();
-                dbHandler.close();*/
+                String sNameAddressSMS=ReadSMS.extractAll(msgBody)[ReadSMS.NAMEADDRESS];
+                String sReason=ReadSMS.extractAll(msgBody)[ReadSMS.REASON];
 
                 if (ReadSMS.IsValidJobNo(sJob_No)) {// Added on 2017/06/30 to prevent irrelevant sms to add as a breakdown
                     DBHandler dbHandler = new DBHandler(context, null, null, 1);
-                    dbHandler.addBreakdown(sID, time, sAcct_num, msgBody, sJob_No, sPhone_No, msg_from,iPriority);
+                    dbHandler.addBreakdown(sID, time, sAcct_num, msgBody, sJob_No, sPhone_No, msg_from,iPriority,sNameAddressSMS,sReason);
                     String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
                     dbHandler.close();
 

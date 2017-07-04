@@ -22,7 +22,7 @@ import java.util.Locale;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version =69;
+    private static final int Database_Version =70;
     private static final String Database_Name = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -40,6 +40,7 @@ public class DBHandler extends SQLiteOpenHelper
                 "Acct_Num 	            TEXT,"+
                 "Status	                TEXT,"+
                 "job_no	                TEXT UNIQUE,"+
+                "NameAddressSMS	        TEXT,"+
                 "Contact_No 	        TEXT,"+
                 "Priority    	        INTEGER,"+
                 "JOB_Source	            TEXT,"+
@@ -308,6 +309,38 @@ public class DBHandler extends SQLiteOpenHelper
         return _jobcompletion_obj;
     }
     public void addBreakdown(String id,String ReceiveDateTime,String Acct_Num,String Description,
+                             String Job_No,String Phone_No, String JOB_Source,int Priority,String NameAddressSMS,String Reason)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        //Using Try Catch to suppress duplicate entries warnings, when Synching Inbox
+        try{
+
+            ContentValues values = new ContentValues();
+            values.put("DateTime",ReceiveDateTime);
+            values.put("Acct_Num",Acct_Num);
+            values.put("Description",Description);
+            values.put("job_no",Job_No);
+            values.put("NameAddressSMS",Job_No);
+            values.put("Reason",Job_No);
+            values.put("Contact_No",Phone_No);
+            values.put("Priority",Priority);
+            values.put("JOB_Source",JOB_Source);
+            values.put("Status",0);
+            values.put("inbox_ref", id + " " +ReceiveDateTime); //TODO:No Exception will occur in db.insert for duplicate entries, they will be just omitted
+
+            db.insert("BreakdownRecords",null,values); //TODO: Use insertOrthrow
+        }
+        catch (Exception e)
+        {
+
+        }
+        finally {
+            db.close();
+        }
+
+    }
+
+    public void addBreakdown(String id,String ReceiveDateTime,String Acct_Num,String Description,
                              String Job_No,String Phone_No, String JOB_Source,int Priority)
     {
         SQLiteDatabase db = getWritableDatabase();
@@ -336,6 +369,7 @@ public class DBHandler extends SQLiteOpenHelper
         }
 
     }
+
     public int AddTestBreakdownObj(Breakdown breakdown,Context context)
     {
         int iResult=-1;

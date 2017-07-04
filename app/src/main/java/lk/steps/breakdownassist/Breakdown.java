@@ -31,6 +31,7 @@ public class Breakdown {
     private String _Completed_Time;
     private String _Acct_Num;
     private String _Name;
+    private String _NameAndAddressSMS;
     private String _ADDRESS;
     private String _LATITUDE;
     private String _LONGITUDE;
@@ -222,6 +223,14 @@ public class Breakdown {
 
     public void set_Job_No(String _Job_No) {
         this._Job_No = _Job_No;
+    }
+
+    public String get_NameAndAddressSMS() {
+        return _NameAndAddressSMS;
+    }
+
+    public void set_NameAndAddressSMS(String _NameAndAddressSMS) {
+        this._NameAndAddressSMS = _NameAndAddressSMS;
     }
 }
 
