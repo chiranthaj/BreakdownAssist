@@ -601,7 +601,7 @@ public class DBHandler extends SQLiteOpenHelper
         db.close();
     }
 
-    public Cursor ReadBreakdownsToCursor(int iStatus)
+    public Cursor ReadBreakdownsToCursor(int iStatus, Boolean GPS_Only)
     {
         SQLiteDatabase db = getWritableDatabase();
         //String query = "SELECT id as ID,NAME,LONGITUDE,LATITUDE FROM Customers limit 3;";
@@ -619,6 +619,11 @@ public class DBHandler extends SQLiteOpenHelper
             statusQuery=" AND B.Status =  '" + iStatus + "' ";
         }
 
+        String gpsQuery ="";
+        if (GPS_Only){
+            gpsQuery=" AND C.GPS_ACCURACY <>  '-1' ";
+        }
+
         String query = "SELECT B.id AS id ,C.NAME as NAME,C.LONGITUDE as LONGITUDE,C.TARIFF_COD as TARIFF_COD," +
                 " C.LATITUDE as LATITUDE, B.Status as Status, " +
                 " B.Acct_Num as Acct_Num,C.ADDRESS as ADDRESS,   " +
@@ -628,7 +633,7 @@ public class DBHandler extends SQLiteOpenHelper
                 " FROM BreakdownRecords B " +
                     " LEFT JOIN Customers C ON C.ACCT_NUM = B.Acct_Num " +
                     " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.Acct_Num " +
-                " WHERE 1 " + statusQuery  +
+                " WHERE 1 " + statusQuery  + gpsQuery +
                 " ORDER BY DateTime DESC, Acct_Num ASC;";
 
         Cursor c = db.rawQuery(query, null);
@@ -639,10 +644,10 @@ public class DBHandler extends SQLiteOpenHelper
         return c;
     }
 
-    public List<Breakdown> ReadBreakdowns(int iStatus)
+    public List<Breakdown> ReadBreakdowns(int iStatus, Boolean GPS_Only)
     {
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
-        Cursor c = ReadBreakdownsToCursor(iStatus);
+        Cursor c = ReadBreakdownsToCursor(iStatus,GPS_Only);
         while (!c.isAfterLast())
         {
             if (c.getString(0) != null)

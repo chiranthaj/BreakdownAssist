@@ -126,7 +126,7 @@ public class JobListFragment extends Fragment {
     }
 
     public static void CreateListView(final Fragment fragment) {
-         BreakdownList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
+        BreakdownList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display, false));
         mRecyclerView = (RecyclerView) mView.findViewById(R.id.recycleview);
 
         mRecyclerView.setHasFixedSize(true);
@@ -138,6 +138,18 @@ public class JobListFragment extends Fragment {
             @Override
             public void onCardViewTap(View view, final int position) {
                 if (TextUtils.isEmpty(BreakdownList.get(position).get_LATITUDE())) {
+                    Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
+                    Dialog dialog = JobView.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
+                    if (dialog != null)
+                        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                mAdapter.notifyDataSetChanged();
+                                //mRecyclerView.ref.invalidate();
+                                //CreateListView(fragment);
+                            }
+                        });
+                }else if (BreakdownList.get(position).get_LATITUDE().equals("0")) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
                     Dialog dialog = JobView.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
                     if (dialog != null)

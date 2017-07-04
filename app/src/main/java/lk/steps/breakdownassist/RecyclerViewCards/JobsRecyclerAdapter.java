@@ -2,6 +2,8 @@ package lk.steps.breakdownassist.RecyclerViewCards;
 
 
 import android.content.Context;
+import android.graphics.Color;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -71,7 +73,18 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
         }else{
             holder.imgMap.setVisibility(View.INVISIBLE);
         }
-
+        int status = dbList.get(position).get_Status();
+        if(status == Breakdown.Status_JOB_COMPLETED){
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#f4f4f4"));
+        }else if(status == Breakdown.Status_JOB_DONE){
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#f9ffce"));
+        }else if(status == Breakdown.Status_JOB_ATTENDING){
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#c9ffcb"));
+        }else if(status == Breakdown.Status_JOB_VISITED){
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#dbfffb"));
+        }else {
+            holder.cardView.setCardBackgroundColor(Color.parseColor("#fbddff"));
+        }
     }
 
     @Override
@@ -85,9 +98,11 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<JobsRecyclerAdapte
         private Button button1,button2;
         private CheckBox checkBox1;
         private ImageView imgMap;
+        private CardView cardView;
 
         public ViewHolder(View itemLayoutView) {
             super(itemLayoutView);
+            cardView = (CardView) itemLayoutView.findViewById(R.id.card_view);
             acc_no = (TextView) itemLayoutView.findViewById(R.id.acct_num);
             job_no = (TextView)itemLayoutView.findViewById(R.id.job_no);
             received_date_time = (TextView) itemLayoutView.findViewById(R.id.received_date_time);

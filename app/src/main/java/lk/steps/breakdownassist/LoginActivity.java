@@ -23,6 +23,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -59,10 +60,6 @@ public class LoginActivity extends AppCompatActivity  {
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "user:abc123", "user2:123456"
     };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mUsernameView;
@@ -134,9 +131,6 @@ public class LoginActivity extends AppCompatActivity  {
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
 
         // Reset errors.
         mUsernameView.setError(null);
@@ -154,6 +148,7 @@ public class LoginActivity extends AppCompatActivity  {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
+            Log.d("TEST","10");
         }
 
         // Check for a valid username address.
@@ -161,10 +156,12 @@ public class LoginActivity extends AppCompatActivity  {
             mUsernameView.setError(getString(R.string.error_field_required));
             focusView = mUsernameView;
             cancel = true;
+            Log.d("TEST","11");
         } else if (!isUsernameValid(username)) {
             mUsernameView.setError(getString(R.string.error_invalid_username));
             focusView = mUsernameView;
             cancel = true;
+            Log.d("TEST","12");
         }
 
         if (cancel) {
@@ -175,8 +172,70 @@ public class LoginActivity extends AppCompatActivity  {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(username, password);
-            mAuthTask.execute((Void) null);
+
+
+            //mAuthTask = new UserLoginTask(username, password);
+            //mAuthTask.execute((Void) null);
+            Log.d("TEST","55");
+
+            Boolean usernameExists = false;
+            Boolean passwordMatches = false;
+            for (String credential : DUMMY_CREDENTIALS) {
+                String _username = credential.split(":")[0];
+                String _password = credential.split(":")[1];
+                if(_username.equals(username)){
+                    usernameExists=true;
+                    if(_password.equals(password))passwordMatches=true;
+                }
+            }
+
+            if(usernameExists & passwordMatches){
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    public void run() {
+                        Log.d("TEST","3");
+                        Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
+                        LoginActivity.this.startActivity(myIntent);
+                    }
+                });
+                finish();
+            }else if(usernameExists){
+                showProgress(false);
+                mPasswordView.setError(getString(R.string.error_incorrect_password));
+                mPasswordView.requestFocus();
+            }else{
+                showProgress(false);
+                mUsernameView.setError(getString(R.string.error_invalid_username));
+                mUsernameView.requestFocus();
+            }
+
+            /*for (String credential : DUMMY_CREDENTIALS) {
+                String[] pieces = credential.split(":");
+                if (pieces[0].equals(username)) {
+                    // Account exists, return true if the password matches.
+                    if(pieces[1].equals(password)){
+                        Handler handler = new Handler(Looper.getMainLooper());
+                        handler.post(new Runnable() {
+                            public void run() {
+                                Log.d("TEST","3");
+                                Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
+                                LoginActivity.this.startActivity(myIntent);
+                            }
+                        });
+                        finish();
+                    }else{
+                        Log.d("TEST","1");
+                        showProgress(false);
+                        mPasswordView.setError(getString(R.string.error_incorrect_password));
+                        mPasswordView.requestFocus();
+                    }
+                }else{
+                    Log.d("TEST","2");
+                    showProgress(false);
+                    mUsernameView.setError(getString(R.string.error_invalid_username));
+                    mUsernameView.requestFocus();
+                }
+            }*/
         }
     }
 
@@ -224,72 +283,6 @@ public class LoginActivity extends AppCompatActivity  {
             // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
             //mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
-    }
-
-
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mUsername;
-        private final String mPassword;
-
-        UserLoginTask(String username, String password) {
-            mUsername = username;
-            mPassword = password;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                //Thread.sleep(500);
-            } catch (Exception e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mUsername)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-
-            if (success) {
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-                    public void run() {
-                        Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
-                        LoginActivity.this.startActivity(myIntent);
-
-                    }
-                });
-                finish();
-            } else {
-                showProgress(false);
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
         }
     }
 }

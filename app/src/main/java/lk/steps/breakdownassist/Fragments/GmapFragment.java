@@ -421,9 +421,15 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     }
 
     public void AddBreakDownListToMap(List<Breakdown> breakdownlist) {
+        //double latCentre = Double.parseDouble(breakdownlist.get(0).get_LATITUDE());
+        //double lonCentre = Double.parseDouble(breakdownlist.get(0).get_LONGITUDE());
         for (Breakdown bd : breakdownlist) {
+            //latCentre = (latCentre + Double.parseDouble(bd.get_LATITUDE()))/2;
+            //lonCentre= (lonCentre + Double.parseDouble(bd.get_LONGITUDE()))/2;
             AddBreakDownToMap(bd);
         }
+        //LatLng latLng = new LatLng(latCentre,lonCentre);
+        //if (mMap != null)mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
     }
 
     public void RefreshJobsFromDB() {
@@ -435,7 +441,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             BD_Id_by_Marker_OnMap.clear();
             Marker_by_BD_Id_OnMap.clear();
         }
-        AddBreakDownListToMap(dbHandler.ReadBreakdowns(iJobs_to_Display));
+        AddBreakDownListToMap(dbHandler.ReadBreakdowns(iJobs_to_Display, true));
     }
 
     protected synchronized void buildGoogleApiClient() {
