@@ -16,6 +16,7 @@ import android.support.design.widget.FloatingActionButton;
 
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -389,9 +390,10 @@ public class MainActivity extends AppCompatActivity
                 try {
                     DBHandler dbHandler = new DBHandler(getAppContext(), null, null, 1);
                     Globals.AverageTime = dbHandler.getAttendedTime();
+                    dbHandler.close();
                     //handler.postDelayed(this, 1000*60*10);//Continue updating 10min
                 } catch (Exception e) {
-
+                    Log.e("CalAttainedTime",e.getMessage());
                 }
             }
         };

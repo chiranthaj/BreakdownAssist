@@ -19,8 +19,6 @@ public class Breakdown {
     public static final int Priority_HIGH = 2;
     public static final int Priority_NORMAL = 3;
 
-
-
     public static final int Priority_Normal = 3;
     public static final int Priority_High = 2;
     public static final int Priority_Urgent = 1;
@@ -45,6 +43,8 @@ public class Breakdown {
     private String _Job_No;
     private String _Contact_No;
     private String _PremisesID;
+
+
 
     public String get_PremisesID() {
         return _PremisesID;

@@ -114,4 +114,13 @@
             android:textSize="18sp" />
     </ScrollView>
 
+    <Button
+        android:id="@+id/button7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/imageView"
+        android:onClick="test"
+        android:text="Button" />
+
 </RelativeLayout>

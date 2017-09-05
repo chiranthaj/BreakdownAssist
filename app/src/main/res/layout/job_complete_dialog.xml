@@ -92,14 +92,14 @@
                 android:id="@+id/text2"
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
-                android:text="Cause :"
+                android:text="Nature :"
                 android:gravity="center_vertical"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
                 android:textStyle="normal" />
 
             <Spinner
-                android:id="@+id/spinner_failure_cause"
+                android:id="@+id/spinner_failure_nature"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="left" />
@@ -115,14 +115,14 @@
                 android:id="@+id/text3"
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
-                android:text="Description :"
+                android:text="Cause :"
                 android:gravity="center_vertical"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
                 android:textStyle="normal" />
 
             <Spinner
-                android:id="@+id/spinner_failure_description"
+                android:id="@+id/spinner_failure_cause"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="left" />
@@ -149,6 +149,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="left"
+
                 android:title="Job Description" />
 
         </TableRow>

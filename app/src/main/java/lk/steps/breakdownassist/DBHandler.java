@@ -141,7 +141,7 @@ public class DBHandler extends SQLiteOpenHelper
 
         String query = "SELECT * " +
                 " FROM JobCompletion " +
-                " WHERE synchro_mobile_db=0;";//
+                " WHERE synchro_mobile_db=0 and length(job_no)>10;";//
 
         Cursor c = db.rawQuery(query, null);
 
@@ -169,7 +169,43 @@ public class DBHandler extends SQLiteOpenHelper
         c.close();
         return newJobCompletion;
     }
+    public List<JobCompletion> getBreakdownCompletion()
+    {
+        JobCompletion _jobcompletion_obj=null;
+        SQLiteDatabase db = getWritableDatabase();
 
+        List<JobCompletion> newJobCompletion = new LinkedList<JobCompletion>();
+
+        String query = "SELECT * " +
+                " FROM JobCompletion " +
+                " WHERE synchro_mobile_db=0 and length(job_no)=10;";//
+
+        Cursor c = db.rawQuery(query, null);
+
+        c.moveToFirst();
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
+                _jobcompletion_obj= new JobCompletion();
+                _jobcompletion_obj.job_no=c.getString(c.getColumnIndex("job_no"));
+                _jobcompletion_obj.st_code=c.getString(c.getColumnIndex("st_code"));
+                _jobcompletion_obj.job_completed_datetime=c.getString(c.getColumnIndex("job_completed_datetime"));
+                _jobcompletion_obj.comment=c.getString(c.getColumnIndex("comment"));
+                _jobcompletion_obj.detail_reason_code = c.getString(c.getColumnIndex("detail_reason_code"));
+                _jobcompletion_obj.cause = c.getString(c.getColumnIndex("cause"));
+                _jobcompletion_obj.type_failure = c.getString(c.getColumnIndex("type_failure"));
+                _jobcompletion_obj.job_completed_by = c.getString(c.getColumnIndex("job_completed_by"));
+                _jobcompletion_obj.action_code = c.getString(c.getColumnIndex("action_code"));
+                _jobcompletion_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
+                _jobcompletion_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
+                newJobCompletion.add(_jobcompletion_obj);
+            }
+            c.moveToNext();
+        }
+        c.close();
+        return newJobCompletion;
+    }
     public void addJobStatusChangeRec(JobChangeStatus jobchangestatus_obj)
     {
         SQLiteDatabase db = getWritableDatabase();
@@ -193,9 +229,7 @@ public class DBHandler extends SQLiteOpenHelper
 
         List<JobChangeStatus> newJobChangeStatus = new LinkedList<JobChangeStatus>();
 
-        String query = "SELECT * " +
-                " FROM JobStatusChange " +
-                " WHERE synchro_mobile_db=0;";//
+        String query = "SELECT *  FROM JobStatusChange  WHERE synchro_mobile_db=0 and length(job_no)>10;";//
 
         Cursor c = db.rawQuery(query, null);
 
@@ -218,7 +252,40 @@ public class DBHandler extends SQLiteOpenHelper
         c.close();
         return newJobChangeStatus;
     }
+    public List<JobChangeStatus> getBreakdownStatusChange()
+    {
+        JobChangeStatus _jobchangestatus_obj=null;
+        SQLiteDatabase db = getWritableDatabase();
 
+        List<JobChangeStatus> newJobChangeStatus = new LinkedList<JobChangeStatus>();
+
+        String query = "SELECT JobStatusChange.job_no, JobStatusChange.st_code,JobStatusChange.change_datetime,BreakdownRecords.Status " +
+                "FROM JobStatusChange " +
+                " join BreakdownRecords on JobStatusChange.job_no = BreakdownRecords.job_no " +
+                "WHERE JobStatusChange.synchro_mobile_db=0 and length(JobStatusChange.job_no)=10;";//
+
+        Cursor c = db.rawQuery(query, null);
+
+        c.moveToFirst();
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
+                _jobchangestatus_obj= new JobChangeStatus();
+                _jobchangestatus_obj.job_no=c.getString(c.getColumnIndex("job_no"));
+                _jobchangestatus_obj.st_code=c.getString(c.getColumnIndex("st_code"));
+                _jobchangestatus_obj.status=c.getString(c.getColumnIndex("Status"));
+                _jobchangestatus_obj.change_datetime=c.getString(c.getColumnIndex("change_datetime"));
+              //  _jobchangestatus_obj.comment=c.getString(c.getColumnIndex("comment"));
+              //  _jobchangestatus_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
+              //  _jobchangestatus_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
+                newJobChangeStatus.add(_jobchangestatus_obj);
+            }
+            c.moveToNext();
+        }
+        c.close();
+        return newJobChangeStatus;
+    }
     public int UpdateSyncState_JobStatusChangeObj(JobChangeStatus jobchangestatus_obj,int iSynchro_mobile_dbValue)
     {
         int iResult=-1;
@@ -307,13 +374,33 @@ public class DBHandler extends SQLiteOpenHelper
 
         return _jobcompletion_obj;
     }
+    /*public int getMaxId(){
+        SELECT * FROM tablename ORDER BY column DESC LIMIT 1;
+
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT COUNT(*) AS TOTAL," +
+                "SUM(CASE Status  WHEN "+Breakdown.Status_JOB_COMPLETED +" THEN 1 ELSE 0 END) AS COMPLETED," +
+                "SUM(CASE Status  WHEN "+Breakdown.Status_JOB_NOT_ATTENDED + " THEN 1 ELSE 0 END) AS UNATTAINED" +
+                " FROM BreakdownRecords;";
+
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+
+        int[] counts = new int[2];
+        if (!c.isAfterLast()){
+            counts[0] = c.getInt(c.getColumnIndex("COMPLETED"));
+            counts[1] = c.getInt(c.getColumnIndex("UNATTAINED"));
+        }
+        c.close();
+        db.close();
+        return counts;
+    }*/
     public void addBreakdown(String id,String ReceiveDateTime,String Acct_Num,String Description,
                              String Job_No,String Phone_No, String JOB_Source,int Priority)
     {
         SQLiteDatabase db = getWritableDatabase();
         //Using Try Catch to suppress duplicate entries warnings, when Synching Inbox
         try{
-
             ContentValues values = new ContentValues();
             values.put("DateTime",ReceiveDateTime);
             values.put("Acct_Num",Acct_Num);
@@ -329,12 +416,37 @@ public class DBHandler extends SQLiteOpenHelper
         }
         catch (Exception e)
         {
-
+            Log.e("CalAttainedTime",e.getMessage());
         }
         finally {
             db.close();
         }
+    }
+    public void addBreakdown2(String ReceiveDateTime,String Acct_Num,String Description,
+                             String Job_No,String Phone_No, String JOB_Source,int Priority)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        //Using Try Catch to suppress duplicate entries warnings, when Synching Inbox
+        try{
+            ContentValues values = new ContentValues();
+            values.put("DateTime",ReceiveDateTime);
+            values.put("Acct_Num",Acct_Num);
+            values.put("Description",Description);
+            values.put("job_no",Job_No);
+            values.put("Contact_No",Phone_No);
+            values.put("Priority",Priority);
+            values.put("JOB_Source",JOB_Source);
+            values.put("Status",0);
 
+            db.insert("BreakdownRecords",null,values); //TODO: Use insertOrthrow
+        }
+        catch (Exception e)
+        {
+            Log.e("CalAttainedTime",e.getMessage());
+        }
+        finally {
+            db.close();
+        }
     }
     public int AddTestBreakdownObj(Breakdown breakdown,Context context)
     {
@@ -390,7 +502,7 @@ public class DBHandler extends SQLiteOpenHelper
     public long getAttendedTime()
     {
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT completed_timestamp AS Date2 ,DateTime AS Date1 FROM BreakdownRecords";
+        String query = "SELECT completed_timestamp AS Date2, DateTime AS Date1 FROM BreakdownRecords";
 
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
@@ -415,7 +527,7 @@ public class DBHandler extends SQLiteOpenHelper
         try {
             Date d1 = Globals.timeFormat.parse(day1);
             Date d2 = Globals.timeFormat.parse(day2);
-
+            //Log.d("TEST",day1+"-"+day2);
             duration = (d2.getTime() - d1.getTime()) / 1000 / 60 ; // In Minutes
         } catch (ParseException e) {
             e.printStackTrace();

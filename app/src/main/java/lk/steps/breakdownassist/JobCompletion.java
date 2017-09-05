@@ -19,6 +19,7 @@ public class JobCompletion {
     public String job_completed_by;
     public String action_code;
 
+    public String change_datetime;  //TODO :Change this to a suitable variable format
 
     public JobCompletion() {
     }

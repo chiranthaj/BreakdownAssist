@@ -2,6 +2,7 @@ package lk.steps.breakdownassist;
 
 import android.app.Application;
 import android.content.Context;
+import android.support.multidex.MultiDex;
 
 /**
  * Created by Chirantha on 4/9/2017. 

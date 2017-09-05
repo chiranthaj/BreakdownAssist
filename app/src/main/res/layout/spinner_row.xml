@@ -11,8 +11,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:gravity="start"
-        android:text="spinner item"
-        android:textSize="28sp" />
+        android:textSize="28sp"
+        android:textColor="#808080"
+        android:text="Please select..."/>
 
     <View
         android:layout_width="match_parent"

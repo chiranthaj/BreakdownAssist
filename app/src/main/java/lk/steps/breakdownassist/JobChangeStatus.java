@@ -9,6 +9,7 @@ import java.util.Date;
 
 public class JobChangeStatus {
     public String job_no;
+    public String status;
     public String st_code;
     public String change_datetime;  //TODO :Change this to a suitable variable format
     public String comment;

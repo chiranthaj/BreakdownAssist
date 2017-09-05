@@ -220,12 +220,12 @@
                         android:layout_alignParentStart="true"
                         android:layout_alignParentTop="true"
                         android:gravity="center_horizontal"
-                        android:text="Average Attend Time"
+                        android:text="Breakdown Status"
                         android:textColor="@android:color/darker_gray"
                         android:textSize="22sp" />
 
                     <org.eazegraph.lib.charts.BarChart xmlns:app="http://schemas.android.com/apk/res-auto"
-                        android:id="@+id/chart2"
+                        android:id="@+id/chart1"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:padding="10dp"
@@ -271,7 +271,7 @@
                 android:textSize="22sp" />
 
             <org.eazegraph.lib.charts.ValueLineChart xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/chart"
+                android:id="@+id/chart2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
