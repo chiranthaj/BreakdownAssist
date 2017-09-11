@@ -1,7 +1,9 @@
 package lk.steps.breakdownassist.Sync;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -30,6 +32,7 @@ public class BackgroundService extends Service {
     JobStatusChangesRESTService myJobStatusChangesRESTService;
     JobCompletionRESTService myJobCompletionRESTService;
     SyncRESTService syncRESTService;
+  //  SyncAuthService syncAuthService;
     Timer timer;
     MyTimerTask myTimerTask;
     boolean bTimerRuning=false;
@@ -53,6 +56,7 @@ public class BackgroundService extends Service {
 
         //delay 1000ms, repeat in 5000ms
         timer.schedule(myTimerTask, 1000, 10000);
+        GetAuthToken();
         return START_NOT_STICKY;
     }
 
@@ -186,7 +190,7 @@ public class BackgroundService extends Service {
             syncRESTService.getService().UpdateBreakdownStatus(syncObject, new Callback<SyncObject>() {
                 @Override
                 public void success(SyncObject job, Response response) {
-                    Log.e("StatusChange","0");
+                    Log.e("SyncStatusChange","Successfull");
                     dbHandler.UpdateSyncState_JobStatusChangeObj(obj,1);//Successfully done
                 }
 
@@ -195,14 +199,17 @@ public class BackgroundService extends Service {
                     //Toast.makeText(getApplicationContext()," RetrofitError " + error.getMessage().toString(), Toast.LENGTH_LONG).show();
                     if (!error.isNetworkError()) {
                         if (error.getResponse().getStatus()==409){
-                            Log.e("StatusChange","1");
+                            Log.e("SyncStatusChange","409");
                             dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 1); //Already record is there, may be due to timeout
+                        }else if (error.getResponse().getStatus()==401){
+                            Log.e("SyncStatusChange","Unauthorized");
+                            dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0); //Not Uploaded due to Unauthorized, need to refresh jwt
                         }else {
-                            Log.e("StatusChange","2");
+                            Log.e("SyncStatusChange","already synced");
                             dbHandler.UpdateSyncState_JobStatusChangeObj(obj, -5); //To avoid retry again and again
                         }
                     }else if(error.isNetworkError()){
-                        Log.e("StatusChange","3");
+                        Log.e("SyncStatusChange","isNetworkError");
                         dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0);//Not Uploaded due to no network
                     }
                 }
@@ -248,6 +255,37 @@ public class BackgroundService extends Service {
         }
     }
 
+   private void GetAuthToken(){
+       SyncAuthService syncAuthService = new SyncAuthService();
+       syncAuthService.getService().GetJwt("jagathprasanga","abc1235", new Callback<Token>() {
+           @Override
+           public void success(Token token, Response response) {
+               Log.e("GetAuthToken","Authorized");
+               SaveToken(token);
+           }
+
+           @Override
+           public void failure(RetrofitError error) {
+               Log.e("GetAuthToken","Unauthorized:"+error);
+           }
+       });
+    }
+
+    private void SaveToken(Token token){
+        SharedPreferences preferences = getSharedPreferences("AUTHENTICATION_TOKEN", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("access_token",token.access_token);
+        editor.putString("expires_in",token.expires_in);
+        editor.apply();
+    }
+
+    private Token ReadToken(){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION_TOKEN", Context.MODE_PRIVATE);
+        Token token = new Token(){};
+        token.access_token=prfs.getString("access_token", "");
+        token.expires_in= prfs.getString("expires_in", "");
+        return token;
+    }
     class MyTimerTask extends TimerTask {
         @Override
         public void run() {

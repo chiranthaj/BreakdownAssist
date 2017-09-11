@@ -5,6 +5,8 @@ import java.util.List;
 import lk.steps.breakdownassist.Breakdown;
 import retrofit.Callback;
 import retrofit.http.Body;
+import retrofit.http.Field;
+import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.Path;
@@ -27,5 +29,10 @@ public interface SyncService {
     @POST("/UpdateBreakdownStatus/")
     public void UpdateBreakdownStatus(@Body SyncObject syncObject,
                                       Callback<SyncObject> callback);
+
+    @FormUrlEncoded
+    @POST("/token")
+    public void GetJwt(@Field("username") String username, @Field("password") String password, Callback<Token> callback);
+
 
 }

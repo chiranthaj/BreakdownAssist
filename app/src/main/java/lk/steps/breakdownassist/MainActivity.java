@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -53,6 +54,7 @@ import lk.steps.breakdownassist.Fragments.SearchViewFragment;
 import lk.steps.breakdownassist.Sync.BackgroundService;
 import lk.steps.breakdownassist.Sync.SignalRService;
 import lk.steps.breakdownassist.Sync.TestAPI;
+import lk.steps.breakdownassist.Sync.Token;
 
 
 public class MainActivity extends AppCompatActivity
@@ -68,7 +70,7 @@ public class MainActivity extends AppCompatActivity
     private NavigationView navigationView;
     private static Context context;
     private SignalRService mService;
-
+    public static Token mToken;
 
     boolean doubleBackToExitPressedOnce = false;
 
@@ -138,7 +140,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
         CalculateAttainedTime();
-
+        mToken=ReadToken();
 
 
         // Show the "What's New" screen once for each new release of the application
@@ -394,7 +396,13 @@ public class MainActivity extends AppCompatActivity
             });
         }
     }
-
+    private Token ReadToken(){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION_TOKEN", Context.MODE_PRIVATE);
+        Token token = new Token(){};
+        token.access_token=prfs.getString("access_token", "");
+        token.expires_in= prfs.getString("expires_in", "");
+        return token;
+    }
     private void CalculateAttainedTime() {
         final Handler handler = new Handler();
         final Runnable r = new Runnable() {

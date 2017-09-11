@@ -1,5 +1,8 @@
 package lk.steps.breakdownassist.Sync;
 
+import android.net.Credentials;
+import retrofit.RequestInterceptor;
+
 /**
  * Created by JagathPrasnaga on 24/08/2017.
  */
@@ -9,19 +12,32 @@ public class SyncRESTService {
     //private static final String URL = "http://111.223.135.20/Team/";
     private retrofit.RestAdapter restAdapter;
     private SyncService apiService;
+    private String Jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImExM2RjZDQ0LTZhODgtNGU1ZS05Y2YzLWJhYTZkOGVhYTA0YyIsImp0aSI6ImNjNGNiNWExLTFjMjEtNDJmZC1hNDRhLTQwM2ViMWQ0ODgyZSIsImlhdCI6MTUwNTA2MjQyNCwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjpbIk1hbmFnZXIiLCJNZW1iZXIiLCJBcmVhIGVuZ2luZWVyIiwiQmFjay1vZmZpY2UgYWdlbnQiLCJMaW5lc21hbiIsIkNhbGwgYWdlbnQiLCJBZG1pbmlzdHJhdG9yIl0sIm5iZiI6MTUwNTA2MjQyNCwiZXhwIjoxNTA1Mjc4NDI0LCJpc3MiOiJBbHRhaXJDQSIsImF1ZCI6IkFsdGFpckNBQXVkaWVuY2UifQ.a9RXq8yZ-ixkL3prESCsuyyQ0UbgSvoGxBHrT1JXf30";
+
+
 
     public SyncRESTService()
     {
         restAdapter = new  retrofit.RestAdapter.Builder()
                 .setEndpoint(URL)
+                .setRequestInterceptor(requestInterceptor)
                 .setLogLevel(retrofit.RestAdapter.LogLevel.FULL)
                 .build();
 
         apiService = restAdapter.create(SyncService.class);
     }
 
+    RequestInterceptor requestInterceptor = new RequestInterceptor() {
+        @Override
+        public void intercept(RequestFacade request) {
+            request.addHeader("Authorization", "Bearer "+Jwt);
+        }
+    };
+
     public SyncService getService()
     {
         return apiService;
     }
+
+
 }
