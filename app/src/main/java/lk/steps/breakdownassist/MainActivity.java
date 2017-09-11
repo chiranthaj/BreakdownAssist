@@ -4,13 +4,16 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.design.widget.FloatingActionButton;
 
@@ -31,7 +34,6 @@ import android.widget.Toast;
 /*import com.arlib.floatingsearchview.FloatingSearchView;*/
 import com.facebook.stetho.Stetho;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
 
 import java.util.List;
@@ -48,6 +50,9 @@ import lk.steps.breakdownassist.Fragments.GmapAddTestBreakdownFragment;
 import lk.steps.breakdownassist.Fragments.GmapFragment;
 
 import lk.steps.breakdownassist.Fragments.SearchViewFragment;
+import lk.steps.breakdownassist.Sync.BackgroundService;
+import lk.steps.breakdownassist.Sync.SignalRService;
+import lk.steps.breakdownassist.Sync.TestAPI;
 
 
 public class MainActivity extends AppCompatActivity
@@ -62,6 +67,8 @@ public class MainActivity extends AppCompatActivity
     public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
     private NavigationView navigationView;
     private static Context context;
+    private SignalRService mService;
+
 
     boolean doubleBackToExitPressedOnce = false;
 
@@ -113,6 +120,7 @@ public class MainActivity extends AppCompatActivity
         timer.schedule(myTimerTask, 1000, 5000);
 
         startService(new Intent(getBaseContext(), BackgroundService.class));
+        startService(new Intent(getBaseContext(), SignalRService.class));
 
         Globals.initAreaCodes(getApplicationContext());
 
@@ -130,6 +138,9 @@ public class MainActivity extends AppCompatActivity
             }
         }
         CalculateAttainedTime();
+
+
+
         // Show the "What's New" screen once for each new release of the application
         new WhatsNewScreen(this).show();
     }
@@ -183,6 +194,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         stopService(new Intent(getBaseContext(), BackgroundService.class));
+        stopService(new Intent(getBaseContext(), SignalRService.class));
         dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
         super.onDestroy();
@@ -399,5 +411,15 @@ public class MainActivity extends AppCompatActivity
         };
         handler.postDelayed(r, 5000); //2Sec
     }
+       /* public void sendMessage(String receiver,String message) {
+        if (mBound) {
+            // Call a method from the SignalRService.
+            // However, if this call were something that might hang, then this request should
+            // occur in a separate thread to avoid slowing down the activity performance.
+            Log.e("SIGNALR","002");
+            mService.sendMessage(message);
+        }
+    }*/
+
 
 }

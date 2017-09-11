@@ -1,7 +1,8 @@
-package lk.steps.breakdownassist;
+package lk.steps.breakdownassist.Sync;
 
 import java.util.List;
 
+import lk.steps.breakdownassist.JobCompletion;
 import retrofit.Callback;
 import retrofit.http.Body;
 import retrofit.http.DELETE;

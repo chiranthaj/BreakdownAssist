@@ -1,4 +1,4 @@
-package lk.steps.breakdownassist;
+package lk.steps.breakdownassist.Sync;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +11,14 @@ import android.widget.Toast;
 
 import java.util.Date;
 
+import lk.steps.breakdownassist.DBHandler;
+import lk.steps.breakdownassist.Globals;
+import lk.steps.breakdownassist.JobChangeStatus;
+import lk.steps.breakdownassist.JobCompletion;
+import lk.steps.breakdownassist.R;
+import lk.steps.breakdownassist.Sync.BackgroundService;
+import lk.steps.breakdownassist.Sync.JobCompletionRESTService;
+import lk.steps.breakdownassist.Sync.JobStatusChangesRESTService;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -103,7 +111,7 @@ public class TestAPI extends AppCompatActivity {
                         myjobstatusRec.job_no=editTextJobNo.getText().toString();
 
                         Date callDayTime = new Date( System.currentTimeMillis());
-                        myjobstatusRec.change_datetime=Globals.timeFormat.format(callDayTime);
+                        myjobstatusRec.change_datetime= Globals.timeFormat.format(callDayTime);
                         myjobstatusRec.st_code=editTextJobStatus.getText().toString();
                         myjobstatusRec.comment="Test comment abcd";
 

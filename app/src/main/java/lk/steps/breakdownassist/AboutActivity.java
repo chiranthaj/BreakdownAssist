@@ -1,29 +1,42 @@
 package lk.steps.breakdownassist;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import lk.steps.breakdownassist.HtmlTextView.HtmlTextView;
+import lk.steps.breakdownassist.Sync.SignalRService;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
 public class AboutActivity extends Activity {
+    private SignalRService mService;
+    private boolean mBound = false;
 
     @Override
     public void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+
+
+        Intent intent = new Intent();
+        intent.setClass(this, SignalRService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 /*
         PackageInfo info;
         String vName ="";
@@ -73,82 +86,47 @@ public class AboutActivity extends Activity {
             return "";
         }
     }
-
+    @Override
+    protected void onStop() {
+        // Unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+        super.onStop();
+    }
 
     public void test(View view){
-      /*  NewBreakdownRESTService newBreakdownRESTService = new NewBreakdownRESTService();
-
-        JobChangeStatus _jobchangestatus_obj= new JobChangeStatus();
-        _jobchangestatus_obj.job_no=("456358");
-        _jobchangestatus_obj.st_code=("st_code");
-        _jobchangestatus_obj.change_datetime="";
-        _jobchangestatus_obj.comment=("comment");
-        _jobchangestatus_obj.device_timestamp=("");
-        _jobchangestatus_obj.synchro_mobile_db=1;
-
-        newBreakdownRESTService.getService().UpdateBreakdownStatus(_jobchangestatus_obj, new Callback<JobChangeStatus>() {
-            @Override
-            public void success(JobChangeStatus job, Response response) {
-                Log.d("API-","OK");
-               // dbHandler.UpdateSyncState_JobStatusChangeObj(obj,1);//Successfully done
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.d("API-","error");
-                //Toast.makeText(getApplicationContext()," RetrofitError " + error.getMessage().toString(), Toast.LENGTH_LONG).show();
-                if (!error.isNetworkError()) {
-                    if (error.getResponse().getStatus()==409){
-                       // dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 1); //Already record is there, may be due to timeout
-                    }else {
-                       // dbHandler.UpdateSyncState_JobStatusChangeObj(obj, -5); //To avoid retry again and again
-                    }
-                }else if(error.isNetworkError()){
-                    //dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0);//Not Uploaded due to no network
-                }
-            }
-        });*/
-
-
-
-
-
-
-
-
-
-
-        /*newBreakdownRESTService.getService().getNewBreakdowns("111","77","S","2", new Callback<List<Breakdown>>() {
-            @Override
-            public void success(List<Breakdown> breakdowns, Response response) {
-                Log.d("API-","OK");
-                Log.d("breakdowns-",""+breakdowns.size());
-                DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
-                for (Breakdown breakdown :breakdowns) {
-                    dbHandler.addBreakdown2(
-                            breakdown.get_Received_Time(),
-                            breakdown.get_Acct_Num(),
-                            breakdown.get_Full_Description(),
-                            breakdown.get_Job_No(),
-                            breakdown.get_Contact_No(),
-                            breakdown.get_ADDRESS(),
-                            1);
-                }
-                String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
-                dbHandler.close();
-
-                //Informing the Map view about the new bd, then it can add it
-                Intent myintent=new Intent();
-                myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
-                myintent.putExtra("_id",sIssuedBreakdownID);
-                getApplicationContext().sendBroadcast(myintent);
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.d("API-","ERROR-"+error.getMessage());
-            }
-
-        });*/
+        Log.e("SIGNALR","001");
+        sendMessage("gamage","prasanga");
     }
+       public void sendMessage(String receiver,String message) {
+        if (mBound) {
+            // Call a method from the SignalRService.
+            // However, if this call were something that might hang, then this request should
+            // occur in a separate thread to avoid slowing down the activity performance.
+            Log.e("SIGNALR","002");
+            mService.sendMessage(message);
+        }
+    }
+
+    /**
+     * Defines callbacks for service binding, passed to bindService()
+     */
+    private final ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to SignalRService, cast the IBinder and get SignalRService instance
+            SignalRService.LocalBinder binder = (SignalRService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 }

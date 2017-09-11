@@ -68,6 +68,10 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     compile 'com.github.medyo:fancybuttons:1.8.3'
     compile 'com.github.javiersantos:FitChart:1.1'
+
+    compile files('libs/gson-2.3.1.jar')
+    compile files('libs/signalr-client-sdk-android.jar')
+    compile files('libs/signalr-client-sdk.jar')
 }
 configurations {
     all*.exclude group: 'com.google.firebase', module: 'app'

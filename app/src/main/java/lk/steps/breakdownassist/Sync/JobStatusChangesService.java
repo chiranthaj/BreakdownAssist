@@ -1,4 +1,4 @@
-package lk.steps.breakdownassist;
+package lk.steps.breakdownassist.Sync;
 
 /**
  * Created by Chirantha on 13/06/2017.
@@ -6,6 +6,7 @@ package lk.steps.breakdownassist;
 
 import java.util.List;
 
+import lk.steps.breakdownassist.JobChangeStatus;
 import retrofit.Callback;
 import retrofit.http.Body;
 import retrofit.http.DELETE;

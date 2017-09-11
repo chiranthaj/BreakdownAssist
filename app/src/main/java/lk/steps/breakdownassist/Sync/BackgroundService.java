@@ -1,20 +1,22 @@
-package lk.steps.breakdownassist;
+package lk.steps.breakdownassist.Sync;
 
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
-
-import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import lk.steps.breakdownassist.Breakdown;
+import lk.steps.breakdownassist.DBHandler;
+import lk.steps.breakdownassist.JobChangeStatus;
+import lk.steps.breakdownassist.JobCompletion;
+import lk.steps.breakdownassist.R;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -30,7 +32,6 @@ public class BackgroundService extends Service {
     SyncRESTService syncRESTService;
     Timer timer;
     MyTimerTask myTimerTask;
-
     boolean bTimerRuning=false;
     @Nullable
     @Override
@@ -45,7 +46,7 @@ public class BackgroundService extends Service {
         myJobStatusChangesRESTService = new JobStatusChangesRESTService();
         myJobCompletionRESTService = new JobCompletionRESTService();
         syncRESTService = new SyncRESTService();
-        Toast.makeText(this, "Synch Service Started", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Sync Service Started", Toast.LENGTH_SHORT).show();
 
         timer = new Timer();
         myTimerTask = new MyTimerTask();
@@ -119,7 +120,7 @@ public class BackgroundService extends Service {
         }
     }
 
-    private void GetNewBreakdownsFromServer(){
+    public void GetNewBreakdownsFromServer(){
         syncRESTService.getService().getNewBreakdowns("111","77","S","3", new Callback<List<Breakdown>>() {
             @Override
             public void success(List<Breakdown> breakdowns, Response response) {
@@ -146,7 +147,6 @@ public class BackgroundService extends Service {
                 myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
                 myintent.putExtra("_id",sIssuedBreakdownID);
                 getApplicationContext().sendBroadcast(myintent);
-
                 if(playTone){
                     MediaPlayer mPlayer2;
                     mPlayer2= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
@@ -247,14 +247,13 @@ public class BackgroundService extends Service {
             });
         }
     }
+
     class MyTimerTask extends TimerTask {
         @Override
         public void run() {
             /*if (!bTimerRuning){
                 bTimerRuning=true;*/
             //Sync_JobStatusChangeObj_to_Server();
-
-            GetNewBreakdownsFromServer();
             SyncBreakdownStatusChange();
             SyncBreakdownCompletion();
               /*  bTimerRuning=false;

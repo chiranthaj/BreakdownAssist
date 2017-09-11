@@ -24,17 +24,10 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBaj0WI-4h1fm70i-iPaDziec3x6PhfM8c" />
-
-        <receiver
-            android:name=".SmsBroadcastReceiver"
-            android:exported="true">
-            <intent-filter android:priority="999">
-                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
-            </intent-filter>
-        </receiver>
 
         <activity
             android:name=".LoginActivity"
@@ -45,12 +38,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
+
         <activity android:name=".AboutActivity" />
+
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -59,16 +55,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="lk.steps.breakdownassist.MainActivity" />
         </activity>
+
         <activity
             android:name=".FileExplorer.FileChooser"
             android:label="Choose File"
             android:theme="@android:style/Theme.Holo">
             <action android:name="lk.steps.breakdownassist.fileexplorer.FileChooser" />
-
             <category android:name="android.intent.category.DEFAULT" />
         </activity>
+
         <activity
-            android:name=".TestAPI"
+            android:name=".Sync.TestAPI"
             android:label="@string/title_activity_test_api"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -77,7 +74,22 @@
                 android:value="lk.steps.breakdownassist.MainActivity" />
         </activity>
 
-        <service android:name=".BackgroundService" />
+        <service
+            android:name=".Sync.BackgroundService" />
+
+        <service
+            android:name=".Sync.SignalRService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
+
+        <receiver
+            android:name=".SmsBroadcastReceiver"
+            android:exported="true">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
