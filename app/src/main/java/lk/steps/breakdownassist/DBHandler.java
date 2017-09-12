@@ -262,7 +262,8 @@ public class DBHandler extends SQLiteOpenHelper
         String query = "SELECT JobStatusChange.job_no, JobStatusChange.st_code,JobStatusChange.change_datetime,BreakdownRecords.Status " +
                 "FROM JobStatusChange " +
                 " join BreakdownRecords on JobStatusChange.job_no = BreakdownRecords.job_no " +
-                "WHERE JobStatusChange.synchro_mobile_db=0 and length(JobStatusChange.job_no)=10;";//
+                "WHERE ( JobStatusChange.synchro_mobile_db = 0 or JobStatusChange.synchro_mobile_db = -1) and " +
+                "length(JobStatusChange.job_no)=10;";//
 
         Cursor c = db.rawQuery(query, null);
 

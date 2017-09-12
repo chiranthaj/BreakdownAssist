@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fancy="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,42 +8,26 @@
     android:orientation="vertical"
     tools:context="lk.steps.breakdownassist.LoginActivity">
 
-    <!-- Login progress -->
-    <RelativeLayout
-        android:id="@+id/login_form"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:scaleType="center"
-            />
-        <LinearLayout
+    <LinearLayout
             android:id="@+id/layout1"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        android:layout_height="match_parent"
             android:focusableInTouchMode="true"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
             android:gravity="center"
             android:orientation="vertical"
             android:layout_above="@+id/txt_app_name"
-            android:layout_alignParentTop="true">
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
 
-            <ImageView
-                android:id="@+id/imageView2"
-                android:layout_width="wrap_content"
-                android:layout_height="100dp"
-                android:layout_marginLeft="50dp"
-                android:layout_marginRight="50dp"
-                android:layout_marginBottom="50dp"
-                app:srcCompat="@drawable/breackdownassist" />
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            app:srcCompat="@drawable/breackdownassist" />
 
-            <LinearLayout
+        <LinearLayout
                 android:id="@+id/email_login_form"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -51,7 +35,15 @@
                 android:focusableInTouchMode="true"
                 android:orientation="vertical">
 
-                <android.support.design.widget.TextInputLayout
+            <ProgressBar
+                android:id="@+id/login_progress"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_margin="10dp"
+                android:visibility="invisible" />
+
+            <android.support.design.widget.TextInputLayout
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="8dp"
                     android:layout_width="match_parent"
@@ -67,7 +59,7 @@
                         android:gravity="center"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:text="user"
+                        android:text="jagathprasanga"
                         android:textSize="25sp" />
 
                 </android.support.design.widget.TextInputLayout>
@@ -96,19 +88,14 @@
 
                 </android.support.design.widget.TextInputLayout>
 
-                <ProgressBar
-                    android:id="@+id/login_progress"
-                    style="?android:attr/progressBarStyleLarge"
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="10dp"
-                    android:visibility="invisible" />
+
 
                 <mehdi.sakout.fancybuttons.FancyButton
                     android:id="@+id/sign_in_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="8dp"
+                    android:layout_marginTop="30dp"
+                    android:padding="6dp"
                     fancy:fb_borderColor="@color/colorPrimaryDark"
                     fancy:fb_borderWidth="2dp"
                     fancy:fb_defaultColor="@android:color/transparent"
@@ -125,18 +112,15 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Breakdown Assist  ©  2017"
             android:textSize="14sp"
             android:textColor="@android:color/holo_blue_dark"
             android:gravity="center"
-            android:layout_marginBottom="20dp"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentStart="true"
             android:id="@+id/txt_app_name" />
-    </RelativeLayout>
 
-
-
-</LinearLayout>
+</RelativeLayout>

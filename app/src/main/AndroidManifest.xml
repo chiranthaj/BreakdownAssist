@@ -64,16 +64,6 @@
             <category android:name="android.intent.category.DEFAULT" />
         </activity>
 
-        <activity
-            android:name=".Sync.TestAPI"
-            android:label="@string/title_activity_test_api"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="lk.steps.breakdownassist.MainActivity" />
-        </activity>
-
         <service
             android:name=".Sync.BackgroundService" />
 

@@ -6,20 +6,10 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -27,21 +17,18 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import lk.steps.breakdownassist.Sync.SyncRESTService;
+import lk.steps.breakdownassist.Sync.Token;
 import mehdi.sakout.fancybuttons.FancyButton;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via username/password.
@@ -65,7 +52,7 @@ public class LoginActivity extends AppCompatActivity  {
     private AutoCompleteTextView mUsernameView;
     private EditText mPasswordView;
     private View mProgressView;
-    private View mLoginFormView;
+  //  private View mLoginFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +95,7 @@ public class LoginActivity extends AppCompatActivity  {
             }
         });
 
-        mLoginFormView = findViewById(R.id.login_form);
+      // mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
 
@@ -173,12 +160,11 @@ public class LoginActivity extends AppCompatActivity  {
             // perform the user login attempt.
             showProgress(true);
 
-
             //mAuthTask = new UserLoginTask(username, password);
             //mAuthTask.execute((Void) null);
             Log.d("TEST","55");
-
-            Boolean usernameExists = false;
+            performeLogin(username,password);
+            /*Boolean usernameExists = false;
             Boolean passwordMatches = false;
             for (String credential : DUMMY_CREDENTIALS) {
                 String _username = credential.split(":")[0];
@@ -207,34 +193,6 @@ public class LoginActivity extends AppCompatActivity  {
                 showProgress(false);
                 mUsernameView.setError(getString(R.string.error_invalid_username));
                 mUsernameView.requestFocus();
-            }
-
-            /*for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(username)) {
-                    // Account exists, return true if the password matches.
-                    if(pieces[1].equals(password)){
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        handler.post(new Runnable() {
-                            public void run() {
-                                Log.d("TEST","3");
-                                Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
-                                LoginActivity.this.startActivity(myIntent);
-                            }
-                        });
-                        finish();
-                    }else{
-                        Log.d("TEST","1");
-                        showProgress(false);
-                        mPasswordView.setError(getString(R.string.error_incorrect_password));
-                        mPasswordView.requestFocus();
-                    }
-                }else{
-                    Log.d("TEST","2");
-                    showProgress(false);
-                    mUsernameView.setError(getString(R.string.error_invalid_username));
-                    mUsernameView.requestFocus();
-                }
             }*/
         }
     }
@@ -284,6 +242,122 @@ public class LoginActivity extends AppCompatActivity  {
             mProgressView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
             //mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
+    }
+
+
+    private void performeLogin(final String username, final String password){
+        long lastLoginTime = ReadLongPreferences("last_login_time", 0);
+        final long currentTime = System.currentTimeMillis()/1000;
+        long expiresIn = ReadLongPreferences("expires_in", 0);
+        String lastUsername = ReadStringPreferences("last_username", "");
+        String lastPassword = ReadStringPreferences("last_password", "");
+
+        Log.e("lastLoginTime","="+lastLoginTime);
+        Log.e("currentTime","="+currentTime);
+        Log.e("expiresIn","="+expiresIn);
+        Log.e("lastUsername","="+lastUsername);
+        Log.e("lastPassword","="+lastPassword);
+        long safeTimeMargin = 24*60*60;
+        if((lastLoginTime + expiresIn + safeTimeMargin > currentTime) & // token expired or will not expire in next hour and user/pass are correct
+                (lastUsername.equals(username) & lastPassword.equals(password))){
+            Log.e("Login","Local login");//Local login
+            showProgress(false);
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                public void run() {
+                    Log.d("TEST","3");
+                    WriteLongPreferences("last_login_time",currentTime);
+                    Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
+                    LoginActivity.this.startActivity(myIntent);
+                }
+            });
+            finish();
+        }else {
+            Log.e("Login","Remote login");//Remote login
+            SyncRESTService syncAuthService = new SyncRESTService();
+            Call<Token> call = syncAuthService.getService().GetJwt(username,password);
+            call.enqueue(new Callback<Token>() {
+                @Override
+                public void onResponse(Call<Token> call, Response<Token> response) {
+                    if (response.isSuccessful()) {
+                        Log.e("GetAuthToken","Authorized");
+                        showProgress(false);
+                        Token token = response.body();
+                        //SaveToken(token);
+                        WriteStringPreferences("user_id",token.user_id);
+                        WriteLongPreferences("expires_in",token.expires_in);
+                        WriteStringPreferences("access_token",token.access_token);
+                        WriteStringPreferences("last_username",username);
+                        WriteStringPreferences("last_password",password);
+
+                        Handler handler = new Handler(Looper.getMainLooper());
+                        handler.post(new Runnable() {
+                            public void run() {
+                                Log.d("TEST","3");
+                                Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
+                                LoginActivity.this.startActivity(myIntent);
+                            }
+                        });
+                        finish();
+                    } else if (response.errorBody() != null) {
+                        showProgress(false);
+                        String error = response.errorBody().toString();
+                        Log.d("TEST","3"+error);
+                        /*if(error.getResponse()==null){
+                            Toast.makeText(getApplicationContext(),"Network failure.. "+error, Toast.LENGTH_LONG).show();
+                        }else if (error.getResponse().getStatus()==401){
+                            Log.e("GetAuthToken","Unauthorized:"+error);
+                            mUsernameView.setError("Login fail..");
+                            mUsernameView.requestFocus();
+                        }else {
+                            Toast.makeText(getApplicationContext(),"Network failure.. "+error, Toast.LENGTH_LONG).show();
+                        }*/
+                    }
+
+
+                }
+
+                @Override
+                public void onFailure(Call<Token> call, Throwable t) {
+
+                }
+
+            });
+        }
+    }
+
+
+    private Token ReadToken(){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        Token token = new Token(){};
+        token.access_token=prfs.getString("access_token", "");
+        token.expires_in= prfs.getLong("expires_in", 0);
+        return token;
+    }
+    private void SaveToken(Token token){
+        SharedPreferences preferences = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("access_token",token.access_token);
+        editor.putLong("expires_in",token.expires_in);
+        editor.apply();
+    }
+    private void WriteLongPreferences(String key, long value){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prfs.edit();
+        editor.putLong(key,value).apply();
+    }
+    private void WriteStringPreferences(String key, String value){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prfs.edit();
+        editor.putString(key,value).apply();
+    }
+    private String ReadStringPreferences(String key, String defaultValue){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        return prfs.getString(key, defaultValue);
+    }
+    private long ReadLongPreferences(String key, long defaultValue){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        return prfs.getLong(key, defaultValue);
     }
 }
 

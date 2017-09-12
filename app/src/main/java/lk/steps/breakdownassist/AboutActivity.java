@@ -19,9 +19,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import lk.steps.breakdownassist.HtmlTextView.HtmlTextView;
 import lk.steps.breakdownassist.Sync.SignalRService;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+
 
 
 public class AboutActivity extends Activity {

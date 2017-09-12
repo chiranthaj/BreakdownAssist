@@ -5,7 +5,8 @@ package lk.steps.breakdownassist.Sync;
  */
 
 public class Token {
+    public String user_id;
     public String access_token;
-    public String expires_in;
+    public long expires_in;
 
 }

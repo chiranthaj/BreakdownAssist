@@ -4,17 +4,15 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.design.widget.FloatingActionButton;
 
@@ -53,8 +51,11 @@ import lk.steps.breakdownassist.Fragments.GmapFragment;
 import lk.steps.breakdownassist.Fragments.SearchViewFragment;
 import lk.steps.breakdownassist.Sync.BackgroundService;
 import lk.steps.breakdownassist.Sync.SignalRService;
-import lk.steps.breakdownassist.Sync.TestAPI;
+import lk.steps.breakdownassist.Sync.SyncRESTService;
 import lk.steps.breakdownassist.Sync.Token;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class MainActivity extends AppCompatActivity
@@ -140,9 +141,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
         CalculateAttainedTime();
-        mToken=ReadToken();
-
-
+        mToken = ReadToken();
         // Show the "What's New" screen once for each new release of the application
         new WhatsNewScreen(this).show();
     }
@@ -310,8 +309,8 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         else if(id == R.id.action_Test_API){
-            Intent intent = new Intent(this, TestAPI.class);
-            startActivity(intent);
+            //Intent intent = new Intent(this, TestAPI.class);
+            //startActivity(intent);
             return true;
         }
         else if(id == R.id.action_Add_Test_Breakdowns){
@@ -397,10 +396,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
     private Token ReadToken(){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION_TOKEN", Context.MODE_PRIVATE);
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         Token token = new Token(){};
+        token.user_id=prfs.getString("user_id", "");
         token.access_token=prfs.getString("access_token", "");
-        token.expires_in= prfs.getString("expires_in", "");
+        token.expires_in= prfs.getLong("expires_in", 0);
         return token;
     }
     private void CalculateAttainedTime() {

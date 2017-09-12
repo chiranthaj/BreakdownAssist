@@ -23,6 +23,7 @@ import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.DBHandler;
 import lk.steps.breakdownassist.JobChangeStatus;
 import lk.steps.breakdownassist.JobCompletion;
+import lk.steps.breakdownassist.MainActivity;
 import lk.steps.breakdownassist.R;
 import microsoft.aspnet.signalr.client.MessageReceivedHandler;
 import microsoft.aspnet.signalr.client.Platform;
@@ -33,9 +34,9 @@ import microsoft.aspnet.signalr.client.hubs.HubProxy;
 import microsoft.aspnet.signalr.client.hubs.SubscriptionHandler2;
 import microsoft.aspnet.signalr.client.transport.ClientTransport;
 import microsoft.aspnet.signalr.client.transport.ServerSentEventsTransport;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SignalRService extends Service {
     private HubConnection mHubConnection;
@@ -175,8 +176,10 @@ public class SignalRService extends Service {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
+                        Log.d("API-","its running-01");
                         GetNewBreakdownsFromServer();
-                        Toast.makeText(getApplicationContext(),"SignalR request received.", Toast.LENGTH_SHORT).show();
+                        Log.d("API-","its running-02");
+                        Toast.makeText(getApplicationContext(),"SignalR request received.XXX", Toast.LENGTH_SHORT).show();
                        // Toast.makeText(getApplicationContext(),json.toString(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -202,47 +205,63 @@ public class SignalRService extends Service {
             mBound = false;
         }
     };
-    public void GetNewBreakdownsFromServer(){
-        syncRESTService.getService().getNewBreakdowns("111","77","S","3", new Callback<List<Breakdown>>() {
-            @Override
-            public void success(List<Breakdown> breakdowns, Response response) {
-                Log.d("API-","OK");
-                Log.d("breakdowns-",""+breakdowns.size());
-                DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
-                boolean playTone = false;
-                for (Breakdown breakdown :breakdowns) {
-                    dbHandler.addBreakdown2(
-                            breakdown.get_Received_Time(),
-                            breakdown.get_Acct_Num(),
-                            breakdown.get_Full_Description(),
-                            breakdown.get_Job_No(),
-                            breakdown.get_Contact_No(),
-                            breakdown.get_ADDRESS(),
-                            1);
-                    playTone = true;
-                }
-                String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
-                dbHandler.close();
 
-                //Informing the Map view about the new bd, then it can add it
-                Intent myintent=new Intent();
-                myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
-                myintent.putExtra("_id",sIssuedBreakdownID);
-                getApplicationContext().sendBroadcast(myintent);
-                if(playTone){
-                    MediaPlayer mPlayer2;
-                    mPlayer2= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
-                    mPlayer2.start();
+
+    public void GetNewBreakdownsFromServer(){
+        //Log.e("GetNewBreakdowns","1");
+        SyncRESTService syncRESTService = new SyncRESTService();
+        Call<List<Breakdown>> call = syncRESTService.getService()
+                .getNewBreakdowns( "Bearer "+ MainActivity.mToken.access_token,
+                        MainActivity.mToken.user_id,"77","S","3");
+
+        call.enqueue(new Callback<List<Breakdown>>(){
+            @Override
+            public void onResponse(Call<List<Breakdown>> call, Response<List<Breakdown>> response) {
+                //Log.e("GetNewBreakdowns","2");
+                if (response.isSuccessful()) {
+                    Log.e("GetNewBreakdowns","Successful");
+                    List<Breakdown> breakdowns = response.body();
+                    Log.e("GetNewBreakdowns","Number-"+breakdowns.size());
+                    DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
+                    boolean playTone = false;
+                    for (Breakdown breakdown :breakdowns) {
+                        dbHandler.addBreakdown2(
+                                breakdown.get_Received_Time(),
+                                breakdown.get_Acct_Num(),
+                                breakdown.get_Full_Description(),
+                                breakdown.get_Job_No(),
+                                breakdown.get_Contact_No(),
+                                breakdown.get_ADDRESS(),
+                                1);
+                        playTone = true;
+                    }
+                    String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
+                    dbHandler.close();
+
+                    //Informing the Map view about the new bd, then it can add it
+                    Intent myintent=new Intent();
+                    myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
+                    myintent.putExtra("_id",sIssuedBreakdownID);
+                    getApplicationContext().sendBroadcast(myintent);
+                    if(playTone){
+                        MediaPlayer mPlayer2;
+                        mPlayer2= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
+                        mPlayer2.start();
+                    }
+                } else if (response.errorBody() != null) {
+                    Log.e("GetNewBreakdowns","4-" + response.errorBody());
                 }
             }
 
             @Override
-            public void failure(RetrofitError error) {
-                Log.d("API-","ERROR-"+error.getMessage());
+            public void onFailure(Call<List<Breakdown>> call, Throwable t) {
+                Log.e("GetNewBreakdowns","5-" + t.getMessage());
             }
 
         });
     }
+
+
 
     class MyTimerTask extends TimerTask {
         @Override

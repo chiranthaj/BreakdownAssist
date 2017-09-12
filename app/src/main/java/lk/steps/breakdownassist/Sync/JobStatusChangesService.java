@@ -7,14 +7,15 @@ package lk.steps.breakdownassist.Sync;
 import java.util.List;
 
 import lk.steps.breakdownassist.JobChangeStatus;
-import retrofit.Callback;
-import retrofit.http.Body;
-import retrofit.http.DELETE;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.PUT;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit2.Callback;
+import retrofit2.http.Body;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+
 
 public interface JobStatusChangesService {
     //Retrofit turns the WEB API into a Java interface.
@@ -28,13 +29,13 @@ public interface JobStatusChangesService {
                            Callback<JobChangeStatus> callback);
 
     @DELETE("/api/jobstatuschanges/{id}")
-    public void deleteJobStatusRec(@Path("id") Integer id,Callback<JobChangeStatus> callback);
+    public void deleteJobStatusRec(@Path("id") Integer id, Callback<JobChangeStatus> callback);
 
     @PUT("/api/jobstatuschanges/{id}")
     public void updateJobStatusRec(@Path("id") Integer id,@Body JobChangeStatus JobStatusRec,
                                    Callback<JobChangeStatus> callback);
 
     @POST("/api/jobstatuschanges")
-    public void addJobStatusRec(@Body JobChangeStatus JobStatusRec,Callback<JobChangeStatus> callback);
+    public void addJobStatusRec(@Body JobChangeStatus JobStatusRec, Callback<JobChangeStatus> callback);
 
 }
