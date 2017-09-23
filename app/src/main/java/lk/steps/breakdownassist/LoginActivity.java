@@ -22,6 +22,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import lk.steps.breakdownassist.Sync.SyncRESTService;
 import lk.steps.breakdownassist.Sync.Token;
 import mehdi.sakout.fancybuttons.FancyButton;
@@ -44,9 +46,6 @@ public class LoginActivity extends AppCompatActivity  {
      * A dummy authentication store containing known user names and passwords.
      * TODO: remove after connecting to a real authentication system.
      */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "user:abc123", "user2:123456"
-    };
 
     // UI references.
     private AutoCompleteTextView mUsernameView;
@@ -97,7 +96,7 @@ public class LoginActivity extends AppCompatActivity  {
 
       // mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-
+        ShowLastCredential();
 
         TextView txtAppName = (TextView) findViewById(R.id.txt_app_name);
         try{
@@ -243,7 +242,7 @@ public class LoginActivity extends AppCompatActivity  {
             //mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
-
+    private boolean ForceLocalLogin = false;
 
     private void performeLogin(final String username, final String password){
         long lastLoginTime = ReadLongPreferences("last_login_time", 0);
@@ -257,22 +256,22 @@ public class LoginActivity extends AppCompatActivity  {
         Log.e("expiresIn","="+expiresIn);
         Log.e("lastUsername","="+lastUsername);
         Log.e("lastPassword","="+lastPassword);
-        long safeTimeMargin = 24*60*60;
-        if((lastLoginTime + expiresIn + safeTimeMargin > currentTime) & // token expired or will not expire in next hour and user/pass are correct
+        long safeTimeMargin = 60*60*1000*-1;
+        if(((lastLoginTime + expiresIn + safeTimeMargin > currentTime) | ForceLocalLogin ) & // token expired or will not expire in next hour and user/pass are correct
                 (lastUsername.equals(username) & lastPassword.equals(password))){
             Log.e("Login","Local login");//Local login
             showProgress(false);
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 public void run() {
-                    Log.d("TEST","3");
+                    //Log.d("TEST","3");
                     WriteLongPreferences("last_login_time",currentTime);
                     Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
                     LoginActivity.this.startActivity(myIntent);
                 }
             });
             finish();
-        }else {
+        }else if(!ForceLocalLogin){
             Log.e("Login","Remote login");//Remote login
             SyncRESTService syncAuthService = new SyncRESTService();
             Call<Token> call = syncAuthService.getService().GetJwt(username,password);
@@ -285,24 +284,31 @@ public class LoginActivity extends AppCompatActivity  {
                         Token token = response.body();
                         //SaveToken(token);
                         WriteStringPreferences("user_id",token.user_id);
+                        WriteStringPreferences("area_id",token.area_id);
+                        WriteStringPreferences("team_id",token.team_id);
                         WriteLongPreferences("expires_in",token.expires_in);
                         WriteStringPreferences("access_token",token.access_token);
+                        WriteStringPreferences("group_token",token.group_token);
                         WriteStringPreferences("last_username",username);
                         WriteStringPreferences("last_password",password);
 
                         Handler handler = new Handler(Looper.getMainLooper());
                         handler.post(new Runnable() {
                             public void run() {
-                                Log.d("TEST","3");
+                                //Log.d("TEST","3");
                                 Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
                                 LoginActivity.this.startActivity(myIntent);
                             }
                         });
+                        Toast.makeText(getApplicationContext(),"Login successful.. ", Toast.LENGTH_LONG).show();
                         finish();
                     } else if (response.errorBody() != null) {
                         showProgress(false);
-                        String error = response.errorBody().toString();
-                        Log.d("TEST","3"+error);
+                        Log.d("GetAuthToken","Fail"+response.errorBody());
+                        Toast.makeText(getApplicationContext(),"Network failure..\nSwitch to local login"+response.errorBody(), Toast.LENGTH_LONG).show();
+                        ForceLocalLogin = true;
+                        performeLogin(username,password);
+
                         /*if(error.getResponse()==null){
                             Toast.makeText(getApplicationContext(),"Network failure.. "+error, Toast.LENGTH_LONG).show();
                         }else if (error.getResponse().getStatus()==401){
@@ -313,13 +319,13 @@ public class LoginActivity extends AppCompatActivity  {
                             Toast.makeText(getApplicationContext(),"Network failure.. "+error, Toast.LENGTH_LONG).show();
                         }*/
                     }
-
-
                 }
 
                 @Override
                 public void onFailure(Call<Token> call, Throwable t) {
-
+                    Log.e("Login","Remote login onFailure"+t.getMessage());//Remote login
+                    ForceLocalLogin = true;
+                    performeLogin(username,password);
                 }
 
             });
@@ -327,20 +333,7 @@ public class LoginActivity extends AppCompatActivity  {
     }
 
 
-    private Token ReadToken(){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        Token token = new Token(){};
-        token.access_token=prfs.getString("access_token", "");
-        token.expires_in= prfs.getLong("expires_in", 0);
-        return token;
-    }
-    private void SaveToken(Token token){
-        SharedPreferences preferences = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("access_token",token.access_token);
-        editor.putLong("expires_in",token.expires_in);
-        editor.apply();
-    }
+
     private void WriteLongPreferences(String key, long value){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prfs.edit();
@@ -358,6 +351,13 @@ public class LoginActivity extends AppCompatActivity  {
     private long ReadLongPreferences(String key, long defaultValue){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getLong(key, defaultValue);
+    }
+
+    private void ShowLastCredential(){
+        String lastUsername = ReadStringPreferences("last_username", "");
+        String lastPassword = ReadStringPreferences("last_password", "");
+        mUsernameView.setText(lastUsername);
+        mPasswordView.setText(lastPassword);
     }
 }
 

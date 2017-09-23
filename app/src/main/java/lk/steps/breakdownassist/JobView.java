@@ -1,14 +1,11 @@
 package lk.steps.breakdownassist;
 
-import android.*;
-import android.app.ActionBar;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -24,22 +21,24 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import lk.steps.breakdownassist.Fragments.GmapFragment;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
-import lk.steps.breakdownassist.Modules.DirectionFinder;
-import lk.steps.breakdownassist.Modules.DirectionFinderListener;
+import lk.steps.breakdownassist.GpsModules.DirectionFinder;
+import lk.steps.breakdownassist.GpsModules.DirectionFinderListener;
+import lk.steps.breakdownassist.Sync.BackgroundService;
+import lk.steps.breakdownassist.Sync.SyncObject;
+import lk.steps.breakdownassist.Sync.SyncRESTService;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 /**
@@ -77,7 +76,7 @@ public class JobView {
             txtPhoneNo.setText(breakdown.get_Contact_No().trim());
 
         TextView txtFullDescription = (TextView) dialog.findViewById(R.id.fulldescription);
-        txtFullDescription.setText("");
+        txtFullDescription.setText(breakdown.get_Full_Description());
 
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(new View.OnClickListener() {
@@ -165,13 +164,13 @@ public class JobView {
                 dialog.dismiss();
             }
         });
-        if (breakdown.get_Status() == Breakdown.Status_JOB_COMPLETED) {
+        if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
             btnCompleted.setTextColor(Color.RED);
-        } else if (breakdown.get_Status() == Breakdown.Status_JOB_DONE) {
+        } else if (breakdown.get_Status() == Breakdown.JOB_DONE) {
             btnDone.setTextColor(Color.RED);
-        } else if (breakdown.get_Status() == Breakdown.Status_JOB_VISITED) {
+        } else if (breakdown.get_Status() == Breakdown.JOB_VISITED) {
             btnVisted.setTextColor(Color.RED);
-        } else if (breakdown.get_Status() == Breakdown.Status_JOB_ATTENDING) {
+        } else if (breakdown.get_Status() == Breakdown.JOB_ATTENDING) {
             btnAttending.setTextColor(Color.RED);
         }
 
@@ -219,7 +218,7 @@ public class JobView {
             public void onClick(View v) {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
                         "V", GetSelectedDateTime(dialog), etComment.getText().toString());
-                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.Status_JOB_VISITED);
+                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_VISITED);
                 dialog.dismiss();
             }
         });
@@ -275,7 +274,7 @@ public class JobView {
             public void onClick(View v) {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
                         "A", GetSelectedDateTime(dialog), etComment.getText().toString());
-                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.Status_JOB_ATTENDING);
+                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_ATTENDING);
                 dialog.dismiss();
             }
         });
@@ -333,7 +332,7 @@ public class JobView {
             public void onClick(View v) {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
                         "D", GetSelectedDateTime(dialog), etComment.getText().toString());
-                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.Status_JOB_DONE);
+                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_DONE);
                 dialog.dismiss();
             }
         });
@@ -506,6 +505,7 @@ public class JobView {
         DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
         dbHandler.addJobStatusChangeRec(jobchangestatus);
         dbHandler.UpdateBreakdownStatus(breakdown, iStatus);
+        BackgroundService.SyncBreakdownStatusChange(fragment.getActivity().getApplicationContext());
         if (fragment instanceof JobListFragment) {
             JobListFragment JobFrag = (JobListFragment) fragment;
             //JobFrag.CreateListView(fragment);
@@ -520,7 +520,8 @@ public class JobView {
     private static void UpdateCompletedJob(Fragment fragment, JobCompletion jobcompletion, Breakdown breakdown) {
         DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
         dbHandler.addJobCompletionRec(jobcompletion);
-        dbHandler.UpdateBreakdownStatus(breakdown, Breakdown.Status_JOB_COMPLETED);
+        dbHandler.UpdateBreakdownStatus(breakdown, Breakdown.JOB_COMPLETED);
+        BackgroundService.SyncBreakdownCompletion(fragment.getActivity().getApplicationContext());
         if (fragment instanceof JobListFragment) {
             JobListFragment JobFrag = (JobListFragment) fragment;
             //JobFrag.CreateListView(fragment);
@@ -618,4 +619,6 @@ public class JobView {
         Log.e("NOT FOUND", "-"+name+" in "+Array.toString());
         return "0";
     }
+
+
 }

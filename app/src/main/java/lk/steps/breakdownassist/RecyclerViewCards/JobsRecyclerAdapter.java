@@ -53,8 +53,8 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
 
         holder.name.setText(breakdownList.get(position).get_Name());
         holder.address.setText(breakdownList.get(position).get_ADDRESS());
-        //holder.description.setText(breakdownList.get(position).get_Full_Description());
-        holder.description.setText("-");
+        holder.description.setText(breakdownList.get(position).get_Full_Description());
+       // holder.description.setText("-");
         if(breakdownList.get(position).get_Completed_Time() == null){
             holder.completed_date_time.setText("Unattained job");
         }else{
@@ -69,13 +69,13 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
             holder.imgMap.setVisibility(View.INVISIBLE);
         }
         int status = breakdownList.get(position).get_Status();
-        if(status == Breakdown.Status_JOB_COMPLETED){
+        if(status == Breakdown.JOB_COMPLETED){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#d8d8d8"));
-        }else if(status == Breakdown.Status_JOB_DONE){
+        }else if(status == Breakdown.JOB_DONE){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#f9ffce"));
-        }else if(status == Breakdown.Status_JOB_ATTENDING){
+        }else if(status == Breakdown.JOB_ATTENDING){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#c9ffcb"));
-        }else if(status == Breakdown.Status_JOB_VISITED){
+        }else if(status == Breakdown.JOB_VISITED){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#dbfffb"));
         }else {
             holder.cardView.setCardBackgroundColor(Color.parseColor("#fbddff"));

@@ -1,7 +1,6 @@
 package lk.steps.breakdownassist.Fragments;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -15,21 +14,15 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -62,14 +55,13 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import lk.steps.breakdownassist.Breakdown;
-import lk.steps.breakdownassist.Failure;
 import lk.steps.breakdownassist.JobView;
 import lk.steps.breakdownassist.Globals;
 import lk.steps.breakdownassist.ManagePermissions;
 import lk.steps.breakdownassist.MapMarker;
-import lk.steps.breakdownassist.Modules.DirectionFinder;
-import lk.steps.breakdownassist.Modules.DirectionFinderListener;
-import lk.steps.breakdownassist.Modules.Route;
+import lk.steps.breakdownassist.GpsModules.DirectionFinder;
+import lk.steps.breakdownassist.GpsModules.DirectionFinderListener;
+import lk.steps.breakdownassist.GpsModules.Route;
 import lk.steps.breakdownassist.DBHandler;
 import lk.steps.breakdownassist.R;
 
@@ -109,7 +101,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     private Context mContext;
 
-    private int iJobs_to_Display = Breakdown.Status_JOB_NOT_ATTENDED;
+    private int iJobs_to_Display = Breakdown.JOB_NOT_ATTENDED;
 
     @Nullable
     @Override
@@ -235,19 +227,19 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         if (id == R.id.menu_jobs_all) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display = Breakdown.Status_JOB_ANY;
+            iJobs_to_Display = Breakdown.JOB_STATUS_ANY;
             RefreshJobsFromDB();
             return true;
         } else if (id == R.id.menu_jobs_completed) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display = Breakdown.Status_JOB_COMPLETED;
+            iJobs_to_Display = Breakdown.JOB_COMPLETED;
             RefreshJobsFromDB();
             return true;
         } else if (id == R.id.menu_jobs_unatended) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display = Breakdown.Status_JOB_NOT_ATTENDED;
+            iJobs_to_Display = Breakdown.JOB_NOT_ATTENDED;
             RefreshJobsFromDB();
             return true;
         }
@@ -316,12 +308,12 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     }
 
     public void FocusBreakdown(Breakdown breakdown) {
-        if (breakdown.get_Status() == Breakdown.Status_JOB_NOT_ATTENDED) {
-            iJobs_to_Display = Breakdown.Status_JOB_NOT_ATTENDED;
-        } else if (breakdown.get_Status() == Breakdown.Status_JOB_COMPLETED) {
-            iJobs_to_Display = Breakdown.Status_JOB_COMPLETED;
+        if (breakdown.get_Status() == Breakdown.JOB_NOT_ATTENDED) {
+            iJobs_to_Display = Breakdown.JOB_NOT_ATTENDED;
+        } else if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
+            iJobs_to_Display = Breakdown.JOB_COMPLETED;
         } else {
-            iJobs_to_Display = Breakdown.Status_JOB_ANY;
+            iJobs_to_Display = Breakdown.JOB_STATUS_ANY;
         }
         //Log.d("GMAP","4");
         RefreshJobsFromDB();

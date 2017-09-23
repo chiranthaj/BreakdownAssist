@@ -2,29 +2,42 @@ package lk.steps.breakdownassist.Sync;
 
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.widget.Toast;
 
+import com.facebook.stetho.json.annotation.JsonProperty;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
-
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.DBHandler;
-import lk.steps.breakdownassist.JobChangeStatus;
-import lk.steps.breakdownassist.JobCompletion;
+import lk.steps.breakdownassist.Globals;
 import lk.steps.breakdownassist.MainActivity;
 import lk.steps.breakdownassist.R;
+import microsoft.aspnet.signalr.client.ErrorCallback;
+import microsoft.aspnet.signalr.client.LogLevel;
+import microsoft.aspnet.signalr.client.Logger;
 import microsoft.aspnet.signalr.client.MessageReceivedHandler;
 import microsoft.aspnet.signalr.client.Platform;
 import microsoft.aspnet.signalr.client.SignalRFuture;
@@ -46,9 +59,13 @@ public class SignalRService extends Service {
     private final IBinder mBinder = new LocalBinder(); // Binder given to clients
     Timer timer;
     MyTimerTask myTimerTask;
-    private boolean ServerConnected=false;
+    //private boolean ServerConnected=false;
+    private boolean RetryTimerStarted=false;
     private boolean mBound = false;
     SyncRESTService syncRESTService;
+    //String serverUrl = "http://192.168.0.196:8099";
+    //String serverUrl = "http://192.168.137.1:31525";
+    //String serverUrl = "http://111.223.135.20";
 
     public SignalRService() {
     }
@@ -67,13 +84,23 @@ public class SignalRService extends Service {
         dbHandler = new DBHandler(this,null,null,1);
         syncRESTService = new SyncRESTService();
         Toast.makeText(this, "SignalR Service Started", Toast.LENGTH_SHORT).show();
-        timer = new Timer();
-        myTimerTask = new MyTimerTask();
-        timer.schedule(myTimerTask, 1000, 10000);
 
+        StartRetryTimer();
         return result;
     }
 
+    private void StartRetryTimer(){
+        if(RetryTimerStarted)return;
+        timer = new Timer();
+        myTimerTask = new MyTimerTask();
+        timer.schedule(myTimerTask, 1000, 10000);
+        RetryTimerStarted=true;
+    }
+    private void StopRetryTimer(){
+        if(!RetryTimerStarted)return;
+        timer.cancel();
+        RetryTimerStarted=false;
+    }
     @Override
     public void onDestroy() {
         mHubConnection.stop();
@@ -88,7 +115,8 @@ public class SignalRService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         // Return the communication channel to the service.
-        if(!ServerConnected)startSignalR();
+       // if(!ServerConnected)
+            startSignalR();
         return mBinder;
     }
 
@@ -107,7 +135,6 @@ public class SignalRService extends Service {
      * method for clients (activities)
      */
     public void sendMessage(String message) {
-        Log.e("SIGNALR","012");
         String SERVER_METHOD_SEND = "send";
         mHubProxy.invoke(SERVER_METHOD_SEND, message);
     }
@@ -120,29 +147,36 @@ public class SignalRService extends Service {
         mHubProxy.invoke(SERVER_METHOD_SEND_TO, receiverName, message);
 
     }
+    private String ReadStringPreferences(String key, String defaultValue){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        return prfs.getString(key, defaultValue);
+    }
 
     private void startSignalR() {
         Platform.loadPlatformComponent(new AndroidPlatformComponent());
-
-        //String serverUrl = "http://192.168.0.196:8099";
-        String serverUrl = "http://192.168.137.1:31525";
-        //String serverUrl = "http://111.223.135.20";
-
-        mHubConnection = new HubConnection(serverUrl);
-        String SERVER_HUB_CHAT = "BreakdownAssistAndroidHub";
-        mHubProxy = mHubConnection.createHubProxy(SERVER_HUB_CHAT);
-
+        mHubConnection = new HubConnection(Globals.serverUrl);
+        String SERVER_HUB = "BreakdownAssistAndroidHub";
+        mHubProxy = mHubConnection.createHubProxy(SERVER_HUB);
         ClientTransport clientTransport = new ServerSentEventsTransport(mHubConnection.getLogger());
         SignalRFuture<Void> signalRFuture = mHubConnection.start(clientTransport);
 
+        //final String group_token = ReadStringPreferences("group_token","");
+        final String area_id = ReadStringPreferences("area_id","");
+        final String team_id = ReadStringPreferences("team_id","");
+        Log.e("SignalR ", "*groupid*"+area_id+"_"+team_id);
+        mHubConnection.setGroupsToken(area_id + "_" + team_id);
         try {
             signalRFuture.get();
-            ServerConnected=true;
-            Log.e("SimpleSignalR", "ServerConnected=true");
+            //ServerConnected=true;
+            Log.e("SignalR ", "*Connected*");
+            Log.e("SignalR ", "ID="+mHubConnection.getConnectionId());
+            StopRetryTimer();
+            //Log.e("SimpleSignalR", "ServerConnected=true");
         } catch (InterruptedException | ExecutionException e) {
-            Log.e("SimpleSignalR", "ServerConnected=false");
-            Log.e("SimpleSignalR", e.toString());
-            ServerConnected=false;
+            //Log.e("SimpleSignalR", "ServerConnected=false");
+            Log.e("SignalR", e.toString());
+            //ServerConnected=false;
+            StartRetryTimer();
             return;
         }
        // sendMessage("Hello from BNK!");
@@ -176,13 +210,49 @@ public class SignalRService extends Service {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d("API-","its running-01");
-                        GetNewBreakdownsFromServer();
-                        Log.d("API-","its running-02");
-                        Toast.makeText(getApplicationContext(),"SignalR request received.XXX", Toast.LENGTH_SHORT).show();
+                        //Log.d("API-","its running-01");
+                     //   JsonObject jobject = json.getAsJsonObject();
+                     //   String result = jobject.get("A").toString().replace("\"","").replace("[","").replace("]","");
+                        GetNewBreakdownsFromServer(area_id, team_id);
+                      //  Log.e("API-","-"+json);
+                      //  Log.e("API-","-02"+result);
+                        Toast.makeText(getApplicationContext(),"SignalR request received", Toast.LENGTH_SHORT).show();
                        // Toast.makeText(getApplicationContext(),json.toString(), Toast.LENGTH_SHORT).show();
                     }
                 });
+            }
+        });
+
+        mHubConnection.error(new ErrorCallback() {
+            @Override
+            public void onError(Throwable error) {
+                //ServerConnected=false;
+                error.printStackTrace();
+                StartRetryTimer();
+            }
+        });
+        mHubConnection.connected(new Runnable() {
+            @Override
+            public void run() {
+                //ServerConnected=true;
+                Log.e("SignalR", "CONNECTED");
+            }
+        });
+
+        mHubConnection.reconnected(new Runnable() {
+            @Override
+            public void run() {
+                //ServerConnected=true;
+                Log.e("SignalR", "RECONNECTED");
+            }
+        });
+        // Subscribe to the closed event
+        mHubConnection.closed(new Runnable() {
+            @Override
+            public void run() {
+                //ServerConnected=false;
+                Log.e("SignalR", "DISCONNECTED");
+                StartRetryTimer();
             }
         });
     }
@@ -207,69 +277,91 @@ public class SignalRService extends Service {
     };
 
 
-    public void GetNewBreakdownsFromServer(){
+    public void GetNewBreakdownsFromServer(String area_Id, String team_id){
         //Log.e("GetNewBreakdowns","1");
-        SyncRESTService syncRESTService = new SyncRESTService();
-        Call<List<Breakdown>> call = syncRESTService.getService()
-                .getNewBreakdowns( "Bearer "+ MainActivity.mToken.access_token,
-                        MainActivity.mToken.user_id,"77","S","3");
+        try{
+            SyncRESTService syncRESTService = new SyncRESTService();
+            Call<List<Breakdown>> call = syncRESTService.getService()
+                    .getNewBreakdowns( "Bearer "+ MainActivity.mToken.access_token,
+                            MainActivity.mToken.user_id,area_Id,team_id);
 
-        call.enqueue(new Callback<List<Breakdown>>(){
-            @Override
-            public void onResponse(Call<List<Breakdown>> call, Response<List<Breakdown>> response) {
-                //Log.e("GetNewBreakdowns","2");
-                if (response.isSuccessful()) {
-                    Log.e("GetNewBreakdowns","Successful");
-                    List<Breakdown> breakdowns = response.body();
-                    Log.e("GetNewBreakdowns","Number-"+breakdowns.size());
-                    DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
-                    boolean playTone = false;
-                    for (Breakdown breakdown :breakdowns) {
-                        dbHandler.addBreakdown2(
-                                breakdown.get_Received_Time(),
-                                breakdown.get_Acct_Num(),
-                                breakdown.get_Full_Description(),
-                                breakdown.get_Job_No(),
-                                breakdown.get_Contact_No(),
-                                breakdown.get_ADDRESS(),
-                                1);
-                        playTone = true;
-                    }
-                    String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
-                    dbHandler.close();
+            call.enqueue(new Callback<List<Breakdown>>(){
+                @Override
+                public void onResponse(Call<List<Breakdown>> call, Response<List<Breakdown>> response) {
+                    //Log.e("GetNewBreakdowns","2");
+                    if (response.isSuccessful()) {
+                        //Log.e("GetNewBreakdowns","Successful");
+                        List<Breakdown> breakdowns = response.body();
+                        Log.e("GetNewBreakdowns","Number-"+breakdowns.size());
+                        DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
+                       // int playTone = 0;
+                        for (Breakdown breakdown :breakdowns) {
+                            dbHandler.addBreakdown2(
+                                    breakdown.get_Received_Time(),
+                                    breakdown.get_Acct_Num(),
+                                    breakdown.get_Full_Description(),
+                                    breakdown.get_Job_No(),
+                                    breakdown.get_Contact_No(),
+                                    breakdown.get_ADDRESS(),
+                                    breakdown.get_Priority());
+                            Log.e("get_Full_Description()",breakdown.get_Full_Description());
 
-                    //Informing the Map view about the new bd, then it can add it
-                    Intent myintent=new Intent();
-                    myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
-                    myintent.putExtra("_id",sIssuedBreakdownID);
-                    getApplicationContext().sendBroadcast(myintent);
-                    if(playTone){
-                        MediaPlayer mPlayer2;
-                        mPlayer2= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
-                        mPlayer2.start();
+                            if(breakdown.get_Priority()==4)MainActivity.NewBreakdownsReceived=2;
+                            else MainActivity.NewBreakdownsReceived = 1;
+                        }
+                        MainActivity.NewBreakdowns = breakdowns;
+
+                        String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
+                        dbHandler.close();
+
+                        //Informing the Map view about the new bd, then it can add it
+                        Intent myintent=new Intent();
+                        myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
+                        myintent.putExtra("_id",sIssuedBreakdownID);
+                        getApplicationContext().sendBroadcast(myintent);
+                        /*if(MainActivity.NewBreakdownsReceived==1){
+                            MediaPlayer mPlayer2;
+                            mPlayer2= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
+                            mPlayer2.start();
+                        }*/
+                    } else if (response.errorBody() != null) {
+                        if(response.code() == 401) { //Authentication fail
+                            Toast.makeText(getApplicationContext(), "Authentication fail..", Toast.LENGTH_SHORT).show();
+                            MainActivity.ReLoginRequired=true;
+                        }else{
+                            Toast.makeText(getApplicationContext(), "GetNewBreakdowns\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                        Log.e("GetNewBreakdowns","onResponse" + response.errorBody()+"*code*"+response.code());
                     }
-                } else if (response.errorBody() != null) {
-                    Log.e("GetNewBreakdowns","4-" + response.errorBody());
                 }
-            }
 
-            @Override
-            public void onFailure(Call<List<Breakdown>> call, Throwable t) {
-                Log.e("GetNewBreakdowns","5-" + t.getMessage());
-            }
+                @Override
+                public void onFailure(Call<List<Breakdown>> call, Throwable t) {
+                    Toast.makeText(getApplicationContext(), "Error in network..\n"+ t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("GetNewBreakdowns","5-" + t.getMessage());
+                }
+            });
+        }catch(Exception e){
+            Log.e("GetNewBreakdowns","" + e.getMessage());
+        }
 
-        });
     }
 
 
 
-    class MyTimerTask extends TimerTask {
+    private class MyTimerTask extends TimerTask {
         @Override
         public void run() {
-           // Log.e("SimpleSignalR ", "timer tick");
-            if(!ServerConnected)startSignalR();
+            //if(!ServerConnected){
+                Log.e("SignalR ", "*NOT*Connected*");
+                startSignalR();
+           // }else{
+           //     Log.e("SignalR ", "*Connected*");
+           // }
         }
     }
+
+
 
 
 }

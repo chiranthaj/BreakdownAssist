@@ -4,24 +4,19 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -35,9 +30,9 @@ import java.util.List;
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.Fragments.JobListFragment;
 import lk.steps.breakdownassist.MapMarker;
-import lk.steps.breakdownassist.Modules.DirectionFinder;
-import lk.steps.breakdownassist.Modules.DirectionFinderListener;
-import lk.steps.breakdownassist.Modules.Route;
+import lk.steps.breakdownassist.GpsModules.DirectionFinder;
+import lk.steps.breakdownassist.GpsModules.DirectionFinderListener;
+import lk.steps.breakdownassist.GpsModules.Route;
 import lk.steps.breakdownassist.R;
 
 import static lk.steps.breakdownassist.RecyclerViewCards.JobsRecyclerAdapter.onItemTouchListener;
@@ -133,7 +128,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         // Since the mapView is re-used, need to remove pre-existing mapView features.
 
         mGoogleMap.clear();
-        if(mBreakdown.get_Status()== Breakdown.Status_JOB_COMPLETED){
+        if(mBreakdown.get_Status()== Breakdown.JOB_COMPLETED){
             mapView.setVisibility(View.GONE);
             txtTripInfo.setVisibility(View.GONE);
         }else
@@ -159,6 +154,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
 
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
+
         List<Polyline> polylinePaths = new ArrayList<>();
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(JobListFragment.currentLocation);
@@ -174,6 +170,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         polylinePaths.add(mGoogleMap.addPolyline(polylineOptions));
         txtTripInfo.setText("Distance : "+routes.get(0).distance.text + "\nTime : "+routes.get(0).duration.text);
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
+
     }
 
     private void setDirections(LatLng origin, LatLng destination) {

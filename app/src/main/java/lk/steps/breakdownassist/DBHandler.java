@@ -1,6 +1,7 @@
 package lk.steps.breakdownassist;
 
 
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
@@ -20,9 +21,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
+import lk.steps.breakdownassist.GpsTracker.TrackerObject;
+
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version =69;
+    private static final int Database_Version = 71;
     private static final String Database_Name = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -98,6 +101,20 @@ public class DBHandler extends SQLiteOpenHelper
                 "PRIMARY KEY (job_no)" +
                 ");";
         db.execSQL(query);
+
+        query = "CREATE TABLE GpsTracking ("+
+                "id          INTEGER PRIMARY KEY," +
+                "timestamp              TEXT,"+
+                "lat                    TEXT,"+
+                "lon                    TEXT,"+
+                "speed                  TEXT,"+
+                "accuracy               TEXT,"+
+                "altitude               TEXT,"+
+                "direction              TEXT,"+
+                "distance              TEXT,"+
+                "sync_done              TEXT"+
+                ");";
+        db.execSQL(query);
     }
 
     @Override
@@ -108,11 +125,67 @@ public class DBHandler extends SQLiteOpenHelper
         db.execSQL("DROP TABLE IF EXISTS PremisesID");
         db.execSQL("DROP TABLE IF EXISTS JobStatusChange");
         db.execSQL("DROP TABLE IF EXISTS JobCompletion");
+        db.execSQL("DROP TABLE IF EXISTS GpsTracking");
         onCreate(db);
     }
-
-    public void addJobCompletionRec(JobCompletion jobcompletion_obj)
+    public void addTrackPoint(String timestamp, String lat, String lon, String speed,
+                              String accuracy, String altitude, String direction, String distance)
     {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("timestamp",timestamp);  //TODO : Change to job no
+        values.put("lat",lat);
+        values.put("lon",lon);
+        values.put("speed",speed);
+        values.put("accuracy",accuracy);
+        values.put("altitude",altitude);
+        values.put("direction",direction);
+        values.put("distance",distance);
+        values.put("sync_done","0");
+
+        db.insert( "GpsTracking", null,values); //TODO : Use insertOrThrow
+        db.close();
+    }
+
+    public List<TrackerObject> getNotSyncTrackingData(){
+        TrackerObject obj=null;
+        SQLiteDatabase db = getWritableDatabase();
+        List<TrackerObject> list = new LinkedList<TrackerObject>();
+        String query = "SELECT * FROM GpsTracking WHERE sync_done=0;";//
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
+                obj= new TrackerObject();
+                obj.id=c.getString(c.getColumnIndex("id"));
+                obj.UserId=MainActivity.mToken.user_id;
+                obj.timestamp=c.getString(c.getColumnIndex("timestamp"));
+                obj.lat=c.getString(c.getColumnIndex("lat"));
+                obj.lon=c.getString(c.getColumnIndex("lon"));
+                obj.speed=c.getString(c.getColumnIndex("speed"));
+                obj.accuracy = c.getString(c.getColumnIndex("accuracy"));
+                obj.altitude = c.getString(c.getColumnIndex("altitude"));
+                obj.direction = c.getString(c.getColumnIndex("direction"));
+                obj.distance = c.getString(c.getColumnIndex("distance"));
+                list.add(obj);
+            }
+            c.moveToNext();
+        }
+        c.close();
+        return list;
+    }
+
+    public void UpdateTrackingData(TrackerObject obj)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "UPDATE GpsTracking SET sync_done='1' WHERE id='" +obj.id + "';";
+        db.execSQL(query);
+        db.close();
+    }
+    public void addJobCompletionRec(JobCompletion jobcompletion_obj){
         SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -132,8 +205,7 @@ public class DBHandler extends SQLiteOpenHelper
         db.close();
     }
 
-    public List<JobCompletion> getJobCompletionObjNotSync_List()
-    {
+    public List<JobCompletion> getJobCompletionObjNotSync_List(){
         JobCompletion _jobcompletion_obj=null;
         SQLiteDatabase db = getWritableDatabase();
 
@@ -169,6 +241,8 @@ public class DBHandler extends SQLiteOpenHelper
         c.close();
         return newJobCompletion;
     }
+
+
     public List<JobCompletion> getBreakdownCompletion()
     {
         JobCompletion _jobcompletion_obj=null;
@@ -292,6 +366,7 @@ public class DBHandler extends SQLiteOpenHelper
         int iResult=-1;
 
         SQLiteDatabase db = getWritableDatabase();
+
         String query = "UPDATE JobStatusChange SET synchro_mobile_db=" + iSynchro_mobile_dbValue +
                 " WHERE job_no= '" + jobchangestatus_obj.job_no + "' AND st_code='"+ jobchangestatus_obj.st_code + "' "+
                 " AND change_datetime='" + jobchangestatus_obj.change_datetime +"';";
@@ -484,8 +559,8 @@ public class DBHandler extends SQLiteOpenHelper
     {
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT COUNT(*) AS TOTAL," +
-                        "SUM(CASE Status  WHEN "+Breakdown.Status_JOB_COMPLETED +" THEN 1 ELSE 0 END) AS COMPLETED," +
-                        "SUM(CASE Status  WHEN "+Breakdown.Status_JOB_NOT_ATTENDED + " THEN 1 ELSE 0 END) AS UNATTAINED" +
+                        "SUM(CASE Status  WHEN "+Breakdown.JOB_COMPLETED +" THEN 1 ELSE 0 END) AS COMPLETED," +
+                        "SUM(CASE Status  WHEN "+Breakdown.JOB_COMPLETED + " THEN 0 ELSE 1 END) AS UNATTAINED" +
                         " FROM BreakdownRecords;";
 
         Cursor c = db.rawQuery(query, null);
@@ -684,16 +759,16 @@ public class DBHandler extends SQLiteOpenHelper
     {
         SQLiteDatabase db = getWritableDatabase();
         //String query = "SELECT id as ID,NAME,LONGITUDE,LATITUDE FROM Customers limit 3;";
-
+        Log.e("job status","="+iStatus);
         //TODO : Add the breakdowns without location data or account number to the info icon
 
         String statusQuery ="";
         if (iStatus==-1){/*All*/
             statusQuery="";
-        }else if (iStatus==Breakdown.Status_JOB_COMPLETED){/*Completed*/
-            statusQuery=" AND B.Status =  '1' ";
-        }else if (iStatus==Breakdown.Status_JOB_NOT_ATTENDED){/*"pending"*/
-            statusQuery=" AND (B.Status <>  '1' OR  B.Status IS NULL)";
+        }else if (iStatus==Breakdown.JOB_COMPLETED){/*Completed*/
+            statusQuery=" AND B.Status =  '6' ";
+        }else if (iStatus==Breakdown.JOB_NOT_ATTENDED){/*"pending"*/
+            statusQuery=" AND (B.Status <>  '6' OR  B.Status IS NULL)";
         }else{
             statusQuery=" AND B.Status =  '" + iStatus + "' ";
         }
@@ -1010,7 +1085,7 @@ public class DBHandler extends SQLiteOpenHelper
         int iResult=-1;
         //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/d h:m:s a");
         String time = Globals.timeFormat.format(System.currentTimeMillis());
-
+        //Log.e("RRRRRRRR",breakdown.get_id() +","+time+","+Breakdown_Status);
         SQLiteDatabase db = getWritableDatabase();
         String query = "UPDATE BreakdownRecords SET Status='" +
                 String.valueOf(Breakdown_Status) +
@@ -1023,5 +1098,22 @@ public class DBHandler extends SQLiteOpenHelper
         iResult=1; //Return Success
         return iResult;
     }
+    public int UpdateBreakdownStatus2(Breakdown breakdown,int Breakdown_Status)
+    {// TODO : Maintain to two tables, one for Current status, one for status changed with all the status changes list with timesatamp
+        int iResult=-1;
+        //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/d h:m:s a");
+        String time = Globals.timeFormat.format(System.currentTimeMillis());
 
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "UPDATE BreakdownRecords SET Status='" +
+                String.valueOf(Breakdown_Status) +
+                "', completed_timestamp= '" +  time + "' " +
+                " WHERE job_no='" +breakdown.get_Job_No() + "';";
+
+        db.execSQL(query);
+        db.close();
+
+        iResult=1; //Return Success
+        return iResult;
+    }
 }

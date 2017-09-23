@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.txusballesteros.widgets.FitChart;
 import com.txusballesteros.widgets.FitChartValue;
@@ -22,16 +23,20 @@ import org.eazegraph.lib.models.ValueLineSeries;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import lk.steps.breakdownassist.DBHandler;
 import lk.steps.breakdownassist.Globals;
+import lk.steps.breakdownassist.MainActivity;
 import lk.steps.breakdownassist.R;
 
 import static android.R.attr.animation;
 
 public class DashboardFragment extends Fragment {
 
-
+    Timer timer;
+    MyTimerTask myTimerTask;
     private View mView;
     @Nullable
     @Override
@@ -43,6 +48,12 @@ public class DashboardFragment extends Fragment {
         DrawChart3();
         final TextView txtAvgTime = (TextView) mView.findViewById(R.id.txtAvgTime);
         txtAvgTime.setText(Globals.AverageTime+" min");
+
+        timer = new Timer();
+        myTimerTask = new MyTimerTask();
+
+        //delay 1000ms, repeat in 5000ms
+        timer.schedule(myTimerTask, 1000, 20000);
         return mView;
     }
 
@@ -53,13 +64,18 @@ public class DashboardFragment extends Fragment {
     }
 
     private void refreshCounts(){
-        DBHandler dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
-        int counts[] = dbHandler.getBreakdownCounts();
+        try {
+            DBHandler dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
+            int counts[] = dbHandler.getBreakdownCounts();
 
-        TextView txtUnattainedCount = (TextView) mView.findViewById(R.id.txtUnattainedCount);
-        TextView txtCompletedCount = (TextView) mView.findViewById(R.id.txtCompletedCount);
-        txtCompletedCount.setText(String.valueOf(counts[0]));
-        txtUnattainedCount.setText(String.valueOf(counts[1]));
+            TextView txtUnattainedCount = (TextView) mView.findViewById(R.id.txtUnattainedCount);
+            TextView txtCompletedCount = (TextView) mView.findViewById(R.id.txtCompletedCount);
+            txtCompletedCount.setText(String.valueOf(counts[0]));
+            txtUnattainedCount.setText(String.valueOf(counts[1]));
+        }catch(Exception e){
+
+        }
+
     }
 
     private void DrawChart1(){
@@ -116,5 +132,23 @@ public class DashboardFragment extends Fragment {
 
         fitChart.setValues(values);
 
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        timer.cancel();
+    }
+
+    private class MyTimerTask extends TimerTask {
+
+        @Override
+        public void run() {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    refreshCounts();
+                }
+            });
+        }
     }
 }

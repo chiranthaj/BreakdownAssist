@@ -7,13 +7,15 @@ import com.google.android.gms.maps.model.LatLng;
  */
 
 public class Breakdown {
-    public static final int Status_JOB_ANY = -1;
-    public static final int Status_JOB_NOT_ATTENDED = 0;
-    public static final int Status_JOB_COMPLETED = 1;
-    public static final int Status_JOB_VISITED = 2;
-    public static final int Status_JOB_DONE = 3;
-    public static final int Status_JOB_ATTENDING = 4; // previous value was 3(=Status_JOB_DONE)
-    public static final int Status_JOB_NOT_FOUND = 10;
+    public static final int JOB_STATUS_ANY = -1;
+    public static final int JOB_NOT_ATTENDED = 0;
+    public static final int JOB_DELIVERED = 1;
+    public static final int JOB_ACKNOWLEDGED = 2;
+    public static final int JOB_VISITED = 3;
+    public static final int JOB_ATTENDING = 4;
+    public static final int JOB_DONE = 5;
+    public static final int JOB_COMPLETED = 6;
+    public static final int JOB_NOT_FOUND = 10;
 
     public static final int Priority_URGENT = 1;
     public static final int Priority_HIGH = 2;

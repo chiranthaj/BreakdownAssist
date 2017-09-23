@@ -1,4 +1,4 @@
-package lk.steps.breakdownassist.Modules;
+package lk.steps.breakdownassist.GpsModules;
 
 /**
  * Created by Mai Thanh Hiep on 4/3/2016.

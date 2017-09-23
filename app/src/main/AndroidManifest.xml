@@ -13,6 +13,11 @@
     <uses-feature android:name="android.hardware.location.network" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:name=".BreakdownAssist"
         android:allowBackup="true"
@@ -80,6 +85,15 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".GpsTracker.GpsTrackerBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".GpsTracker.GpsTrackerAlarmReceiver">
+        </receiver>
+        <service android:name=".GpsTracker.LocationService">
+        </service>
     </application>
 
 </manifest>

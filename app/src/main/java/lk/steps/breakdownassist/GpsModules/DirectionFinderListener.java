@@ -1,4 +1,4 @@
-package lk.steps.breakdownassist.Modules;
+package lk.steps.breakdownassist.GpsModules;
 
 import java.util.List;
 

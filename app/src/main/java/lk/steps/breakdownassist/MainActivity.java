@@ -1,11 +1,16 @@
 package lk.steps.breakdownassist;
 
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 
@@ -14,11 +19,13 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -28,6 +35,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /*import com.arlib.floatingsearchview.FloatingSearchView;*/
@@ -35,9 +45,11 @@ import com.facebook.stetho.Stetho;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.Marker;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 
 import lk.steps.breakdownassist.Fragments.DashboardFragment;
@@ -49,6 +61,8 @@ import lk.steps.breakdownassist.Fragments.GmapAddTestBreakdownFragment;
 import lk.steps.breakdownassist.Fragments.GmapFragment;
 
 import lk.steps.breakdownassist.Fragments.SearchViewFragment;
+import lk.steps.breakdownassist.GpsTracker.GpsTrackerAlarmReceiver;
+import lk.steps.breakdownassist.GpsTracker.LocationService;
 import lk.steps.breakdownassist.Sync.BackgroundService;
 import lk.steps.breakdownassist.Sync.SignalRService;
 import lk.steps.breakdownassist.Sync.SyncRESTService;
@@ -72,9 +86,10 @@ public class MainActivity extends AppCompatActivity
     private static Context context;
     private SignalRService mService;
     public static Token mToken;
-
+    public static boolean ReLoginRequired = false;
+    public static int NewBreakdownsReceived = 0;
     boolean doubleBackToExitPressedOnce = false;
-
+    public static List<Breakdown> NewBreakdowns;
     Timer timer;
     MyTimerTask myTimerTask;
 
@@ -82,7 +97,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         MainActivity.context = getApplicationContext();
 
@@ -120,7 +134,7 @@ public class MainActivity extends AppCompatActivity
         myTimerTask = new MyTimerTask();
 
         //delay 1000ms, repeat in 5000ms
-        timer.schedule(myTimerTask, 1000, 5000);
+        timer.schedule(myTimerTask, 1000, 2000);
 
         startService(new Intent(getBaseContext(), BackgroundService.class));
         startService(new Intent(getBaseContext(), SignalRService.class));
@@ -142,8 +156,22 @@ public class MainActivity extends AppCompatActivity
         }
         CalculateAttainedTime();
         mToken = ReadToken();
+
+        View v = navigationView.getHeaderView(0);
+        TextView username = (TextView ) v.findViewById(R.id.txtUsername);
+        username.setText(ReadStringPreferences("last_username", "[username]"));//
+
+        SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
+
+        trackLocation();
+
         // Show the "What's New" screen once for each new release of the application
         new WhatsNewScreen(this).show();
+    }
+
+    private String ReadStringPreferences(String key, String defaultValue){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        return prfs.getString(key, defaultValue);
     }
 
     @Override
@@ -198,6 +226,7 @@ public class MainActivity extends AppCompatActivity
         stopService(new Intent(getBaseContext(), SignalRService.class));
         dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
+        StopTrackLocation();
         super.onDestroy();
     }
 
@@ -335,14 +364,14 @@ public class MainActivity extends AppCompatActivity
             fm.beginTransaction().replace(R.id.content_frame, new SearchViewFragment()).commit();
         }*/ else if (id == R.id.nav_unattained_jobs) {
             Bundle arguments = new Bundle();
-            arguments.putInt("JOB_STATUS", Breakdown.Status_JOB_NOT_ATTENDED);
+            arguments.putInt("JOB_STATUS", Breakdown.JOB_NOT_ATTENDED);
             JobListFragment fragment = new JobListFragment();
             fragment.setArguments(arguments);
-            fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
+            fm.beginTransaction().replace(R.id.content_frame, fragment).commitAllowingStateLoss(); // just commit(); crash when calling this at new bd dialog
             //fm.beginTransaction().replace(R.id.content_frame, new UnattainedJobsFragment()).commit();
         } else if (id == R.id.nav_completed_jobs) {
             Bundle arguments = new Bundle();
-            arguments.putInt("JOB_STATUS", Breakdown.Status_JOB_COMPLETED);
+            arguments.putInt("JOB_STATUS", Breakdown.JOB_COMPLETED);
             JobListFragment fragment = new JobListFragment();
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
@@ -391,6 +420,17 @@ public class MainActivity extends AppCompatActivity
                         GmapFragment GmapFrag = (GmapFragment) currentFragment;
                         GmapFrag.ApplyMapDayNightModeAccordingly();
                     }
+                    if(ReLoginRequired){
+                        ReLoginRequired=false;
+                        LoginAgainDialog();
+                    }
+                    if(NewBreakdownsReceived == 1){
+                        NewBreakdownsReceived = 0;
+                        NewBreakdownsDialog(false);
+                    }else if(NewBreakdownsReceived == 2){
+                        NewBreakdownsReceived = 0;
+                        NewBreakdownsDialog(true);
+                    }
                 }
             });
         }
@@ -430,4 +470,177 @@ public class MainActivity extends AppCompatActivity
     }*/
 
 
+    private void LoginAgainDialog(){
+        /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Authentication fail.\nRe-Login required.");
+        builder.setCancelable(true);
+
+        builder.setPositiveButton(
+                "Re-Login",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {*/
+                        Intent i = getBaseContext().getPackageManager()
+                                .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+                        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(i);
+                        this.finish();
+                       /* dialog.cancel();
+                    }
+                });
+
+        builder.setNegativeButton(
+                "Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert = builder.create();
+        alert.show();*/
+    }
+
+    private void NewBreakdownsDialog(final boolean ring){
+        onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Forcus to job list fragment
+
+        final MediaPlayer mp = MediaPlayer.create(getBaseContext(), R.raw.buzzer);
+        if(ring){
+                mp.setLooping(true);
+                mp.start();
+        }else{
+            MediaPlayer mPlayer2;
+            mPlayer2= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
+            mPlayer2.start();
+        }
+
+
+        ///
+// custom dialog
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.alert_dialog);
+        //dialog.setTitle("BreakdownAssist...");
+        dialog.setCancelable(false);
+        Button dialogButton = (Button) dialog.findViewById(R.id.btnOk);
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(ring) {
+                    mp.pause();
+                    mp.stop();
+                }
+                UpdateJobStatusAcknowledged();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+////
+
+
+
+        /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("New breakdowns received.");
+        builder.setCancelable(false);
+
+        builder.setPositiveButton(
+            "Acknowledged",
+            new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                if(ring) {
+                    mp.pause();
+                    mp.stop();
+                }
+                    UpdateJobStatusAcknowledged();
+                dialog.cancel();
+                }
+            });
+
+        AlertDialog alert = builder.create();
+        alert.show();*/
+
+    }
+
+
+    private static void UpdateJobStatusAcknowledged() {
+        DBHandler dbHandler = new DBHandler(getAppContext(), null, null, 1);
+        String time = "" + Globals.timeFormat.format(new Date());
+        for (Breakdown breakdown :NewBreakdowns) {
+            JobChangeStatus status = new JobChangeStatus();
+            status.job_no=breakdown.get_Job_No();
+            status.change_datetime=time;
+            status.device_timestamp=time;
+            status.synchro_mobile_db=0;
+            status.st_code=String.valueOf(Breakdown.JOB_ACKNOWLEDGED);
+
+            dbHandler.addJobStatusChangeRec(status);
+            dbHandler.UpdateBreakdownStatus2(breakdown, Breakdown.JOB_ACKNOWLEDGED);
+        }
+        dbHandler.close();
+        BackgroundService.SyncBreakdownStatusChange(getAppContext());
+        NewBreakdowns=null;
+    }
+
+    private AlarmManager alarmManager;
+    private Intent gpsTrackerIntent;
+    private PendingIntent pendingIntent;
+    private int intervalInMinutes = 1;
+
+
+
+    protected void trackLocation() {
+        SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        editor.putInt("intervalInMinutes", 1);
+        editor.putString("userName", "123");
+        editor.putString("defaultUploadWebsite", "123");
+
+            startAlarmManager();
+
+            editor.putBoolean("currentlyTracking", true);
+            editor.putFloat("totalDistanceInMeters", 0f);
+            editor.putBoolean("firstTimeGettingPosition", true);
+            editor.putString("sessionID",  UUID.randomUUID().toString());
+        editor.apply();
+    }
+
+    protected void StopTrackLocation() {
+        SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        editor.putInt("intervalInMinutes", 1);
+        editor.putString("userName", "123");
+        editor.putString("defaultUploadWebsite", "123");
+        cancelAlarmManager();
+        editor.putBoolean("currentlyTracking", false);
+        editor.putString("sessionID", "");
+
+        editor.apply();
+    }
+
+    private void startAlarmManager() {
+        Log.d("GPS TRACKER", "startAlarmManager");
+
+        Context context = getBaseContext();
+        alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        gpsTrackerIntent = new Intent(context, GpsTrackerAlarmReceiver.class);
+        pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
+
+        SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
+        intervalInMinutes = sharedPreferences.getInt("intervalInMinutes", 1);
+
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime(),
+                intervalInMinutes * 60000, // 60000 = 1 minute
+                pendingIntent);
+    }
+
+    private void cancelAlarmManager() {
+        Log.d("GPSTRACKER", "cancelAlarmManager");
+
+        Context context = getBaseContext();
+        Intent gpsTrackerIntent = new Intent(context, GpsTrackerAlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
+        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.cancel(pendingIntent);
+    }
 }

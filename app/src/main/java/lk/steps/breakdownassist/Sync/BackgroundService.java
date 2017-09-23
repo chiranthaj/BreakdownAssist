@@ -1,25 +1,26 @@
 package lk.steps.breakdownassist.Sync;
 
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.DBHandler;
+import lk.steps.breakdownassist.GpsTracker.TrackerObject;
 import lk.steps.breakdownassist.JobChangeStatus;
 import lk.steps.breakdownassist.JobCompletion;
 import lk.steps.breakdownassist.MainActivity;
-import lk.steps.breakdownassist.R;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -30,11 +31,11 @@ import retrofit2.Response;
  */
 
 public class BackgroundService extends Service {
-    DBHandler dbHandler;
+    static DBHandler dbHandler;
     SyncRESTService syncRESTService;
     Timer timer;
     MyTimerTask myTimerTask;
-    boolean bTimerRuning=false;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -52,7 +53,7 @@ public class BackgroundService extends Service {
         myTimerTask = new MyTimerTask();
 
         //delay 1000ms, repeat in 5000ms
-        timer.schedule(myTimerTask, 1000, 10000);
+        timer.schedule(myTimerTask, 1000, 20000);
         //GetAuthToken();
         return START_NOT_STICKY;
     }
@@ -63,21 +64,22 @@ public class BackgroundService extends Service {
         Toast.makeText(this, "Service Destroyed", Toast.LENGTH_SHORT).show();
     }
 
-    private void SyncBreakdownStatusChange(){
+    public static void SyncBreakdownStatusChange(final Context context){
         List<JobChangeStatus> JobChangeStatusList = dbHandler.getBreakdownStatusChange();
         for (final JobChangeStatus obj: JobChangeStatusList)
         {
             Log.e("StatusChange","*"+ obj.job_no+","+obj.change_datetime+", "+ obj.status);
             SyncObject syncObject = new SyncObject();
 
-            if(obj.status.equals(Integer.toString(Breakdown.Status_JOB_VISITED))) syncObject.StatusId="1";
-            else if(obj.status.equals(Integer.toString(Breakdown.Status_JOB_ATTENDING))) syncObject.StatusId="2";
-            else if(obj.status.equals(Integer.toString(Breakdown.Status_JOB_DONE))) syncObject.StatusId="3";
-            else if(obj.status.equals(Integer.toString(Breakdown.Status_JOB_COMPLETED))) syncObject.StatusId="4";
-            else syncObject.StatusId="2";
-
-            syncObject.BreakdownId=obj.job_no;
-            syncObject.StatusTime=obj.change_datetime;
+            /*if(obj.status.equals(Integer.toString(Breakdown.Status_JOB_Acknowledge))) syncObject.StatusId="2";
+            else if(obj.status.equals(Integer.toString(Breakdown.Status_JOB_VISITED))) syncObject.StatusId="3";
+            else if(obj.status.equals(Integer.toString(Breakdown.Status_JOB_ATTENDING))) syncObject.StatusId="4";
+            else if(obj.status.equals(Integer.toString(Breakdown.Status_JOB_DONE))) syncObject.StatusId="5";
+            else if(obj.status.equals(Integer.toString(Breakdown.Status_JOB_COMPLETED))) syncObject.StatusId="6";
+            else syncObject.StatusId="1";*/
+            syncObject.StatusId=obj.status;
+            syncObject.BreakdownId = obj.job_no;
+            syncObject.StatusTime = obj.change_datetime;
             syncObject.UserId = MainActivity.mToken.user_id;
 
             //TODO : if program crashes then this particular record may not be updated, hence use another task or change the
@@ -90,11 +92,15 @@ public class BackgroundService extends Service {
 
             call.enqueue(new Callback<SyncObject>(){
                 @Override
-                public void onResponse(Call<SyncObject> call, Response<SyncObject> response) {
+                public void onResponse(Call<SyncObject> call, Response<
+                        SyncObject> response) {
                     if (response.isSuccessful()) {
-                        Log.e("SyncStatusChange","successful");
-                        dbHandler.UpdateSyncState_JobStatusChangeObj(obj,1);//Successfully done
+                        Log.e("SyncStatusChange","successful1");
+                        if(dbHandler.UpdateSyncState_JobStatusChangeObj(obj,1)==1){//Successfully done
+                            Log.e("SyncStatusChange","successful2");
+                        }
                     } else if (response.errorBody() != null) {
+                        Toast.makeText(context,"SyncBreakdownStatus-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                         Log.e("SyncStatusChange","onResponse"+response.errorBody());
                         dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0); //ToDo : Change this for each reason
                         /*if (error.getResponse().getStatus()==409){
@@ -107,11 +113,19 @@ public class BackgroundService extends Service {
                             Log.e("SyncStatusChange","already synced");
                             dbHandler.UpdateSyncState_JobStatusChangeObj(obj, -5); //To avoid retry again and again
                         }*/
+                        if(response.code() == 401) { //Authentication fail
+                            Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
+                            MainActivity.ReLoginRequired=true;
+                        }else{
+                            Toast.makeText(context, "SyncStatusChange\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                        Log.e("SyncStatusChange","onResponse" + response.errorBody()+"*code*"+response.code());
                     }
                 }
 
                 @Override
                 public void onFailure(Call<SyncObject> call, Throwable t) {
+                    Toast.makeText(context,"SyncBreakdownStatus-Failure\n"+t, Toast.LENGTH_SHORT).show();
                     Log.e("SyncStatusChange","onFailure "+t);
                     dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0);//Not Uploaded due to no network
                 }
@@ -119,13 +133,13 @@ public class BackgroundService extends Service {
         }
     }
 
-    private void SyncBreakdownCompletion(){
+    public static void SyncBreakdownCompletion(final Context context){
         List<JobCompletion> JobCompletionList = dbHandler.getBreakdownCompletion();
         for (final JobCompletion obj: JobCompletionList)
         {
             SyncObject syncObject = new SyncObject();
             syncObject.BreakdownId=obj.job_no;
-            syncObject.StatusId="4";
+            syncObject.StatusId=String.valueOf(Breakdown.JOB_COMPLETED);
             syncObject.StatusTime=obj.job_completed_datetime;
             syncObject.FailureTypeId=obj.type_failure;
             syncObject.FailureNatureId=obj.cause;
@@ -142,10 +156,11 @@ public class BackgroundService extends Service {
                 @Override
                 public void onResponse(Call<SyncObject> call, Response<SyncObject> response) {
                     if (response.isSuccessful()) {
-                        Log.e("SyncStatusChange","Successfull");
+                        Log.e("SyncBreakdownCompletion","Successfull");
                         dbHandler.UpdateSyncState_JobCompletionObj(obj,1);//Successfully done
                     } else if (response.errorBody() != null) {
-                        Log.e("SyncStatusChange","Error"+response.errorBody());
+                        Log.e("SyncBreakdownCompletion","Error"+response.errorBody());
+                        Toast.makeText(context,"SyncBreakdownCompletion-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                         dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                         /*if (error.getKind() != RetrofitError.Kind.NETWORK | error.getResponse() != null) {
                             if (error.getResponse().getStatus()==409){
@@ -156,23 +171,94 @@ public class BackgroundService extends Service {
                         }else {
                             dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                         }*/
+                        if(response.code() == 401) { //Authentication fail
+                            Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
+                            MainActivity.ReLoginRequired=true;
+                        }else{
+                            Toast.makeText(context, "SyncBreakdownCompletion\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                        Log.e("SyncBreakdownCompletion","onResponse" + response.errorBody()+"*code*"+response.code());
                     }
                 }
 
                 @Override
                 public void onFailure(Call<SyncObject> call, Throwable t) {
                     dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
+                    Toast.makeText(context,"SyncBreakdownCompletion-Failure\n"+t, Toast.LENGTH_SHORT).show();
                 }
             });
         }
     }
 
+    private static void SyncTrackingData(final Context context){
+        final List<TrackerObject> list = dbHandler.getNotSyncTrackingData();
+        if(list.size()<=0)return;
 
-    class MyTimerTask extends TimerTask {
+        SyncRESTService syncRESTService = new SyncRESTService();
+        Call<TrackerObject> call = syncRESTService.getService()
+                .PushTrackingData( "Bearer "+ MainActivity.mToken.access_token, list);
+
+        call.enqueue(new Callback<TrackerObject>(){
+
+            @Override
+            public void onResponse(Call<TrackerObject> call, Response<TrackerObject> response) {
+                if (response.isSuccessful()) {
+                    Log.e("SyncTrackingData","Successfull");
+                    for (final TrackerObject obj: list) {
+                        dbHandler.UpdateTrackingData(obj);//Successfully done
+                    }
+                } else if (response.errorBody() != null) {
+                    Log.e("SyncTrackingData","Error"+response.errorBody());
+                    Toast.makeText(context,"SyncTrackingData-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
+                    //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
+                    if(response.code() == 401) { //Authentication fail
+                        Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
+                        MainActivity.ReLoginRequired=true;
+                    }else{
+                        Toast.makeText(context, "SyncTrackingData\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                    Log.e("SyncTrackingData","onResponse" + response.errorBody()+"*code*"+response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TrackerObject> call, Throwable t) {
+               // dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
+                Toast.makeText(context,"SyncTrackingData-Failure\n"+t, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+
+        /*for (final TrackerObject obj: list)
+        {
+            SyncObject syncObject = new SyncObject();
+            syncObject.BreakdownId=obj.job_no;
+            syncObject.StatusId=String.valueOf(Breakdown.JOB_COMPLETED);
+            syncObject.StatusTime=obj.job_completed_datetime;
+            syncObject.FailureTypeId=obj.type_failure;
+            syncObject.FailureNatureId=obj.cause;
+            syncObject.FailureCauseId=obj.detail_reason_code;
+            syncObject.UserId= MainActivity.mToken.user_id;
+
+            dbHandler.UpdateSyncState_JobCompletionObj(obj, -1);//Uploading Started
+
+        }*/
+    }
+    int i = 0;
+    private class MyTimerTask extends TimerTask {
         @Override
         public void run() {
-            SyncBreakdownStatusChange();
-            SyncBreakdownCompletion();
+            if(i==0){
+                i=1;
+                SyncBreakdownStatusChange(getApplicationContext());
+            }else if(i==1){
+                i=2;
+                SyncBreakdownCompletion(getApplicationContext());
+            }else if(i==2){
+                i=0;
+                SyncTrackingData(getApplicationContext());
+            }
         }
     }
 }

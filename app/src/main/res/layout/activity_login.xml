@@ -58,8 +58,6 @@
                         android:inputType="text"
                         android:gravity="center"
                         android:maxLines="1"
-                        android:singleLine="true"
-                        android:text="jagathprasanga"
                         android:textSize="25sp" />
 
                 </android.support.design.widget.TextInputLayout>
@@ -82,8 +80,6 @@
                         android:inputType="textPassword"
                         android:gravity="center"
                         android:maxLines="1"
-                        android:singleLine="true"
-                        android:text="abc123"
                         android:textSize="25sp" />
 
                 </android.support.design.widget.TextInputLayout>
