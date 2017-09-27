@@ -376,57 +376,79 @@ public class JobView {
         spinnerCause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
                 R.layout.spinner_row, R.id.textView, GetFilteredColumn(Failure.FailureCauseList, "1")));
 
-        spinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
-                SetNatureSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
-                if (view != null) {
-                    TextView textView = (TextView) view.findViewById(R.id.textView);
-                    if (position > 0)
-                        textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                    else textView.setTextColor(Color.RED);
-                }
-            }
+        if(breakdown.get_Status()==Breakdown.JOB_COMPLETED){
+            DBHandler dbHandler = new DBHandler(fragment.getActivity(), null, null, 1);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-            }
-        });
-        spinnerNature.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
-                SetCauseSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
-                if (view != null) {
-                    TextView textView = (TextView) view.findViewById(R.id.textView);
-                    if (position > 0)
-                        textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                    else textView.setTextColor(Color.RED);
-                }
-            }
+            JobCompletion obj= dbHandler.getJobCompletionRec(breakdown.get_Job_No());
+            int type = Integer.parseInt(obj.type_failure);//2
+            int cause = Integer.parseInt(obj.cause);//9
+            int nature = Integer.parseInt(obj.detail_reason_code);//21
+            spinnerType.setSelection(type);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-            }
-        });
-        spinnerCause.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
-                //SetCauseSpinners(fragment,spinnerType,spinnerNature,spinnerCause);
-                if (view != null) {
-                    TextView textView = (TextView) view.findViewById(R.id.textView);
-                    if (position > 0)
-                        textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                    else textView.setTextColor(Color.RED);
-                }
-            }
+            SetNatureSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
+            spinnerNature.setSelection(GetSubIndex(Failure.FailureNatureList,type,nature));
 
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-            }
-        });
+            SetCauseSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
+            spinnerCause.setSelection(GetSubIndex(Failure.FailureCauseList,nature,cause));
+
+            spinnerType.setEnabled(false);
+            spinnerNature.setEnabled(false);
+            spinnerCause.setEnabled(false);
+
+        }else{
+            spinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                    SetNatureSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
+                    if (view != null) {
+                        TextView textView = (TextView) view.findViewById(R.id.textView);
+                        if (position > 0)
+                            textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                        else textView.setTextColor(Color.RED);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> arg0) {
+                    // TODO Auto-generated method stub
+                }
+            });
+            spinnerNature.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                    SetCauseSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
+                    if (view != null) {
+                        TextView textView = (TextView) view.findViewById(R.id.textView);
+                        if (position > 0)
+                            textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                        else textView.setTextColor(Color.RED);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> arg0) {
+                    // TODO Auto-generated method stub
+                }
+            });
+            spinnerCause.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                    //SetCauseSpinners(fragment,spinnerType,spinnerNature,spinnerCause);
+                    if (view != null) {
+                        TextView textView = (TextView) view.findViewById(R.id.textView);
+                        if (position > 0)
+                            textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                        else textView.setTextColor(Color.RED);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> arg0) {
+                    // TODO Auto-generated method stub
+                }
+            });
+        }
+
 
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
         //Spinner
@@ -474,8 +496,8 @@ public class JobView {
                 jobCompletionRec.job_no = breakdown.get_Job_No();
                 jobCompletionRec.job_completed_datetime = GetSelectedDateTime(dialog);
                 jobCompletionRec.type_failure = GetId(Failure.FailureTypeList, spinnerType.getSelectedItem().toString());
-                jobCompletionRec.cause = GetId(Failure.FailureNatureList, spinnerNature.getSelectedItem().toString());
-                jobCompletionRec.detail_reason_code = GetId(Failure.FailureCauseList, spinnerCause.getSelectedItem().toString());
+                jobCompletionRec.detail_reason_code = GetId(Failure.FailureNatureList, spinnerNature.getSelectedItem().toString());
+                jobCompletionRec.cause = GetId(Failure.FailureCauseList, spinnerCause.getSelectedItem().toString());
 
                 UpdateCompletedJob(fragment, jobCompletionRec, breakdown);
                 dialog.dismiss();
@@ -497,9 +519,13 @@ public class JobView {
                 dialog.dismiss();
             }
         });
+
         dialog.show();
+
+
         return dialog;
     }
+
 
     private static void UpdateJobStatusChange(Fragment fragment, JobChangeStatus jobchangestatus, Breakdown breakdown, int iStatus) {
         DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
@@ -612,11 +638,34 @@ public class JobView {
     private static String GetId(String[][] Array, String name) {
         for (String[] array : Array) {
             if (array[2].equals(name)) {
-                Log.e("FOUND", name + "-" + array[1]);
+                Log.e("FOUND", name + "" + array[1]);
                 return array[1];
             }
         }
-        Log.e("NOT FOUND", "-"+name+" in "+Array.toString());
+        Log.e("NOT FOUND", ""+name+" in "+Array.toString());
+        return "0";
+    }
+    private static int GetSubIndex(String[][] Array, int parentId, int id) {
+        int i = 0;
+        for (String[] array : Array) {
+            if (array[3].equals(String.valueOf(parentId))) {
+                if (array[1].equals(String.valueOf(id))) {
+                    Log.e("GetSubIndex", "GetSubIndex=" + i);
+                    return i;
+                }
+                i++;
+            }
+        }
+       // Log.e("NOT FOUND", " in "+Array.toString());
+        return 0;
+    }
+    private static String GetName(String[][] Array, String id){
+        for (String[] array : Array) {
+            if (array[1].equals(id)) {
+                Log.e("FOUND", id + "" + array[2]);
+                return array[2];
+            }
+        }
         return "0";
     }
 

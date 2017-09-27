@@ -83,7 +83,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_below="@+id/text1"
-            android:text="Completed "
+            android:text="Status "
             android:textAlignment="viewStart"
             android:textColor="@android:color/darker_gray"
             android:textSize="22sp" />

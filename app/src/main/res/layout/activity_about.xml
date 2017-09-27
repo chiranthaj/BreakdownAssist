@@ -43,7 +43,7 @@
         android:layout_width="265dp"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Developed by : Chirantha Jayasinghe"
+        android:text="Developed by :\nChirantha Jayasinghe | Jagath Samarawickrama"
         android:id="@+id/textView"
         android:textSize="14dp"
         android:textColor="@android:color/holo_blue_dark"
@@ -114,13 +114,5 @@
             android:textSize="18sp" />
     </ScrollView>
 
-    <Button
-        android:id="@+id/button7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/imageView"
-        android:onClick="test"
-        android:text="Button" />
 
 </RelativeLayout>

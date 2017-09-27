@@ -44,7 +44,13 @@ import android.widget.Toast;
 import com.facebook.stetho.Stetho;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.Marker;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -84,12 +90,10 @@ public class MainActivity extends AppCompatActivity
     public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
     private NavigationView navigationView;
     private static Context context;
-    private SignalRService mService;
     public static Token mToken;
     public static boolean ReLoginRequired = false;
-    public static int NewBreakdownsReceived = 0;
     boolean doubleBackToExitPressedOnce = false;
-    public static List<Breakdown> NewBreakdowns;
+
     Timer timer;
     MyTimerTask myTimerTask;
 
@@ -134,7 +138,7 @@ public class MainActivity extends AppCompatActivity
         myTimerTask = new MyTimerTask();
 
         //delay 1000ms, repeat in 5000ms
-        timer.schedule(myTimerTask, 1000, 2000);
+        timer.schedule(myTimerTask, 1000, 10000);
 
         startService(new Intent(getBaseContext(), BackgroundService.class));
         startService(new Intent(getBaseContext(), SignalRService.class));
@@ -197,7 +201,7 @@ public class MainActivity extends AppCompatActivity
         Stetho.initializeWithDefaults(this); //TODO : Remove this later, which is a tool for database inspection
     }
 
-    @Override
+    /*@Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         // Save the user's current game state
         savedInstanceState.putInt(STATE_SCORE, 123);//Testing
@@ -207,15 +211,27 @@ public class MainActivity extends AppCompatActivity
         if (currentFragment != null) {
             savedInstanceState.putString("CURRENT_FRAGMENT", currentFragment.getClass().getName());
         }
+
         // Always call the superclass so it can save the view hierarchy state
         super.onSaveInstanceState(savedInstanceState);
-    }
+    }*/
 
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String sID = intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
             //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
+            String json = intent.getStringExtra("new_breakdowns");
+            String ring = intent.getStringExtra("ring");
+            String refreshReq = intent.getStringExtra("job_status_changed");
+            if(ring != null & json != null){
+                Type type = new TypeToken<List<Breakdown>>(){}.getType();
+                Gson gson = new Gson();
+                List<Breakdown> breakdowns = gson.fromJson(json, type);
+                NewBreakdownsDialog(breakdowns,ring);
+            }else if(refreshReq!=null){
+                onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
+            }
         }
     };
 
@@ -422,15 +438,19 @@ public class MainActivity extends AppCompatActivity
                     }
                     if(ReLoginRequired){
                         ReLoginRequired=false;
-                        LoginAgainDialog();
+                        Intent i = getBaseContext().getPackageManager()
+                                .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+                        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(i);
+                        MainActivity.this.finish();
                     }
-                    if(NewBreakdownsReceived == 1){
+                    /*if(NewBreakdownsReceived == 1){
                         NewBreakdownsReceived = 0;
                         NewBreakdownsDialog(false);
                     }else if(NewBreakdownsReceived == 2){
                         NewBreakdownsReceived = 0;
                         NewBreakdownsDialog(true);
-                    }
+                    }*/
                 }
             });
         }
@@ -459,111 +479,46 @@ public class MainActivity extends AppCompatActivity
         };
         handler.postDelayed(r, 5000); //2Sec
     }
-       /* public void sendMessage(String receiver,String message) {
-        if (mBound) {
-            // Call a method from the SignalRService.
-            // However, if this call were something that might hang, then this request should
-            // occur in a separate thread to avoid slowing down the activity performance.
-            Log.e("SIGNALR","002");
-            mService.sendMessage(message);
-        }
-    }*/
 
 
-    private void LoginAgainDialog(){
-        /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Authentication fail.\nRe-Login required.");
-        builder.setCancelable(true);
-
-        builder.setPositiveButton(
-                "Re-Login",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {*/
-                        Intent i = getBaseContext().getPackageManager()
-                                .getLaunchIntentForPackage( getBaseContext().getPackageName() );
-                        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(i);
-                        this.finish();
-                       /* dialog.cancel();
-                    }
-                });
-
-        builder.setNegativeButton(
-                "Cancel",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-
-        AlertDialog alert = builder.create();
-        alert.show();*/
-    }
-
-    private void NewBreakdownsDialog(final boolean ring){
-        onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Forcus to job list fragment
-
-        final MediaPlayer mp = MediaPlayer.create(getBaseContext(), R.raw.buzzer);
-        if(ring){
-                mp.setLooping(true);
-                mp.start();
+    private Dialog newBreakdownDialog;
+    private void NewBreakdownsDialog(final List<Breakdown> breakdowns, final String ring){
+        final MediaPlayer mp;
+        if(ring.equals("1")){
+            mp = MediaPlayer.create(getBaseContext(), R.raw.buzzer);
+            mp.setLooping(true);
+           // mp.start();
         }else{
-            MediaPlayer mPlayer2;
-            mPlayer2= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
-            mPlayer2.start();
+            mp= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
+          //  mp.start();
         }
-
-
-        ///
-// custom dialog
-        final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.alert_dialog);
+        //if(newBreakdownDialog != null)newBreakdownDialog.cancel();
+        newBreakdownDialog = new Dialog(this);
+        newBreakdownDialog.setContentView(R.layout.alert_dialog);
         //dialog.setTitle("BreakdownAssist...");
-        dialog.setCancelable(false);
-        Button dialogButton = (Button) dialog.findViewById(R.id.btnOk);
+        newBreakdownDialog.setCancelable(false);
+        Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
         dialogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(ring) {
+                if(ring.equals("1")) {
                     mp.pause();
                     mp.stop();
                 }
-                UpdateJobStatusAcknowledged();
-                dialog.dismiss();
+                UpdateJobStatusAcknowledged(breakdowns);
+                newBreakdownDialog.dismiss();
             }
         });
-        dialog.show();
-////
-
-
-
-        /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("New breakdowns received.");
-        builder.setCancelable(false);
-
-        builder.setPositiveButton(
-            "Acknowledged",
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                if(ring) {
-                    mp.pause();
-                    mp.stop();
-                }
-                    UpdateJobStatusAcknowledged();
-                dialog.cancel();
-                }
-            });
-
-        AlertDialog alert = builder.create();
-        alert.show();*/
-
+        newBreakdownDialog.show();
+        mp.start();
+        onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
     }
 
 
-    private static void UpdateJobStatusAcknowledged() {
+    private static void UpdateJobStatusAcknowledged(List<Breakdown> breakdowns) {
         DBHandler dbHandler = new DBHandler(getAppContext(), null, null, 1);
         String time = "" + Globals.timeFormat.format(new Date());
-        for (Breakdown breakdown :NewBreakdowns) {
+        for (Breakdown breakdown :breakdowns) {
             JobChangeStatus status = new JobChangeStatus();
             status.job_no=breakdown.get_Job_No();
             status.change_datetime=time;
@@ -572,18 +527,16 @@ public class MainActivity extends AppCompatActivity
             status.st_code=String.valueOf(Breakdown.JOB_ACKNOWLEDGED);
 
             dbHandler.addJobStatusChangeRec(status);
-            dbHandler.UpdateBreakdownStatus2(breakdown, Breakdown.JOB_ACKNOWLEDGED);
+            dbHandler.UpdateBreakdownStatusByJobNo(breakdown.get_Job_No(), "", String.valueOf(Breakdown.JOB_ACKNOWLEDGED));
         }
         dbHandler.close();
         BackgroundService.SyncBreakdownStatusChange(getAppContext());
-        NewBreakdowns=null;
     }
 
     private AlarmManager alarmManager;
     private Intent gpsTrackerIntent;
     private PendingIntent pendingIntent;
     private int intervalInMinutes = 1;
-
 
 
     protected void trackLocation() {

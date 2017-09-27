@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -53,7 +54,7 @@ public class BackgroundService extends Service {
         myTimerTask = new MyTimerTask();
 
         //delay 1000ms, repeat in 5000ms
-        timer.schedule(myTimerTask, 1000, 20000);
+        timer.schedule(myTimerTask, 1000, 30000);
         //GetAuthToken();
         return START_NOT_STICKY;
     }
@@ -142,8 +143,8 @@ public class BackgroundService extends Service {
             syncObject.StatusId=String.valueOf(Breakdown.JOB_COMPLETED);
             syncObject.StatusTime=obj.job_completed_datetime;
             syncObject.FailureTypeId=obj.type_failure;
-            syncObject.FailureNatureId=obj.cause;
-            syncObject.FailureCauseId=obj.detail_reason_code;
+            syncObject.FailureNatureId=obj.detail_reason_code;
+            syncObject.FailureCauseId=obj.cause;
             syncObject.UserId= MainActivity.mToken.user_id;
 
             dbHandler.UpdateSyncState_JobCompletionObj(obj, -1);//Uploading Started
@@ -189,6 +190,8 @@ public class BackgroundService extends Service {
             });
         }
     }
+
+
 
     private static void SyncTrackingData(final Context context){
         final List<TrackerObject> list = dbHandler.getNotSyncTrackingData();

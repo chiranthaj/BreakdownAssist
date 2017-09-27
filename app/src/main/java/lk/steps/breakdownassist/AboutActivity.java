@@ -1,51 +1,25 @@
 package lk.steps.breakdownassist;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.List;
 import lk.steps.breakdownassist.HtmlTextView.HtmlTextView;
-import lk.steps.breakdownassist.Sync.SignalRService;
 
 
 
 public class AboutActivity extends Activity {
-    private SignalRService mService;
-    private boolean mBound = false;
 
     @Override
     public void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
-
-        Intent intent = new Intent();
-        intent.setClass(this, SignalRService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-/*
-        PackageInfo info;
-        String vName ="";
-        int vCode =0;
-        try {
-            info = getPackageManager().getPackageInfo(getPackageName(), 0);
-            vName = info.versionName;
-            vCode = info.versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }*/
 
         String version = "0";
         int versionCode = 0;
@@ -84,47 +58,5 @@ public class AboutActivity extends Activity {
             return "";
         }
     }
-    @Override
-    protected void onStop() {
-        // Unbind from the service
-        if (mBound) {
-            unbindService(mConnection);
-            mBound = false;
-        }
-        super.onStop();
-    }
 
-    public void test(View view){
-        Log.e("SIGNALR","001");
-        sendMessage("gamage","prasanga");
-    }
-       public void sendMessage(String receiver,String message) {
-        if (mBound) {
-            // Call a method from the SignalRService.
-            // However, if this call were something that might hang, then this request should
-            // occur in a separate thread to avoid slowing down the activity performance.
-            Log.e("SIGNALR","002");
-            mService.sendMessage(message);
-        }
-    }
-
-    /**
-     * Defines callbacks for service binding, passed to bindService()
-     */
-    private final ServiceConnection mConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to SignalRService, cast the IBinder and get SignalRService instance
-            SignalRService.LocalBinder binder = (SignalRService.LocalBinder) service;
-            mService = binder.getService();
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
-        }
-    };
 }

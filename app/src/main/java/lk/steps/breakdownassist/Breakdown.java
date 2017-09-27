@@ -47,7 +47,6 @@ public class Breakdown {
     private String _PremisesID;
 
 
-
     public String get_PremisesID() {
         return _PremisesID;
     }

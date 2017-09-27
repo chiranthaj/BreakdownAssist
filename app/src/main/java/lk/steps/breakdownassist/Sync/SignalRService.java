@@ -11,20 +11,25 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
 import com.facebook.stetho.json.annotation.JsonProperty;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -32,7 +37,10 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.DBHandler;
+import lk.steps.breakdownassist.Failure;
 import lk.steps.breakdownassist.Globals;
+import lk.steps.breakdownassist.JobChangeStatus;
+import lk.steps.breakdownassist.JobCompletion;
 import lk.steps.breakdownassist.MainActivity;
 import lk.steps.breakdownassist.R;
 import microsoft.aspnet.signalr.client.ErrorCallback;
@@ -210,14 +218,22 @@ public class SignalRService extends Service {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        //Log.d("API-","its running-01");
+                        Gson gson = new Gson();
+                        SignalRMessage msg = gson.fromJson(json, SignalRMessage.class);
+
+                       // Log.d("obj","-"+msg.H);
+                       // Log.d("obj","-"+msg.M);
+                     //   Log.d("obj","-"+msg.A.get(1));
                      //   JsonObject jobject = json.getAsJsonObject();
                      //   String result = jobject.get("A").toString().replace("\"","").replace("[","").replace("]","");
-                        GetNewBreakdownsFromServer(area_id, team_id);
-                      //  Log.e("API-","-"+json);
-                      //  Log.e("API-","-02"+result);
-                        Toast.makeText(getApplicationContext(),"SignalR request received", Toast.LENGTH_SHORT).show();
-                       // Toast.makeText(getApplicationContext(),json.toString(), Toast.LENGTH_SHORT).show();
+                        //String msg = json.toString();
+                        if(msg.M.equals("GetNewBreakdowns")){
+                            Toast.makeText(getApplicationContext(),"SignalR NewBreakdowns request received", Toast.LENGTH_SHORT).show();
+                            GetNewBreakdownsFromServer(area_id, team_id);
+                        }else if(msg.M.equals("GetBreakdownStatusUpdate")){
+                            Toast.makeText(getApplicationContext(),"SignalR BreakdownStatusUpdate request received", Toast.LENGTH_SHORT).show();
+                            GetBreakdownsStatusUpdateFromServer(msg.A.get(1));
+                        }
                     }
                 });
             }
@@ -278,7 +294,6 @@ public class SignalRService extends Service {
 
 
     public void GetNewBreakdownsFromServer(String area_Id, String team_id){
-        //Log.e("GetNewBreakdowns","1");
         try{
             SyncRESTService syncRESTService = new SyncRESTService();
             Call<List<Breakdown>> call = syncRESTService.getService()
@@ -288,42 +303,38 @@ public class SignalRService extends Service {
             call.enqueue(new Callback<List<Breakdown>>(){
                 @Override
                 public void onResponse(Call<List<Breakdown>> call, Response<List<Breakdown>> response) {
-                    //Log.e("GetNewBreakdowns","2");
                     if (response.isSuccessful()) {
                         //Log.e("GetNewBreakdowns","Successful");
                         List<Breakdown> breakdowns = response.body();
                         Log.e("GetNewBreakdowns","Number-"+breakdowns.size());
-                        DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
-                       // int playTone = 0;
-                        for (Breakdown breakdown :breakdowns) {
-                            dbHandler.addBreakdown2(
-                                    breakdown.get_Received_Time(),
-                                    breakdown.get_Acct_Num(),
-                                    breakdown.get_Full_Description(),
-                                    breakdown.get_Job_No(),
-                                    breakdown.get_Contact_No(),
-                                    breakdown.get_ADDRESS(),
-                                    breakdown.get_Priority());
-                            Log.e("get_Full_Description()",breakdown.get_Full_Description());
 
-                            if(breakdown.get_Priority()==4)MainActivity.NewBreakdownsReceived=2;
-                            else MainActivity.NewBreakdownsReceived = 1;
+                        if(breakdowns.size()>0){
+                            DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
+                            String ring = "0";
+                            for (Breakdown breakdown :breakdowns) {
+                                dbHandler.addBreakdown2(
+                                        breakdown.get_Received_Time(),
+                                        breakdown.get_Acct_Num(),
+                                        breakdown.get_Full_Description(),
+                                        breakdown.get_Job_No(),
+                                        breakdown.get_Contact_No(),
+                                        breakdown.get_ADDRESS(),
+                                        breakdown.get_Priority());
+                                if(breakdown.get_Priority() == 4) ring = "1";
+                            }
+
+                            String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
+                            dbHandler.close();
+
+                            //Informing the Map view about the new bd, then it can add it
+                            Intent myintent=new Intent();
+                            myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
+                            myintent.putExtra("_id",sIssuedBreakdownID);
+                            myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
+                            myintent.putExtra("ring",ring);
+                            getApplicationContext().sendBroadcast(myintent);
                         }
-                        MainActivity.NewBreakdowns = breakdowns;
 
-                        String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
-                        dbHandler.close();
-
-                        //Informing the Map view about the new bd, then it can add it
-                        Intent myintent=new Intent();
-                        myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
-                        myintent.putExtra("_id",sIssuedBreakdownID);
-                        getApplicationContext().sendBroadcast(myintent);
-                        /*if(MainActivity.NewBreakdownsReceived==1){
-                            MediaPlayer mPlayer2;
-                            mPlayer2= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
-                            mPlayer2.start();
-                        }*/
                     } else if (response.errorBody() != null) {
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(getApplicationContext(), "Authentication fail..", Toast.LENGTH_SHORT).show();
@@ -344,9 +355,104 @@ public class SignalRService extends Service {
         }catch(Exception e){
             Log.e("GetNewBreakdowns","" + e.getMessage());
         }
-
     }
 
+
+    public void GetBreakdownsStatusUpdateFromServer(String breakdownId){
+        try{
+            SyncRESTService syncRESTService = new SyncRESTService();
+            Call<List<JobChangeStatus>> call = syncRESTService.getService()
+                    .GetBreakdownsStatus( "Bearer "+ MainActivity.mToken.access_token,breakdownId);
+
+            call.enqueue(new Callback<List<JobChangeStatus>>(){
+                @Override
+                public void onResponse(Call<List<JobChangeStatus>> call, Response<List<JobChangeStatus>> response) {
+                    if (response.isSuccessful()) {
+                        //Log.e("GetNewBreakdowns","Successful");
+                        List<JobChangeStatus> jobChangeStatus = response.body();
+                        Log.e("GetBreakdownsStatus","Number-"+jobChangeStatus.size());
+
+
+                        if(jobChangeStatus.size()>0){
+                            DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
+                            for (JobChangeStatus jobStatus :jobChangeStatus) {
+                                //Log.e("GetBreakdownsStatus","job_no-"+jobStatus.job_no);
+                                //Log.e("GetBreakdownsStatus","change_datetime-"+jobStatus.change_datetime);
+                                //Log.e("GetBreakdownsStatus","status-"+jobStatus.status);
+                                //Log.e("GetBreakdownsStatus","type_failure-"+jobStatus.type_failure);
+                                //Log.e("GetBreakdownsStatus","cause-"+jobStatus.cause);
+                                //Log.e("GetBreakdownsStatus","detail_reason_code-"+jobStatus.detail_reason_code);
+                                jobStatus.device_timestamp=jobStatus.change_datetime;
+                                jobStatus.synchro_mobile_db=1;//No need to send to server
+
+                                if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_VISITED))){//Visited
+                                    Log.e("GetBreakdownsStatus","Visited");
+                                    jobStatus.st_code="V";
+                                    dbHandler.addJobStatusChangeRec(jobStatus);
+                                    dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
+
+                                }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_ATTENDING))){//Attending
+                                    Log.e("GetBreakdownsStatus","Attending");
+                                    jobStatus.st_code="A";
+                                    dbHandler.addJobStatusChangeRec(jobStatus);
+                                    dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
+
+                                }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_DONE))){//Done
+                                    Log.e("GetBreakdownsStatus","Done");
+                                    jobStatus.st_code="D";
+                                    dbHandler.addJobStatusChangeRec(jobStatus);
+                                    dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
+
+                                }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_COMPLETED))){//Completed
+                                    Log.e("GetBreakdownsStatus","Completed");
+                                    jobStatus.st_code="C";
+                                    JobCompletion jobCompletionRec = new JobCompletion();
+                                    jobCompletionRec.job_no = jobStatus.job_no;
+                                    jobCompletionRec.job_completed_datetime = jobStatus.change_datetime;
+                                    jobCompletionRec.type_failure = jobStatus.type_failure;
+                                    jobCompletionRec.cause = jobStatus.cause;
+                                    jobCompletionRec.detail_reason_code = jobStatus.detail_reason_code;
+
+                                    dbHandler.addJobCompletionRec(jobCompletionRec);
+                                    dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,jobStatus.change_datetime, jobStatus.status);
+                                }
+
+                            }
+
+                            //String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
+                            dbHandler.close();
+
+                            //Informing the Map view about the new bd, then it can add it
+                            Intent myintent=new Intent();
+                            myintent.setAction("lk.steps.breakdownassist.NewBreakdownBroadcast");
+                            myintent.putExtra("job_status_changed","refresh_list");
+                           // myintent.putExtra("_id",sIssuedBreakdownID);
+                          //  myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
+                           // myintent.putExtra("ring",ring);
+                            getApplicationContext().sendBroadcast(myintent);
+                        }
+
+                    } else if (response.errorBody() != null) {
+                        if(response.code() == 401) { //Authentication fail
+                            Toast.makeText(getApplicationContext(), "Authentication fail..", Toast.LENGTH_SHORT).show();
+                            MainActivity.ReLoginRequired=true;
+                        }else{
+                            Toast.makeText(getApplicationContext(), "GetNewBreakdowns\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                        Log.e("GetNewBreakdowns","onResponse" + response.errorBody()+"*code*"+response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<JobChangeStatus>> call, Throwable t) {
+                    Toast.makeText(getApplicationContext(), "Error in network..\n"+ t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("GetNewBreakdowns","5-" + t.getMessage());
+                }
+            });
+        }catch(Exception e){
+            Log.e("GetNewBreakdowns","" + e.getMessage());
+        }
+    }
 
 
     private class MyTimerTask extends TimerTask {
@@ -364,4 +470,10 @@ public class SignalRService extends Service {
 
 
 
+}
+
+class SignalRMessage{
+    String H;
+    String M;
+    ArrayList<String> A;
 }

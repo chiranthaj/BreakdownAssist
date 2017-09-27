@@ -25,7 +25,7 @@ import lk.steps.breakdownassist.GpsTracker.TrackerObject;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version = 71;
+    private static final int Database_Version = 72;
     private static final String Database_Name = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -204,7 +204,27 @@ public class DBHandler extends SQLiteOpenHelper
 
         db.close();
     }
+    public JobCompletion getJobCompletionRec(String job_no){
+        SQLiteDatabase db = getWritableDatabase();
+        JobCompletion obj= new JobCompletion();
+        String query = "SELECT * FROM JobCompletion WHERE job_no='"+job_no+"';";//
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
 
+                obj.job_completed_datetime=c.getString(c.getColumnIndex("job_completed_datetime"));
+                obj.type_failure=c.getString(c.getColumnIndex("type_failure"));
+                obj.cause=c.getString(c.getColumnIndex("cause"));
+                obj.detail_reason_code=c.getString(c.getColumnIndex("detail_reason_code"));
+            }
+            c.moveToNext();
+        }
+        c.close();
+        return obj;
+    }
     public List<JobCompletion> getJobCompletionObjNotSync_List(){
         JobCompletion _jobcompletion_obj=null;
         SQLiteDatabase db = getWritableDatabase();
@@ -1098,7 +1118,7 @@ public class DBHandler extends SQLiteOpenHelper
         iResult=1; //Return Success
         return iResult;
     }
-    public int UpdateBreakdownStatus2(Breakdown breakdown,int Breakdown_Status)
+    /*public int UpdateBreakdownStatusByJobNo(String jobNo,int Breakdown_Status)
     {// TODO : Maintain to two tables, one for Current status, one for status changed with all the status changes list with timesatamp
         int iResult=-1;
         //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/d h:m:s a");
@@ -1108,12 +1128,26 @@ public class DBHandler extends SQLiteOpenHelper
         String query = "UPDATE BreakdownRecords SET Status='" +
                 String.valueOf(Breakdown_Status) +
                 "', completed_timestamp= '" +  time + "' " +
-                " WHERE job_no='" +breakdown.get_Job_No() + "';";
+                " WHERE job_no='" +jobNo  + "';";
 
         db.execSQL(query);
         db.close();
 
         iResult=1; //Return Success
+        return iResult;
+    }*/
+    public int UpdateBreakdownStatusByJobNo(String jobNo,String time, String Breakdown_Status)
+    {// TODO : Maintain to two tables, one for Current status, one for status changed with all the status changes list with timesatamp
+        int iResult=-1;
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "UPDATE BreakdownRecords SET Status='" + Breakdown_Status + "', completed_timestamp= '" +  time + "' " +
+                " WHERE job_no='" +jobNo + "';";
+
+        db.execSQL(query);
+
+        iResult=1; //Return Success*/
+
+        //Log.e("RRRRRRRR",jobNo +","+time+","+Breakdown_Status);
         return iResult;
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import lk.steps.breakdownassist.Breakdown;
 import lk.steps.breakdownassist.GpsTracker.TrackerObject;
+import lk.steps.breakdownassist.JobChangeStatus;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.http.Body;
@@ -25,7 +26,8 @@ public interface SyncService {
 
     @FormUrlEncoded
     @POST("/token")
-    Call<Token> GetJwt(@Field("username") String username, @Field("password") String password);
+    Call<Token> GetJwt(@Field("username") String username,
+                       @Field("password") String password);
 
     @GET("/Mobile/GetNewBreakdowns/{userId}/{areaId}/{teamId}")
     Call<List<Breakdown>> getNewBreakdowns(@Header("Authorization") String auth,
@@ -34,11 +36,15 @@ public interface SyncService {
                                                   @Path("teamId") String team);
 
     @POST("/Mobile/UpdateBreakdownStatus/")
-    Call<SyncObject> UpdateBreakdownStatus(@Header("Authorization") String auth, @Body SyncObject syncObject);
+    Call<SyncObject> UpdateBreakdownStatus(@Header("Authorization") String auth,
+                                           @Body SyncObject syncObject);
 
-
+    @GET("/Mobile/GetBreakdownsStatus/{breakdownId}")
+    Call<List<JobChangeStatus>> GetBreakdownsStatus(@Header("Authorization") String auth,
+                                              @Path("breakdownId") String BreakdownId);
 
     @POST("/Mobile/UpdateTrackingData/")
-    Call<TrackerObject> PushTrackingData(@Header("Authorization") String auth, @Body List<TrackerObject> list);
+    Call<TrackerObject> PushTrackingData(@Header("Authorization") String auth,
+                                         @Body List<TrackerObject> list);
 
 }

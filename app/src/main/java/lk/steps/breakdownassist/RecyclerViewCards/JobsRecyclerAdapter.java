@@ -56,10 +56,21 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         holder.description.setText(breakdownList.get(position).get_Full_Description());
        // holder.description.setText("-");
         if(breakdownList.get(position).get_Completed_Time() == null){
-            holder.completed_date_time.setText("Unattained job");
-        }else{
-            holder.completed_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Completed_Time()));
+            holder.completed_date_time.setText("Unattained");
+        }else if(breakdownList.get(position).get_Status()==Breakdown.JOB_ATTENDING){
+            holder.completed_date_time.setText("Attending");
+        }else if(breakdownList.get(position).get_Status()==Breakdown.JOB_VISITED){
+            holder.completed_date_time.setText("Visited");
+        }else if(breakdownList.get(position).get_Status()==Breakdown.JOB_DONE){
+            holder.completed_date_time.setText("Done");
+        }else if(breakdownList.get(position).get_Status()==Breakdown.JOB_COMPLETED){
+            holder.completed_date_time.setText("Completed on "+Globals.parseDate(breakdownList.get(position).get_Completed_Time()));
         }
+
+
+        /*else{
+            holder.completed_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Completed_Time()));
+        }*/
         String lat = breakdownList.get(position).get_LATITUDE();
         if(lat==null){
             holder.imgMap.setVisibility(View.INVISIBLE);

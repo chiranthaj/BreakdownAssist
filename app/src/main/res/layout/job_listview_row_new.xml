@@ -102,7 +102,7 @@
             android:layout_alignBaseline="@+id/completed_date_time"
             android:layout_alignBottom="@+id/completed_date_time"
             android:layout_alignParentStart="true"
-            android:text="Completed "
+            android:text="Status "
             android:textAlignment="viewStart"
             android:textColor="@android:color/darker_gray"
             android:textSize="22sp" />
@@ -126,7 +126,7 @@
             android:layout_alignParentEnd="true"
             android:layout_below="@+id/received_date_time"
             android:layout_toEndOf="@+id/text1"
-            android:text="Unattained job"
+            android:text="Unattained"
             android:textAlignment="viewStart"
             android:textColor="@android:color/holo_orange_dark"
             android:textSize="22sp" />

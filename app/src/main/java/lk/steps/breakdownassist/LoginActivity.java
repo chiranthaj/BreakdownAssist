@@ -24,6 +24,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.InetAddress;
+import java.net.URL;
+
 import lk.steps.breakdownassist.Sync.SyncRESTService;
 import lk.steps.breakdownassist.Sync.Token;
 import mehdi.sakout.fancybuttons.FancyButton;
@@ -105,7 +108,27 @@ public class LoginActivity extends AppCompatActivity  {
             txtAppName.setText("Ceylon Electricity Board  ©  2017");
         }
 
+        //GetIpAddress();
+
     }
+
+    private void GetIpAddress(){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    InetAddress address = InetAddress.getByName(new URL("http://meterasist.hopto.org").getHost());
+                    String ip = address.getHostAddress();
+                    Globals.serverUrl="http://"+ip+"";
+                    Log.e("IP","="+ip);
+                }catch(Exception e){
+                    Log.e("IP","="+e.getMessage());
+                }
+            }
+        });
+        thread.start();
+    }
+
     public static void hideKeyboardFrom(Context context, View view) {
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -245,6 +268,7 @@ public class LoginActivity extends AppCompatActivity  {
     private boolean ForceLocalLogin = false;
 
     private void performeLogin(final String username, final String password){
+
         long lastLoginTime = ReadLongPreferences("last_login_time", 0);
         final long currentTime = System.currentTimeMillis()/1000;
         long expiresIn = ReadLongPreferences("expires_in", 0);
@@ -256,7 +280,7 @@ public class LoginActivity extends AppCompatActivity  {
         Log.e("expiresIn","="+expiresIn);
         Log.e("lastUsername","="+lastUsername);
         Log.e("lastPassword","="+lastPassword);
-        long safeTimeMargin = 60*60*1000*-1;
+        long safeTimeMargin = 60*60*-1000;
         if(((lastLoginTime + expiresIn + safeTimeMargin > currentTime) | ForceLocalLogin ) & // token expired or will not expire in next hour and user/pass are correct
                 (lastUsername.equals(username) & lastPassword.equals(password))){
             Log.e("Login","Local login");//Local login

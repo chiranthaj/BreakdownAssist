@@ -469,7 +469,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             Marker_by_BD_Id_OnMap.clear();
         }
         AddBreakDownListToMap(dbHandler.ReadBreakdowns(iJobs_to_Display, true));
-        ReBoundMap();
+        //ReBoundMap();//2017/09/29
     }
 
     protected synchronized void buildGoogleApiClient() {

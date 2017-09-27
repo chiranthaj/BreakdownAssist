@@ -12,6 +12,8 @@ import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.widget.Toast;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -135,11 +137,12 @@ public class LocationService extends Service implements
         String altitudeTxt = Double.toString(location.getAltitude());
         String directionTxt = Double.toString(location.getBearing());
 
-        Log.d(TAG, "latitude="+latTxt);
-        Log.d(TAG, "longitude="+lonTxt);
-        Log.d(TAG, "speed="+speedTxt);
-        Log.d(TAG, "distance="+distance);
-        if(distance > 1 & location.getAccuracy() < 50){
+        Log.d(TAG, "GPSTEST accu="+accuracyTxt+"lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance);
+        //Log.d(TAG, "longitude="+lonTxt);
+        //Log.d(TAG, "speed="+speedTxt);
+        //Log.d(TAG, "distance="+distance);
+        if(location.getAccuracy() < 50.0f){
+            Toast.makeText(this, "GPS Tracker accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_LONG).show();
             DBHandler dbHandler = new DBHandler(this, null, null, 1);
             dbHandler.addTrackPoint(timestamp,latTxt,lonTxt,speedTxt,accuracyTxt,altitudeTxt,directionTxt,distanceTxt);
         }
@@ -161,9 +164,9 @@ public class LocationService extends Service implements
         if (location != null) {
             Log.e(TAG, "position: " + location.getLatitude() + ", " + location.getLongitude() + " accuracy: " + location.getAccuracy());
 
-            // we have our desired accuracy of 100 meters so lets quit this service,
+            // we have our desired accuracy of 500 meters so lets quit this service,
             // onDestroy will be called and stop our location uodates
-            if (location.getAccuracy() < 100.0f) {
+            if (location.getAccuracy() < 500.0f) {
                 stopLocationUpdates();
                 SaveLocation(location);
             }
@@ -193,7 +196,8 @@ public class LocationService extends Service implements
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+            if(googleApiClient.isConnected())
+                LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
         }
 
     }

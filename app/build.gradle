@@ -10,14 +10,14 @@ android {
         }
     }
     compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    buildToolsVersion "26.0.1"
     defaultConfig {
         applicationId "lk.steps.breakdownassist"
         minSdkVersion 19
         targetSdkVersion 25
         multiDexEnabled true
         versionCode 124
-        versionName "1.0.6"
+        versionName "1.2.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.signedkey
     }
