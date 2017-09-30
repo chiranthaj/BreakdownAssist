@@ -621,6 +621,8 @@ public class DBHandler extends SQLiteOpenHelper
         //SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a", Locale.US);
         long duration = 0;
         try {
+           // Log.e("day1","="+day1);
+           // Log.e("day2","="+day2);
             Date d1 = Globals.timeFormat.parse(day1);
             Date d2 = Globals.timeFormat.parse(day2);
             //Log.d("TEST",day1+"-"+day2);

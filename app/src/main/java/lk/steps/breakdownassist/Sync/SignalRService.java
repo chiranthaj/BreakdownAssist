@@ -91,7 +91,7 @@ public class SignalRService extends Service {
         int result = super.onStartCommand(intent, flags, startId);
         dbHandler = new DBHandler(this,null,null,1);
         syncRESTService = new SyncRESTService();
-        Toast.makeText(this, "SignalR Service Started", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "SignalR Service Started", Toast.LENGTH_SHORT).show();
 
         StartRetryTimer();
         return result;
@@ -221,11 +221,11 @@ public class SignalRService extends Service {
                         Gson gson = new Gson();
                         SignalRMessage msg = gson.fromJson(json, SignalRMessage.class);
 
-                       // Log.d("obj","-"+msg.H);
-                       // Log.d("obj","-"+msg.M);
-                     //   Log.d("obj","-"+msg.A.get(1));
+                      // Log.d("obj-H","-"+msg.H);
+                     //   Log.d("obj-M","-"+msg.M);
+                     //   Log.d("obj-A","-"+msg.A);
                      //   JsonObject jobject = json.getAsJsonObject();
-                     //   String result = jobject.get("A").toString().replace("\"","").replace("[","").replace("]","");
+                       // String result = jobject.get("A").toString().replace("\"","").replace("[","").replace("]","");
                         //String msg = json.toString();
                         if(msg.M.equals("GetNewBreakdowns")){
                             Toast.makeText(getApplicationContext(),"SignalR NewBreakdowns request received", Toast.LENGTH_SHORT).show();
@@ -472,8 +472,3 @@ public class SignalRService extends Service {
 
 }
 
-class SignalRMessage{
-    String H;
-    String M;
-    ArrayList<String> A;
-}

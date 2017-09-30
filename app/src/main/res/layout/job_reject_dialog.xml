@@ -12,7 +12,16 @@
         android:layout_marginTop="10dp"
         android:orientation="vertical"
         android:weightSum="1">
-
+        <TextView
+            android:id="@+id/warning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="You are about to REJECT the job"
+            android:textAlignment="center"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="25sp"
+            android:textStyle="bold" />
         <TextView
             android:id="@+id/jobInfo"
             android:layout_width="match_parent"
@@ -28,7 +37,7 @@
             android:id="@+id/text23"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Attending Date and Time"
+            android:text="Done Date and Time"
             android:textAlignment="center"
             android:textColor="@color/colorPrimaryDark"
             android:textSize="25sp"
@@ -60,10 +69,9 @@
 
 
         <TableRow
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="10dp"
-            android:visibility="gone"
             android:gravity="center">
 
             <TextView
@@ -122,7 +130,7 @@
 
 
             <ImageButton
-                android:id="@+id/btnAttending"
+                android:id="@+id/btnReject"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"

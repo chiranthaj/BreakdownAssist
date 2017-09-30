@@ -133,6 +133,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="10dp"
+            android:visibility="gone"
             android:gravity="center">
 
             <TextView
@@ -149,7 +150,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="left"
-
                 android:title="Job Description" />
 
         </TableRow>
@@ -158,6 +158,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="20dp"
+            android:visibility="gone"
             android:gravity="center">
 
             <EditText

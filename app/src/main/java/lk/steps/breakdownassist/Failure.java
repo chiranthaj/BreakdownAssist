@@ -127,7 +127,12 @@ public class Failure {
             "Comment3",
             "Custom",
     };
-
+    public static String[] RejectComments = {
+            "Please select",
+            "Internal fault",
+            "No fault",
+            "Custom",
+    };
     public static String[] CompletedComments = {
             "Please select",
             "Comment1",
@@ -152,8 +157,8 @@ public class Failure {
             {"77", "0", "Please select", "1"},
             {"77", "1", "Service wire breakdowns", "1"},
             {"77", "2", "Aluminum Breakdowns", "1"},
-            {"77", "3", "Bimetallic Breakdowns", "1"},
-            {"77", "4", "ABC Breakdowns", "1"},
+            {"77", "3", "ABC Breakdowns", "1"},
+            {"77", "4", "Bimetallic Breakdowns", "1"},
             {"77", "5", "Meter Breakdowns", "1"},
             {"77", "6", "Cut Out Terminal Breakdowns", "1"},
             {"77", "7", "MCCB Failures", "1"},

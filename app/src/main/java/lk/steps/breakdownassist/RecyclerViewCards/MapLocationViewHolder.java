@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -138,7 +139,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         }else if(mBreakdown.get_LATITUDE().equals("0") | mBreakdown.get_LONGITUDE().equals("0")){
             mapView.setVisibility(View.GONE);
             txtTripInfo.setVisibility(View.GONE);
-        }else{
+        }else if(JobListFragment.currentLocation != null){
             BitmapDescriptor icon = MapMarker.GetBitmap(mBreakdown);
             BitmapDescriptor iconBk = BitmapDescriptorFactory.fromResource(R.drawable.breakdown_vehicle);
             setDirections(JobListFragment.currentLocation,mBreakdown.get_location());
@@ -175,6 +176,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
 
     private void setDirections(LatLng origin, LatLng destination) {
         try {
+            if(origin == null ) return;
             String sOrigin=String.valueOf(origin.latitude) + ","+ String.valueOf(origin.longitude);
             String sDestination=String.valueOf(destination.latitude) + ","+ String.valueOf(destination.longitude);
             new DirectionFinder(this,sOrigin , sDestination).execute();

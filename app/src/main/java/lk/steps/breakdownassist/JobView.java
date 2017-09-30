@@ -66,7 +66,9 @@ public class JobView {
         TextView txtRecTime = (TextView) dialog.findViewById(R.id.received_date_time);
         txtRecTime.setText("Received time : " + Globals.parseDate(breakdown.get_Received_Time().trim()));
         TextView txtAcctNum = (TextView) dialog.findViewById(R.id.acctnum);
-        txtAcctNum.setText("Acc. No. : " + breakdown.get_Acct_Num().trim());
+
+        if(breakdown.get_Acct_Num() != null) txtAcctNum.setText("Acc. No. : " + breakdown.get_Acct_Num().trim());
+        else  txtAcctNum.setText("Acc. No. : Not available");
         TextView txtName = (TextView) dialog.findViewById(R.id.name);
         if (breakdown.get_Name() != null)
             txtName.setText(breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
@@ -164,6 +166,14 @@ public class JobView {
                 dialog.dismiss();
             }
         });
+        Button btnReject = (Button) dialog.findViewById(R.id.btnReject);
+        btnReject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JobRejectDialog(fragment, breakdown, position);
+                dialog.dismiss();
+            }
+        });
         if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
             btnCompleted.setTextColor(Color.RED);
         } else if (breakdown.get_Status() == Breakdown.JOB_DONE) {
@@ -177,7 +187,63 @@ public class JobView {
         dialog.show();
         return dialog;
     }
+    private static void JobRejectDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+        final Dialog dialog = new Dialog(fragment.getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.job_reject_dialog);
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        //dialog.setCancelable(false);
+        TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
+        if (breakdown.get_Name() != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        else
+            txtView.setText(breakdown.get_Job_No());
 
+        final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
+        //Spinner
+        final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
+        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, Failure.RejectComments));
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
+                if (position == 0) {
+                    etComment.setText("", TextView.BufferType.EDITABLE);
+                } else {
+                    etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+        ImageButton btnReject = (ImageButton) dialog.findViewById(R.id.btnReject);
+        btnReject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                        "R", GetSelectedDateTime(dialog), etComment.getText().toString());
+                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_REJECT);
+                dialog.dismiss();
+            }
+        });
+        ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (fragment instanceof JobListFragment) {
+                    JobListFragment jobListFragment = (JobListFragment) fragment;
+                    jobListFragment.RestoreItem(breakdown, position);
+                }
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
 
     private static void JobVisitedDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         final Dialog dialog = new Dialog(fragment.getActivity());

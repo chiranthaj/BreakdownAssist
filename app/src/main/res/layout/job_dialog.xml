@@ -135,7 +135,7 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="0.25"
-                        android:text="Done"
+                        android:text="Temporary Done"
                         android:textSize="18sp" />
 
                     <Button
@@ -164,16 +164,25 @@
                         android:id="@+id/btnCancel"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.25"
+                        android:layout_height="65dp"
+                        android:layout_weight="0.33"
                         android:src="@drawable/ic_cancel" />
+
+                    <Button
+                        android:id="@+id/btnReject"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="65dp"
+                        android:layout_weight="0.33"
+                        android:text="Reject"
+                        android:textSize="18sp" />
 
                     <ImageButton
                         android:id="@+id/btnNavigate"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.25"
+                        android:layout_height="65dp"
+                        android:layout_weight="0.33"
                         android:src="@drawable/ic_navigation" />
                 </TableRow>
 

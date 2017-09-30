@@ -165,6 +165,9 @@ public class MainActivity extends AppCompatActivity
         TextView username = (TextView ) v.findViewById(R.id.txtUsername);
         username.setText(ReadStringPreferences("last_username", "[username]"));//
 
+        username = (TextView ) v.findViewById(R.id.txtArea);
+        username.setText(ReadStringPreferences("area_name", "[Area name]"));//
+
         SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
 
         trackLocation();
@@ -230,7 +233,10 @@ public class MainActivity extends AppCompatActivity
                 List<Breakdown> breakdowns = gson.fromJson(json, type);
                 NewBreakdownsDialog(breakdowns,ring);
             }else if(refreshReq!=null){
+                MediaPlayer mp= MediaPlayer.create(getApplicationContext(), R.raw.iphone);
+                mp.start();
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
+                //mp.stop();
             }
         }
     };
@@ -353,16 +359,16 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
             return true;
         }
-        else if(id == R.id.action_Test_API){
-            //Intent intent = new Intent(this, TestAPI.class);
-            //startActivity(intent);
+        /*else if(id == R.id.action_Test_API){
+            Intent intent = new Intent(this, TestAPI.class);
+            startActivity(intent);
             return true;
         }
         else if(id == R.id.action_Add_Test_Breakdowns){
             fm.beginTransaction().replace(R.id.content_frame, new GmapAddTestBreakdownFragment(),
                     MAP_ADDTestBREAKDOWN_FRAGMENT_TAG).addToBackStack(MAP_FRAGMENT_TAG).commit();
             return true;
-        }
+        }*/
         return super.onOptionsItemSelected(item);
     }
 
@@ -391,11 +397,11 @@ public class MainActivity extends AppCompatActivity
             JobListFragment fragment = new JobListFragment();
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
-        } else if (id == R.id.nav_sync_sms_inbox) {
+        } /*else if (id == R.id.nav_sync_sms_inbox) {
             Toast.makeText(this, "Please wait.. This will take some time to complete", Toast.LENGTH_LONG).show();
             ReadSMS.SyncSMSInbox(this);
             Toast.makeText(this, "Synced !!", Toast.LENGTH_SHORT).show();
-        } else if (id == R.id.nav_settings) {
+        }*/ else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         } else if (id == R.id.about) {
@@ -438,6 +444,7 @@ public class MainActivity extends AppCompatActivity
                     }
                     if(ReLoginRequired){
                         ReLoginRequired=false;
+                        WriteLongPreferences("restart_due_to_authentication_fail",true);
                         Intent i = getBaseContext().getPackageManager()
                                 .getLaunchIntentForPackage( getBaseContext().getPackageName() );
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -455,10 +462,17 @@ public class MainActivity extends AppCompatActivity
             });
         }
     }
+    private void WriteLongPreferences(String key, boolean value){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prfs.edit();
+        editor.putBoolean(key,value).apply();
+    }
     private Token ReadToken(){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         Token token = new Token(){};
         token.user_id=prfs.getString("user_id", "");
+        token.area_id=prfs.getString("area_id", "");
+        token.area_name=prfs.getString("area_name", "");
         token.access_token=prfs.getString("access_token", "");
         token.expires_in= prfs.getLong("expires_in", 0);
         return token;
@@ -516,21 +530,26 @@ public class MainActivity extends AppCompatActivity
 
 
     private static void UpdateJobStatusAcknowledged(List<Breakdown> breakdowns) {
-        DBHandler dbHandler = new DBHandler(getAppContext(), null, null, 1);
-        String time = "" + Globals.timeFormat.format(new Date());
-        for (Breakdown breakdown :breakdowns) {
-            JobChangeStatus status = new JobChangeStatus();
-            status.job_no=breakdown.get_Job_No();
-            status.change_datetime=time;
-            status.device_timestamp=time;
-            status.synchro_mobile_db=0;
-            status.st_code=String.valueOf(Breakdown.JOB_ACKNOWLEDGED);
+        try{
+            DBHandler dbHandler = new DBHandler(getAppContext(), null, null, 1);
+            String time = "" + Globals.timeFormat.format(new Date());
+            for (Breakdown breakdown :breakdowns) {
+                JobChangeStatus status = new JobChangeStatus();
+                status.job_no=breakdown.get_Job_No();
+                status.change_datetime=time;
+                status.device_timestamp=time;
+                status.synchro_mobile_db=0;
+                status.st_code=String.valueOf(Breakdown.JOB_ACKNOWLEDGED);
 
-            dbHandler.addJobStatusChangeRec(status);
-            dbHandler.UpdateBreakdownStatusByJobNo(breakdown.get_Job_No(), "", String.valueOf(Breakdown.JOB_ACKNOWLEDGED));
+                dbHandler.addJobStatusChangeRec(status);
+                dbHandler.UpdateBreakdownStatusByJobNo(breakdown.get_Job_No(), "", String.valueOf(Breakdown.JOB_ACKNOWLEDGED));
+            }
+            dbHandler.close();
+            BackgroundService.SyncBreakdownStatusChange(getAppContext());
+        }catch(Exception e){
+            Log.e("Error","UpdateJobStatusAcknowledged "+e.getMessage());
         }
-        dbHandler.close();
-        BackgroundService.SyncBreakdownStatusChange(getAppContext());
+
     }
 
     private AlarmManager alarmManager;

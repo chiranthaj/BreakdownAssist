@@ -7,6 +7,7 @@ package lk.steps.breakdownassist.Sync;
 public class Token {
     public String user_id;
     public String area_id;
+    public String area_name;
     public String team_id;
     public String access_token;
     public long expires_in;
