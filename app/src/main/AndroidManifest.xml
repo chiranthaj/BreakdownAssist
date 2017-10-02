@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="lk.steps.breakdownassist">
+    package="lk.steps.breakdownassistpluss">
 
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
@@ -59,14 +59,14 @@
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="lk.steps.breakdownassist.MainActivity" />
+                android:value="lk.steps.breakdownassistpluss.MainActivity" />
         </activity>
 
         <activity
             android:name=".FileExplorer.FileChooser"
             android:label="Choose File"
             android:theme="@android:style/Theme.Holo">
-            <action android:name="lk.steps.breakdownassist.fileexplorer.FileChooser" />
+            <action android:name="lk.steps.breakdownassistpluss.fileexplorer.FileChooser" />
             <category android:name="android.intent.category.DEFAULT" />
         </activity>
 
