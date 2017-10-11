@@ -3,12 +3,17 @@ package lk.steps.breakdownassistpluss;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,6 +51,7 @@ public class ReadSMS {
         Cursor cursor = context.getContentResolver().query(Uri.parse("content://sms/inbox"), reqCols, null, null, null);
         if(cursor != null){
             if (cursor.moveToFirst()) { // must check the result to prevent exception
+                List<Breakdown> breakdowns = new ArrayList<>();
                 do {
                     String sID = cursor.getString(0);
                     String sAddress = cursor.getString(1);
@@ -58,15 +64,58 @@ public class ReadSMS {
                     String sAcct_num = extractAccountNo(sFullMessage);
                     String sPhone_No = extractPhoneNo(sFullMessage);
                     int iPriority=extractPriority(sFullMessage);
-                    Log.d("SmsReceiver","="+sJob_No);// empty box, no SMS
+
+                    /*Log.d("sID","="+sID);// empty box, no SMS
+                    Log.d("sAddress","="+sAddress);
+                    Log.d("sFullMessage","="+sFullMessage);
+                    Log.d("callDayTime","="+callDayTime);
+                    Log.d("time","="+time);
+                    Log.d("sJob_No","="+sJob_No);
+                    Log.d("sAcct_num","="+sAcct_num);
+                    Log.d("sPhone_No","="+sPhone_No);
+                    Log.d("iPriority","="+iPriority);*/
+
                     if (IsValidJobNo(sJob_No)) {// Added on 2017/05/22 to prevent irrelevant sms to add as a breakdown
-                        DBHandler dbHandler = new DBHandler(context, null, null, 1);
-                        dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
-                        dbHandler.close();
+
+                        Breakdown breakdown = new Breakdown();
+                        if(sAcct_num.equals("")){
+                            breakdown.set_Full_Description(sFullMessage);
+                        }else{
+                            breakdown = Globals.dbHandler.GetCustomerData(sAcct_num);
+                        }
+
+                        /*String description =sFullMessage.replace(sAcct_num,"")
+                                .replace(sJob_No,"")
+                                .replace(time,"")
+                                .replace(sPhone_No,"")
+                                .replace(breakdown.get_ADDRESS(),"")
+                                .replace(breakdown.get_Name(),"");*/
+
+                        breakdown.set_Received_Time(time);
+                        breakdown.set_inbox_ref(sID + " " +time);
+                        breakdown.set_Acct_Num(sAcct_num);
+                        //breakdown.set_Full_Description(description);
+                        breakdown.set_JOB_SOURCE("IT");//sAddress
+                        breakdown.set_Job_No(sJob_No);
+                        breakdown.set_Contact_No(sPhone_No);
+                       // breakdown.set_ADDRESS(sAddress);
+                        breakdown.set_Priority(iPriority);
+                        breakdown.set_BA_SERVER_SYNCED("0");
+                        //dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
+                        Globals.dbHandler.addBreakdown2(breakdown);
+                        breakdowns.add(breakdown);
+
                         Log.d("SmsReceiver",sJob_No);// empty box, no SMS
                     }
                 }
                 while (cursor.moveToNext());
+
+                if(breakdowns.size()>0){
+                    Intent myintent=new Intent();
+                    myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
+                    myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
+                    context.sendBroadcast(myintent);
+                }
             } else {
                 Log.d("Breakdown added","Not a breakdown sms");// empty box, no SMS
             }
@@ -168,7 +217,7 @@ public class ReadSMS {
         return sPhoneNo;
     }
 
-    public static int extractPriority(String sInputText)//To detect Priority N,U,V,H,L
+    public static int extractPriority(String sInputText)//To detect PRIORITY N,U,V,H,L
     {
         String sPriority = "";
         int iPriority = Breakdown.Priority_Normal;

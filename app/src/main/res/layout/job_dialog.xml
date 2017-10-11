@@ -95,7 +95,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="Full Description"
+                android:text="Full DESCRIPTION"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
@@ -135,7 +135,7 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="0.25"
-                        android:text="Temporary Done"
+                        android:text="Temporary Completed"
                         android:textSize="18sp" />
 
                     <Button

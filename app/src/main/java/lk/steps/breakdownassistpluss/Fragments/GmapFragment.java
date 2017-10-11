@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -44,7 +43,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,7 +51,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.JobView;
 import lk.steps.breakdownassistpluss.Globals;
@@ -62,7 +59,6 @@ import lk.steps.breakdownassistpluss.MapMarker;
 import lk.steps.breakdownassistpluss.GpsModules.DirectionFinder;
 import lk.steps.breakdownassistpluss.GpsModules.DirectionFinderListener;
 import lk.steps.breakdownassistpluss.GpsModules.Route;
-import lk.steps.breakdownassistpluss.DBHandler;
 import lk.steps.breakdownassistpluss.R;
 
 public class GmapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
@@ -81,7 +77,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     Map BD_Id_by_Marker_OnMap = new WeakHashMap<Marker, String>(); //Marker is the key
 
     LatLng lastlocation = new LatLng(7, 80);
-    DBHandler dbHandler;
 
     final public int MAP_STYLE_NIGHT = 1;
     final public int MAP_STYLE_NORMAL = 2;
@@ -114,7 +109,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
 
         if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -260,7 +254,6 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onDestroy() {
         super.onDestroy();
-        dbHandler.close();
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
             mGoogleApiClient.disconnect();
     }
@@ -381,7 +374,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             @Override
             public void onInfoWindowClick(Marker marker) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
-                final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID((String) BD_Id_by_Marker_OnMap.get(marker));
+                final Breakdown selectedBreakdown = Globals.dbHandler.ReadBreakdown_by_ID((String) BD_Id_by_Marker_OnMap.get(marker));
                 JobView.DialogInfo(GmapFragment.this, selectedBreakdown, marker, getLastLocation(), 0);
                 marker.hideInfoWindow();
             }
@@ -468,7 +461,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             BD_Id_by_Marker_OnMap.clear();
             Marker_by_BD_Id_OnMap.clear();
         }
-        AddBreakDownListToMap(dbHandler.ReadBreakdowns(iJobs_to_Display, true));
+        AddBreakDownListToMap(Globals.dbHandler.ReadBreakdowns(iJobs_to_Display, true));
         //ReBoundMap();//2017/09/29
     }
 
@@ -613,7 +606,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         //final Marker selectedMarker = marker;  //to access in Override Methods
         //Calling from Harshmap by giving the Marker Ref
-        final Breakdown selectedBreakdown = dbHandler.ReadBreakdown_by_ID((String) BD_Id_by_Marker_OnMap.get(marker));
+        final Breakdown selectedBreakdown = Globals.dbHandler.ReadBreakdown_by_ID((String) BD_Id_by_Marker_OnMap.get(marker));
 
         JobView.DialogInfo(this, selectedBreakdown, marker, getLastLocation(), 0);
         marker.hideInfoWindow();
@@ -623,7 +616,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
 
     public void UpdateBreakDown(Breakdown selectedBreakdown, int iStatus) {
-        dbHandler.UpdateBreakdownStatus(selectedBreakdown, iStatus);
+        Globals.dbHandler.UpdateBreakdownStatus(selectedBreakdown, iStatus);
         RefreshJobsFromDB();
         //TODO : Add methods to handle other status like Visited etc may be with custom time, then change the marker
     }

@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,56 +61,61 @@ public class LoginActivity extends AppCompatActivity  {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        // Set up the login form.
-        mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
-        mPasswordView = (EditText) findViewById(R.id.password);
+            setContentView(R.layout.activity_login);
+            // Set up the login form.
+            mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
+            mPasswordView = (EditText) findViewById(R.id.password);
 
-        mUsernameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_NEXT) {
-                    mPasswordView.requestFocus();
-                    return true;
+            mUsernameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                    if (id == EditorInfo.IME_ACTION_NEXT) {
+                        mPasswordView.requestFocus();
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
 
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL || id == EditorInfo.IME_ACTION_DONE) {
-                    mPasswordView.clearFocus();
-                    hideKeyboardFrom(getApplicationContext(),mPasswordView);
+            mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                    if (id == R.id.login || id == EditorInfo.IME_NULL || id == EditorInfo.IME_ACTION_DONE) {
+                        mPasswordView.clearFocus();
+                        hideKeyboardFrom(getApplicationContext(),mPasswordView);
+                        attemptLogin();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            FancyButton mUsernameSignInButton = (FancyButton) findViewById(R.id.sign_in_button);
+            mUsernameSignInButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
                     attemptLogin();
-                    return true;
                 }
-                return false;
+            });
+
+            // mLoginFormView = findViewById(R.id.login_form);
+            mProgressView = findViewById(R.id.login_progress);
+            ShowLastCredential();
+
+            TextView txtAppName = (TextView) findViewById(R.id.txt_app_name);
+            try{
+                txtAppName.setText("Breakdown Assist "+ this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName + "\nCeylon Electricity Board  ©  2017");
+            }catch(Exception e){
+                txtAppName.setText("Ceylon Electricity Board  ©  2017");
             }
-        });
-
-
-        FancyButton mUsernameSignInButton = (FancyButton) findViewById(R.id.sign_in_button);
-        mUsernameSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
-
-      // mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
-        ShowLastCredential();
-
-        TextView txtAppName = (TextView) findViewById(R.id.txt_app_name);
-        try{
-            txtAppName.setText("Breakdown Assist "+ this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName + "\nCeylon Electricity Board  ©  2017");
-        }catch(Exception e){
-            txtAppName.setText("Ceylon Electricity Board  ©  2017");
-        }
-
-        //GetIpAddress();
+        /*boolean server = ReadBooleanPreferences("server",false);
+        if(!server)GetIpAddress();
+        Log.e("SERVER",Globals.serverUrl);
+        if(ReadBooleanPreferences2("keep_sign_in",false)){
+            Log.e("SERVER","012");
+            performAutoLogin();
+            Log.e("SERVER","456");
+        }*/
     }
 
     private void GetIpAddress(){
@@ -122,6 +129,7 @@ public class LoginActivity extends AppCompatActivity  {
                     String ip = address.getHostAddress();
                     Globals.serverUrl="http://"+ip+"";
                     Log.e("IP","="+ip);
+                    Log.e("SERVER",Globals.serverUrl);
                 }catch(Exception e){
                     Log.e("IP","="+e.getMessage());
                 }
@@ -182,41 +190,8 @@ public class LoginActivity extends AppCompatActivity  {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
+            performLogin(username,password);
 
-            //mAuthTask = new UserLoginTask(username, password);
-            //mAuthTask.execute((Void) null);
-            //Log.d("TEST","55");
-            performeLogin(username,password);
-            /*Boolean usernameExists = false;
-            Boolean passwordMatches = false;
-            for (String credential : DUMMY_CREDENTIALS) {
-                String _username = credential.split(":")[0];
-                String _password = credential.split(":")[1];
-                if(_username.equals(username)){
-                    usernameExists=true;
-                    if(_password.equals(password))passwordMatches=true;
-                }
-            }
-
-            if(usernameExists & passwordMatches){
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-                    public void run() {
-                        Log.d("TEST","3");
-                        Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
-                        LoginActivity.this.startActivity(myIntent);
-                    }
-                });
-                finish();
-            }else if(usernameExists){
-                showProgress(false);
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }else{
-                showProgress(false);
-                mUsernameView.setError(getString(R.string.error_invalid_username));
-                mUsernameView.requestFocus();
-            }*/
         }
     }
 
@@ -268,7 +243,9 @@ public class LoginActivity extends AppCompatActivity  {
     }
     private boolean ForceLocalLogin = false;
 
-    private void performeLogin(final String username, final String password){
+
+
+    private void performLogin(final String username, final String password){
 
         long lastLoginTime = ReadLongPreferences("last_login_time", 0);
         final long currentTime = System.currentTimeMillis()/1000;
@@ -295,7 +272,9 @@ public class LoginActivity extends AppCompatActivity  {
                     LoginActivity.this.startActivity(myIntent);
                 }
             });
-            Toast.makeText(getApplicationContext(),"Local login successful.. ", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(),"Local login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
+            CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
+            WriteLongPreferences("keep_sign_in",chk.isChecked());
             finish();
         }else if(!ForceLocalLogin){
             Log.e("Login","**Remote**");//Remote login
@@ -327,15 +306,20 @@ public class LoginActivity extends AppCompatActivity  {
                                 LoginActivity.this.startActivity(myIntent);
                             }
                         });
+                        Globals.serverConnected = true;
                         WriteLongPreferences("restart_due_to_authentication_fail",false);
-                        Toast.makeText(getApplicationContext(),"Remote login successful.. ", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(),"Remote login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
+
+                        CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
+                        WriteLongPreferences("keep_sign_in",chk.isChecked());
                         finish();
                     } else if (response.errorBody() != null) {
                         showProgress(false);
                         Log.d("GetAuthToken","Fail"+response.errorBody());
                         Toast.makeText(getApplicationContext(),"Network failure..\nSwitch to local login"+response.errorBody(), Toast.LENGTH_LONG).show();
                         ForceLocalLogin = true;
-                        performeLogin(username,password);
+                        Globals.serverConnected = false;
+                        performLogin(username,password);
 
                         /*if(error.getResponse()==null){
                             Toast.makeText(getApplicationContext(),"Network failure.. "+error, Toast.LENGTH_LONG).show();
@@ -353,12 +337,14 @@ public class LoginActivity extends AppCompatActivity  {
                 public void onFailure(Call<Token> call, Throwable t) {
                     Log.e("Login","Remote login onFailure"+t.getMessage());//Remote login
                     ForceLocalLogin = true;
-                    performeLogin(username,password);
+                    Globals.serverConnected = false;
+                    performLogin(username,password);
                 }
 
             });
         }
     }
+
 
 
 
@@ -381,9 +367,20 @@ public class LoginActivity extends AppCompatActivity  {
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getString(key, defaultValue);
     }
+
     private long ReadLongPreferences(String key, long defaultValue){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getLong(key, defaultValue);
+    }
+    private boolean ReadBooleanPreferences2(String key, boolean defaultValue){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        //SharedPreferences prfs = getPreferences(Context.MODE_PRIVATE);
+        return prfs.getBoolean(key, defaultValue);
+    }
+    private boolean ReadBooleanPreferences(String key, boolean defaultValue){
+        SharedPreferences prfs = PreferenceManager.getDefaultSharedPreferences(this);
+        //SharedPreferences prfs = getPreferences(Context.MODE_PRIVATE);
+        return prfs.getBoolean(key, defaultValue);
     }
     private boolean ReadStringPreferences(String key, boolean defaultValue){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);

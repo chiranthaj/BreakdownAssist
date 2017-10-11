@@ -39,8 +39,8 @@
         android:defaultValue="@string/pref_default_areacode3"
         android:inputType="number"
         android:key="areacode3"
-        android:maxLines="1"
         android:maxLength="2"
+        android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="@string/pref_title_areacode3" />
@@ -62,5 +62,11 @@
         android:key="traffic"
         android:title="@string/pref_title_show_traffic"/>
 
+    <PreferenceCategory android:title="Sync Server" >
+        <CheckBoxPreference
+            android:id="@+id/chkServer"
+            android:key="server"
+            android:title="Test server"/>
+    </PreferenceCategory>
 
 </PreferenceScreen>

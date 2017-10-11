@@ -1,5 +1,8 @@
 package lk.steps.breakdownassistpluss.Sync;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,41 +14,23 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Base64;
+import android.os.PowerManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.widget.Toast;
-
-import com.facebook.stetho.json.annotation.JsonProperty;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import lk.steps.breakdownassistpluss.Breakdown;
-import lk.steps.breakdownassistpluss.DBHandler;
-import lk.steps.breakdownassistpluss.Failure;
 import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.JobChangeStatus;
 import lk.steps.breakdownassistpluss.JobCompletion;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
 import microsoft.aspnet.signalr.client.ErrorCallback;
-import microsoft.aspnet.signalr.client.LogLevel;
-import microsoft.aspnet.signalr.client.Logger;
 import microsoft.aspnet.signalr.client.MessageReceivedHandler;
 import microsoft.aspnet.signalr.client.Platform;
 import microsoft.aspnet.signalr.client.SignalRFuture;
@@ -62,7 +47,6 @@ import retrofit2.Response;
 public class SignalRService extends Service {
     private HubConnection mHubConnection;
     private HubProxy mHubProxy;
-    DBHandler dbHandler;
     private Handler mHandler; // to display Toast message
     private final IBinder mBinder = new LocalBinder(); // Binder given to clients
     Timer timer;
@@ -89,7 +73,6 @@ public class SignalRService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int result = super.onStartCommand(intent, flags, startId);
-        dbHandler = new DBHandler(this,null,null,1);
         syncRESTService = new SyncRESTService();
         //Toast.makeText(this, "SignalR Service Started", Toast.LENGTH_SHORT).show();
 
@@ -175,13 +158,13 @@ public class SignalRService extends Service {
         mHubConnection.setGroupsToken(area_id + "_" + team_id);
         try {
             signalRFuture.get();
-            //ServerConnected=true;
+            Globals.serverConnected = true;
             Log.e("SignalR ", "*Connected*");
             Log.e("SignalR ", "ID="+mHubConnection.getConnectionId());
             StopRetryTimer();
             //Log.e("SimpleSignalR", "ServerConnected=true");
         } catch (InterruptedException | ExecutionException e) {
-            //Log.e("SimpleSignalR", "ServerConnected=false");
+            Globals.serverConnected = false;
             Log.e("SignalR", e.toString());
             //ServerConnected=false;
             StartRetryTimer();
@@ -219,7 +202,7 @@ public class SignalRService extends Service {
                     @Override
                     public void run() {
                         Gson gson = new Gson();
-                        SignalRMessage msg = gson.fromJson(json, SignalRMessage.class);
+                        SignalRObject msg = gson.fromJson(json, SignalRObject.class);
 
                       // Log.d("obj-H","-"+msg.H);
                      //   Log.d("obj-M","-"+msg.M);
@@ -304,31 +287,47 @@ public class SignalRService extends Service {
                 @Override
                 public void onResponse(Call<List<Breakdown>> call, Response<List<Breakdown>> response) {
                     if (response.isSuccessful()) {
+                        Globals.serverConnected = true;
                         //Log.e("GetNewBreakdowns","Successful");
                         List<Breakdown> breakdowns = response.body();
                         Log.e("GetNewBreakdowns","Number-"+breakdowns.size());
 
                         if(breakdowns.size()>0){
-                            DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
                             String ring = "0";
                             for (Breakdown breakdown :breakdowns) {
-                                dbHandler.addBreakdown2(breakdown);
+                                breakdown.set_BA_SERVER_SYNCED("1");
+                                breakdown.set_JOB_SOURCE("BA");
+                                Globals.dbHandler.addBreakdown2(breakdown);
+                                Log.e("breakdown","breakdown-"+breakdown.get_Job_No());
                                 if(breakdown.get_Priority() == 4) ring = "1";
                             }
 
-                            String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
-                            dbHandler.close();
+                            String sIssuedBreakdownID=Globals.dbHandler.getLastBreakdownID();
+
+                            if(ring.equals("1")){
+                                Globals.mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.buzzer);
+                                Globals.mediaPlayer.setLooping(true);
+                            }else{
+                                Globals.mediaPlayer= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
+                            }
+                            Globals.mediaPlayer.start();
 
                             //Informing the Map view about the new bd, then it can add it
                             Intent myintent=new Intent();
                             myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
                             myintent.putExtra("_id",sIssuedBreakdownID);
                             myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
-                            myintent.putExtra("ring",ring);
+                            //myintent.putExtra("ring",ring);
                             getApplicationContext().sendBroadcast(myintent);
-                        }
 
+                            if(breakdowns.size() == 1){
+                                CreateNotification("New breakdown received.");
+                            }else{
+                                CreateNotification("New "+breakdowns.size()+" breakdowns received.");
+                            }
+                        }
                     } else if (response.errorBody() != null) {
+                        Globals.serverConnected = false;
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(getApplicationContext(), "Authentication fail..", Toast.LENGTH_SHORT).show();
                             MainActivity.ReLoginRequired=true;
@@ -341,6 +340,7 @@ public class SignalRService extends Service {
 
                 @Override
                 public void onFailure(Call<List<Breakdown>> call, Throwable t) {
+                    Globals.serverConnected = false;
                     Toast.makeText(getApplicationContext(), "Error in network..\n"+ t.getMessage(), Toast.LENGTH_SHORT).show();
                     Log.e("GetNewBreakdowns","5-" + t.getMessage());
                 }
@@ -361,59 +361,58 @@ public class SignalRService extends Service {
                 @Override
                 public void onResponse(Call<List<JobChangeStatus>> call, Response<List<JobChangeStatus>> response) {
                     if (response.isSuccessful()) {
-                        //Log.e("GetNewBreakdowns","Successful");
+                        Log.e("GetBreakdownsStatus","Successful"+new Gson().toJson(response));
                         List<JobChangeStatus> jobChangeStatus = response.body();
                         Log.e("GetBreakdownsStatus","Number-"+jobChangeStatus.size());
 
 
                         if(jobChangeStatus.size()>0){
-                            DBHandler dbHandler = new DBHandler(getApplicationContext(), null, null, 1);
                             for (JobChangeStatus jobStatus :jobChangeStatus) {
-                                //Log.e("GetBreakdownsStatus","job_no-"+jobStatus.job_no);
-                                //Log.e("GetBreakdownsStatus","change_datetime-"+jobStatus.change_datetime);
-                                //Log.e("GetBreakdownsStatus","status-"+jobStatus.status);
-                                //Log.e("GetBreakdownsStatus","type_failure-"+jobStatus.type_failure);
-                                //Log.e("GetBreakdownsStatus","cause-"+jobStatus.cause);
-                                //Log.e("GetBreakdownsStatus","detail_reason_code-"+jobStatus.detail_reason_code);
+                                Log.e("GetBreakdownsStatus","JOB_NO-"+jobStatus.job_no);
+                                Log.e("GetBreakdownsStatus","change_datetime-"+jobStatus.change_datetime);
+                                Log.e("GetBreakdownsStatus","status-"+jobStatus.status);
+                                Log.e("GetBreakdownsStatus","type_failure-"+jobStatus.type_failure);
+                                Log.e("GetBreakdownsStatus","cause-"+jobStatus.cause);
+                                Log.e("GetBreakdownsStatus","detail_reason_code-"+jobStatus.detail_reason_code);
                                 jobStatus.device_timestamp=jobStatus.change_datetime;
                                 jobStatus.synchro_mobile_db=1;//No need to send to server
 
                                 if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_VISITED))){//Visited
-                                    Log.e("GetBreakdownsStatus","Visited");
+                                    Log.e("GetBreakdownsStatus","Visited:"+jobStatus.job_no);
                                     jobStatus.st_code="V";
-                                    dbHandler.addJobStatusChangeRec(jobStatus);
-                                    dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
+                                    Globals.dbHandler.addJobStatusChangeRec(jobStatus);
+                                    Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
 
                                 }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_ATTENDING))){//Attending
-                                    Log.e("GetBreakdownsStatus","Attending");
+                                    Log.e("GetBreakdownsStatus","Attending:"+jobStatus.job_no);
                                     jobStatus.st_code="A";
-                                    dbHandler.addJobStatusChangeRec(jobStatus);
-                                    dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
+                                    Globals.dbHandler.addJobStatusChangeRec(jobStatus);
+                                    Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
 
                                 }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_DONE))){//Done
-                                    Log.e("GetBreakdownsStatus","Done");
+                                    Log.e("GetBreakdownsStatus","Done:"+jobStatus.job_no);
                                     jobStatus.st_code="D";
-                                    dbHandler.addJobStatusChangeRec(jobStatus);
-                                    dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
+                                    Globals.dbHandler.addJobStatusChangeRec(jobStatus);
+                                    Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
 
                                 }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_COMPLETED))){//Completed
-                                    Log.e("GetBreakdownsStatus","Completed");
+                                    Log.e("GetBreakdownsStatus","Completed:"+jobStatus.job_no);
                                     jobStatus.st_code="C";
                                     JobCompletion jobCompletionRec = new JobCompletion();
-                                    jobCompletionRec.job_no = jobStatus.job_no;
+                                    jobCompletionRec.JOB_NO = jobStatus.job_no;
                                     jobCompletionRec.job_completed_datetime = jobStatus.change_datetime;
                                     jobCompletionRec.type_failure = jobStatus.type_failure;
                                     jobCompletionRec.cause = jobStatus.cause;
                                     jobCompletionRec.detail_reason_code = jobStatus.detail_reason_code;
 
-                                    dbHandler.addJobCompletionRec(jobCompletionRec);
-                                    dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,jobStatus.change_datetime, jobStatus.status);
+                                    Globals.dbHandler.addJobCompletionRec(jobCompletionRec);
+                                    Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,jobStatus.change_datetime, jobStatus.status);
                                 }
 
                             }
+                            Globals.mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.iphone);
+                            Globals.mediaPlayer.start();
 
-                            //String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
-                            dbHandler.close();
 
                             //Informing the Map view about the new bd, then it can add it
                             Intent myintent=new Intent();
@@ -423,6 +422,12 @@ public class SignalRService extends Service {
                           //  myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
                            // myintent.putExtra("ring",ring);
                             getApplicationContext().sendBroadcast(myintent);
+
+                            if(jobChangeStatus.size() == 1){
+                                CreateNotification("One breakdown has updated.");
+                            }else{
+                                CreateNotification(jobChangeStatus.size()+" breakdowns has updated.");
+                            }
                         }
 
                     } else if (response.errorBody() != null) {
@@ -452,6 +457,7 @@ public class SignalRService extends Service {
         @Override
         public void run() {
             //if(!ServerConnected){
+
                 Log.e("SignalR ", "*NOT*Connected*");
                 startSignalR();
            // }else{
@@ -460,6 +466,35 @@ public class SignalRService extends Service {
         }
     }
 
+    private void CreateNotification(String msg){
+        Intent i = new Intent(this, MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, i,
+                PendingIntent.FLAG_CANCEL_CURRENT);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+                .setContentTitle("Breakdown Assist+")
+                .setContentText(msg)
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .setDefaults(Notification.FLAG_ONLY_ALERT_ONCE);
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        //MediaPlayer mp= MediaPlayer.create(getBaseContext(), R.raw.fb_sound);
+        //mp.start();
+        manager.notify(73195, builder.build());
+
+        PowerManager pm = (PowerManager)getBaseContext().getSystemService(Context.POWER_SERVICE);
+        boolean isScreenOn = pm.isScreenOn();
+        if(!isScreenOn)
+        {
+            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                    PowerManager.ON_AFTER_RELEASE,"MyLock");
+            wl.acquire(10000);
+            PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyCpuLock");
+            wl_cpu.acquire(10000);
+        }
+    }
 
 
 

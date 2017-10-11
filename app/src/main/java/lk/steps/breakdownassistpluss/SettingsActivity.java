@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PersistableBundle;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -124,6 +125,20 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             .getString(preference.getKey(), ""));
         }
     }
+    private static void bindPreferenceSummaryToValue2(Preference preference) {
+
+        if (preference instanceof Preference) { //To avoid the fragments such as data & synch without any preferences object
+            // Set the listener to watch for value changes.
+            preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
+
+            // Trigger the listener immediately with the preference's
+            // current value.
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                    PreferenceManager
+                            .getDefaultSharedPreferences(preference.getContext())
+                            .getBoolean(preference.getKey(), false));
+        }
+    }
 
 
     @Override
@@ -214,6 +229,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("areacode1"));
             bindPreferenceSummaryToValue(findPreference("areacode2"));
             bindPreferenceSummaryToValue(findPreference("areacode3"));
+            bindPreferenceSummaryToValue2(findPreference("server"));
+
+
+
         }
 
         @Override
@@ -264,6 +283,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             findPreference("Import_Customer_Data").setOnPreferenceClickListener(PreferenceClickListener);
             findPreference("Import_PremisesID_Data").setOnPreferenceClickListener(PreferenceClickListener);
+
         }
 
         @Override
@@ -294,10 +314,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 @Override
                 public void run() {
                     try {
-                        DBHandler dbHandler;
-                        dbHandler = new DBHandler(SettingsActivity.this,null,null,1);
-                        dbHandler.importGPSdata(curFileName);
-                        dbHandler.close();
+                        Globals.dbHandler.importGPSdata(curFileName);
                         progressdialog.dismiss();
                         //Toast.makeText(SettingsActivity.this, "Finished uploading Customer data from "+ curFileName, Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
@@ -310,11 +327,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }else if(requestCode == READ_REQUEST_CODE_PREMISES_DATA && resultCode == Activity.RESULT_OK) {
             try {
                 String curFileName = resultData.getStringExtra("GetFullPathFileName") ;
-                DBHandler dbHandler;
-                dbHandler = new DBHandler(this,null,null,1);
-                dbHandler.importPremisesID(curFileName);
+                Globals.dbHandler.importPremisesID(curFileName);
                 Toast.makeText(this, "Finished uploading Premises data from "+ curFileName, Toast.LENGTH_SHORT).show();
-                dbHandler.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }

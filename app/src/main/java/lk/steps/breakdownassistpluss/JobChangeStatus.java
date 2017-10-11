@@ -19,8 +19,8 @@ public class JobChangeStatus {
     public String detail_reason_code;
     public String type_failure;
 
-    public JobChangeStatus(String job_no, String st_code, String change_datetime, String comment) {
-        this.job_no = job_no;
+    public JobChangeStatus(String _job_no, String st_code, String change_datetime, String comment) {
+        this.job_no = _job_no;
         this.st_code = st_code;
         this.change_datetime = change_datetime;
         this.comment = comment;

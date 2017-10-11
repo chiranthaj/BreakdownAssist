@@ -9,31 +9,31 @@ import com.google.android.gms.maps.model.LatLng;
 public class Customer {
     //TODO : Make these private and use getter and setters
     public String _id;
-    public String _Name;
-    public String _LATITUDE;
-    public String _LONGITUDE;
-    public LatLng _location ;
+    public String NAME;
+    public String LATITUDE;
+    public String LONGITUDE;
+    public LatLng LOCATION ;
 
     public Customer(String id,String Name,String LATITUDE,String LONGITUDE)
     {
         this._id=id;
-        this._Name = Name;
-        this._LATITUDE=LATITUDE;
-        this._LONGITUDE=LONGITUDE;
+        this.NAME = Name;
+        this.LATITUDE=LATITUDE;
+        this.LONGITUDE=LONGITUDE;
     }
 
     public String getName()
     {
-        return _Name;
+        return NAME;
     }
 
     public String getCustomerToString()
     {
-        return _id + " " + _Name + " " + _LATITUDE  + " " + _LONGITUDE;
+        return _id + " " + NAME + " " + LATITUDE  + " " + LONGITUDE;
     }
     public LatLng getLocation()
     {
-        return new LatLng(Double.parseDouble (_LONGITUDE) ,Double.parseDouble (_LATITUDE));
+        return new LatLng(Double.parseDouble (LONGITUDE) ,Double.parseDouble (LATITUDE));
     }
 }
 

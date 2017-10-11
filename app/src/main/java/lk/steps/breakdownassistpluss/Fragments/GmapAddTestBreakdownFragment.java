@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -23,20 +22,15 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import lk.steps.breakdownassistpluss.Breakdown;
+import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.ManagePermissions;
-import lk.steps.breakdownassistpluss.DBHandler;
 import lk.steps.breakdownassistpluss.R;
 
 public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReadyCallback ,
@@ -50,7 +44,7 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
     ArrayList<Marker> listMarkersOnMap = new ArrayList<Marker>();
 
     LatLng lastlocation= new LatLng(7, 80);
-    DBHandler dbHandler;
+
 
     @Nullable
     @Override
@@ -62,7 +56,6 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dbHandler=new DBHandler(getActivity().getApplicationContext(),null,null,1);
     }
 
     @Override
@@ -105,7 +98,6 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
     @Override
     public void onDestroy() {
         super.onDestroy();
-        dbHandler.close();
     }
     // TODO : Should be added like in  new SMS BD add method, create a new ID
     public void AddBreakDownToMap(Breakdown breakdown) {
@@ -119,7 +111,7 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
     }
 
     public void RefreshMarkersFromDB(){
-        AddBreakDownListToMap(dbHandler.ReadAllCustomers());
+        AddBreakDownListToMap(Globals.dbHandler.ReadAllCustomers());
     }
 
     public void AddMarkers(){
@@ -195,7 +187,7 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {//TODO : Use Enum class to to have Breakdownstatus.Done like thing
-                        dbHandler.AddTestBreakdownObj(selectedBreakdown,getActivity().getApplicationContext());
+                        Globals.dbHandler.AddTestBreakdownObj(selectedBreakdown,getActivity().getApplicationContext());
                         //TODO : Use an Undo option
 
 

@@ -2,76 +2,152 @@ package lk.steps.breakdownassistpluss.Fragments;
 
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.txusballesteros.widgets.FitChart;
 import com.txusballesteros.widgets.FitChartValue;
-
 import org.eazegraph.lib.charts.BarChart;
 import org.eazegraph.lib.charts.ValueLineChart;
 import org.eazegraph.lib.models.BarModel;
 import org.eazegraph.lib.models.ValueLinePoint;
 import org.eazegraph.lib.models.ValueLineSeries;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import lk.steps.breakdownassistpluss.DBHandler;
+import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.Globals;
-import lk.steps.breakdownassistpluss.MainActivity;
+import lk.steps.breakdownassistpluss.MapMarker;
 import lk.steps.breakdownassistpluss.R;
 
-import static android.R.attr.animation;
 
-public class DashboardFragment extends Fragment {
+
+public class DashboardFragment extends Fragment implements OnMapReadyCallback {
 
     Timer timer;
     MyTimerTask myTimerTask;
     private View mView;
-    @Nullable
+
+    private GoogleMap googleMap;
+    private MapView mapView;
+    android.support.v7.app.ActionBar mActionBar;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate( R.layout.fragment_dashboard_new,container,false);
+        mView = inflater.inflate( R.layout.fragment_dashboard_new2,container,false);
         refreshCounts();
-        DrawChart1();
-        DrawChart2();
-        DrawChart3();
+        //DrawChart1();
+        //DrawChart2();
+        //DrawChart3();
+        Globals.AverageTime = Globals.dbHandler.getAttendedTime();
         final TextView txtAvgTime = (TextView) mView.findViewById(R.id.txtAvgTime);
         txtAvgTime.setText(Globals.AverageTime+" min");
-
+        //MapTask();
         timer = new Timer();
         myTimerTask = new MyTimerTask();
 
         //delay 1000ms, repeat in 5000ms
         timer.schedule(myTimerTask, 1000, 20000);
+
+
+
+        mapView = (MapView)mView.findViewById(R.id.map_view);
+        mapView.onCreate(savedInstanceState);
+        //mapView.setPadding(20, 20, 20, 20);
+        mapView.getMapAsync(this);
+
+
+
+        mActionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        if(mActionBar!=null)mActionBar.setSubtitle("Offline");
         return mView;
     }
+    @Override
+    public void onMapReady(GoogleMap map)
+    {
+        googleMap = map;
+        List<Breakdown> BreakdownList = new ArrayList<>(Globals.dbHandler.ReadBreakdowns(Breakdown.JOB_NOT_ATTENDED, true));
+
+        try {
+            map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(mView.getContext(), R.raw.style_json_dark));
+        } catch (Exception e) {
+            Log.e("MapsActivityRaw", "Can't find style.", e);
+        }
+
+        if(BreakdownList.size()>0){
+            LatLngBounds.Builder builder = LatLngBounds.builder();
+
+            for(Breakdown bd : BreakdownList){
+                double lat = Double.parseDouble(bd.get_LATITUDE());
+                double lon = Double.parseDouble(bd.get_LONGITUDE());
+                LatLng loc = new LatLng(lat,lon);
+                map.addMarker(new MarkerOptions()
+                        .position(loc)
+                        .title(bd.get_Job_No())
+                        .icon(MapMarker.GetBitmap(bd)));
+                builder.include(loc);
+            }
+            LatLngBounds bounds=builder.build();
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds,50));
+
+        }else{
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(7.8204307,80.2189718),8));
+        }
+
+        map.setOnMapClickListener(new GoogleMap.OnMapClickListener()
+        {
+            @Override
+            public void onMapClick(LatLng arg0)
+            {
+                FragmentTransaction t = getActivity().getFragmentManager().beginTransaction();
+                Fragment mFrag = new GmapFragment();
+                t.replace(R.id.content_frame, mFrag);
+                t.commit();
+            }
+        });
+
+        UiSettings settings = map.getUiSettings();
+        //settings.setZoomControlsEnabled(false);
+       // settings.setAllGesturesEnabled(false);
+       // settings.setMyLocationButtonEnabled(false);
+      //  settings.setZoomControlsEnabled(false);
+        settings.setMapToolbarEnabled(false);
+    }
+
 
     @Override
     public void onResume() {
         super.onResume();
         refreshCounts();
+        if(googleMap!=null)onMapReady(googleMap);
     }
 
     private void refreshCounts(){
         try {
-            DBHandler dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
-            int counts[] = dbHandler.getBreakdownCounts();
+            int counts[] = Globals.dbHandler.getBreakdownCounts();
 
             TextView txtUnattainedCount = (TextView) mView.findViewById(R.id.txtUnattainedCount);
             TextView txtCompletedCount = (TextView) mView.findViewById(R.id.txtCompletedCount);
-            txtCompletedCount.setText(String.valueOf(counts[0]));
-            txtUnattainedCount.setText(String.valueOf(counts[1]));
+           // txtCompletedCount.setText(String.valueOf(counts[0]));
+            txtUnattainedCount.setText(String.valueOf(counts[1]+counts[2]+counts[3]+counts[4]));
         }catch(Exception e){
 
         }
@@ -103,9 +179,7 @@ public class DashboardFragment extends Fragment {
     }
 
     private void DrawChart2(){
-        DBHandler dbHandler = new DBHandler(getActivity().getApplicationContext(), null, null, 1);
-        String counts[][] = dbHandler.getBreakdownStatistics();
-        dbHandler.close();
+        String counts[][] = Globals.dbHandler.getBreakdownStatistics();
 
         ValueLineChart mCubicValueLineChart = (ValueLineChart) mView.findViewById(R.id.chart2);
 
@@ -139,13 +213,34 @@ public class DashboardFragment extends Fragment {
         timer.cancel();
     }
 
+
+
+    /*private void MapTask(){
+        MapView mapView = (MapView) mView.findViewById(R.id.map_view);
+        mapView.getMapAsync(this);
+
+    }
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // Add a marker in Sydney, Australia, and move the camera.
+        LatLng sydney = new LatLng(-34, 151);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    }*/
+
     private class MyTimerTask extends TimerTask {
 
         @Override
         public void run() {
+
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    //if(mActionBar!=null)mActionBar.setSubtitle("Online");
+                    if(Globals.serverConnected & mActionBar!=null)mActionBar.setSubtitle("Online");
+                    else if(!Globals.serverConnected & mActionBar!=null)mActionBar.setSubtitle("Offline");
                     refreshCounts();
                 }
             });

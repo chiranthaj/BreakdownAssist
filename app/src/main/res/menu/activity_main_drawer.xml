@@ -30,17 +30,37 @@
         android:title="Advanced">
         <menu>
             <group android:checkableBehavior="single">
-                <!--<item
+                <item
                     android:id="@+id/nav_sync_sms_inbox"
                     android:icon="@drawable/ic_autorenew_black_24dp"
-                    android:title="Sync SMS Inbox" />-->
+                    android:title="Sync SMS Inbox" />
                 <item
                     android:id="@+id/nav_settings"
                     android:icon="@drawable/ic_settings_black_24dp"
                     android:title="Settings" />
+            </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/account"
+        android:title="Account">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_logout"
+                    android:icon="@drawable/ic_action_logout"
+                    android:title="Logout" />
+            </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/other"
+        android:title="Other">
+        <menu>
+            <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/about"
-                    android:icon="@drawable/ic_report_black_24dp"
+                    android:icon="@drawable/ic_about"
                     android:title="About" />
             </group>
         </menu>

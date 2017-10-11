@@ -16,7 +16,7 @@ public class SyncRESTService {
    // private static final String serverUrl = "http://192.168.137.1:31525/";//10.0.2.2//222.165.188.234:8080
     //private static final String URL = "http://111.223.135.20/Team/";
 
-    private SyncService syncService;
+    private SyncApi syncService;
 
     public SyncRESTService()
     {
@@ -33,10 +33,10 @@ public class SyncRESTService {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        syncService = retrofit.create(SyncService.class);
+        syncService = retrofit.create(SyncApi.class);
     }
 
-    public SyncService getService()
+    public SyncApi getService()
     {
         return syncService;
     }

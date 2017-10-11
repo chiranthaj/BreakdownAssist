@@ -27,18 +27,12 @@ import com.google.android.gms.maps.model.Marker;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 import lk.steps.breakdownassistpluss.Fragments.GmapFragment;
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
 import lk.steps.breakdownassistpluss.GpsModules.DirectionFinder;
 import lk.steps.breakdownassistpluss.GpsModules.DirectionFinderListener;
-import lk.steps.breakdownassistpluss.Sync.BackgroundService;
-import lk.steps.breakdownassistpluss.Sync.SyncObject;
-import lk.steps.breakdownassistpluss.Sync.SyncRESTService;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import lk.steps.breakdownassistpluss.Sync.SyncService;
 
 
 /**
@@ -46,6 +40,9 @@ import retrofit2.Response;
  */
 
 public class JobView {
+    private static String[][] FailureTypeList;
+    private static String[][] FailureCauseList;
+    private static String[][] FailureNatureList;
 
     public static Dialog DialogInfo(final Fragment fragment, final Breakdown breakdown, final Marker marker, final Location currentLocation, final int position) {
 
@@ -54,6 +51,7 @@ public class JobView {
                     "Breakdown details not available..", Toast.LENGTH_LONG).show();
             return null;
         }
+
 
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -73,9 +71,23 @@ public class JobView {
         if (breakdown.get_Name() != null)
             txtName.setText(breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
 
+        ImageButton btnCall = (ImageButton) dialog.findViewById(R.id.btnMakeCall);
+        btnCall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + breakdown.get_Contact_No().trim()));
+                fragment.getActivity().startActivity(intent);
+            }
+        });
         TextView txtPhoneNo = (TextView) dialog.findViewById(R.id.phoneno);
-        if (breakdown.get_Contact_No() != null)
+        if (breakdown.get_Contact_No() != null){
             txtPhoneNo.setText(breakdown.get_Contact_No().trim());
+        }
+        else {
+            txtPhoneNo.setVisibility(View.GONE);
+            btnCall.setVisibility(View.GONE);
+        }
 
         TextView txtFullDescription = (TextView) dialog.findViewById(R.id.fulldescription);
         txtFullDescription.setText(breakdown.get_Full_Description());
@@ -84,10 +96,7 @@ public class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment = (JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown, position);
-                }
+                RestoreCard(fragment,breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -113,10 +122,12 @@ public class JobView {
             public boolean onLongClick(View v) {
                 Toast.makeText(fragment.getActivity().getApplicationContext(), "Opening Google Map Navigation...",
                         Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
-                        Uri.parse("http://maps.google.com/maps?daddr=" + marker.getPosition().latitude + "," +
-                                marker.getPosition().longitude));
-                fragment.getActivity().startActivity(intent);
+                if(marker!=null){
+                    Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                            Uri.parse("http://maps.google.com/maps?daddr=" + marker.getPosition().latitude + "," +
+                                    marker.getPosition().longitude));
+                    fragment.getActivity().startActivity(intent);
+                }
                 dialog.dismiss();
                 return true;
             }
@@ -124,15 +135,7 @@ public class JobView {
         });
 
 
-        ImageButton btnCall = (ImageButton) dialog.findViewById(R.id.btnMakeCall);
-        btnCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse("tel:" + breakdown.get_Contact_No().trim()));
-                fragment.getActivity().startActivity(intent);
-            }
-        });
+
 
         Button btnVisted = (Button) dialog.findViewById(R.id.btnVisted);
         btnVisted.setOnClickListener(new View.OnClickListener() {
@@ -174,6 +177,8 @@ public class JobView {
                 dialog.dismiss();
             }
         });
+        //Toast.makeText(fragment.getActivity().getApplicationContext(),
+        //        "Breakdown status ="+breakdown.get_Status(), Toast.LENGTH_LONG).show();
         if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
             btnCompleted.setTextColor(Color.RED);
         } else if (breakdown.get_Status() == Breakdown.JOB_DONE) {
@@ -182,12 +187,16 @@ public class JobView {
             btnVisted.setTextColor(Color.RED);
         } else if (breakdown.get_Status() == Breakdown.JOB_ATTENDING) {
             btnAttending.setTextColor(Color.RED);
+        } else if (breakdown.get_Status() == Breakdown.JOB_REJECT) {
+            btnReject.setTextColor(Color.RED);
         }
 
         dialog.show();
         return dialog;
     }
+
     private static void JobRejectDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_reject_dialog);
@@ -228,6 +237,7 @@ public class JobView {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
                         "R", GetSelectedDateTime(dialog), etComment.getText().toString());
                 UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_REJECT);
+                JobListFragment.CreateListView(fragment);
                 dialog.dismiss();
             }
         });
@@ -235,10 +245,7 @@ public class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment = (JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown, position);
-                }
+                RestoreCard(fragment,breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -285,6 +292,7 @@ public class JobView {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
                         "V", GetSelectedDateTime(dialog), etComment.getText().toString());
                 UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_VISITED);
+                JobListFragment.CreateListView(fragment);
                 dialog.dismiss();
             }
         });
@@ -292,10 +300,7 @@ public class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment = (JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown, position);
-                }
+                RestoreCard(fragment,breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -341,6 +346,7 @@ public class JobView {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
                         "A", GetSelectedDateTime(dialog), etComment.getText().toString());
                 UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_ATTENDING);
+                JobListFragment.CreateListView(fragment);
                 dialog.dismiss();
             }
         });
@@ -348,10 +354,7 @@ public class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment = (JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown, position);
-                }
+                RestoreCard(fragment,breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -399,6 +402,7 @@ public class JobView {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
                         "D", GetSelectedDateTime(dialog), etComment.getText().toString());
                 UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_DONE);
+                JobListFragment.CreateListView(fragment);
                 dialog.dismiss();
             }
         });
@@ -406,10 +410,8 @@ public class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment = (JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown, position);
-                }
+
+                RestoreCard(fragment,breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -417,6 +419,10 @@ public class JobView {
     }
 
     public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+        FailureTypeList = Failure.GetFailureTypeList(fragment.getActivity().getApplicationContext());
+        FailureCauseList = Failure.GetFailureCauseList(fragment.getActivity().getApplicationContext());
+        FailureNatureList = Failure.GetFailureNatureList(fragment.getActivity().getApplicationContext());
+
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_complete_dialog);
@@ -432,30 +438,28 @@ public class JobView {
         //Failure Type Spinner
         final Spinner spinnerType = (Spinner) dialog.findViewById(R.id.spinner_failure_type);
         spinnerType.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, GetColumn(Failure.FailureTypeList)));
+                R.layout.spinner_row, R.id.textView, GetColumn(FailureTypeList)));
 
         final Spinner spinnerNature = (Spinner) dialog.findViewById(R.id.spinner_failure_nature);
         spinnerNature.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, GetFilteredColumn(Failure.FailureNatureList, "1")));
+                R.layout.spinner_row, R.id.textView, GetFilteredColumn(FailureNatureList, "1")));
 
         final Spinner spinnerCause = (Spinner) dialog.findViewById(R.id.spinner_failure_cause);
         spinnerCause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, GetFilteredColumn(Failure.FailureCauseList, "1")));
+                R.layout.spinner_row, R.id.textView, GetFilteredColumn(FailureCauseList, "1")));
 
         if(breakdown.get_Status()==Breakdown.JOB_COMPLETED){
-            DBHandler dbHandler = new DBHandler(fragment.getActivity(), null, null, 1);
-
-            JobCompletion obj= dbHandler.getJobCompletionRec(breakdown.get_Job_No());
+            JobCompletion obj= Globals.dbHandler.getJobCompletionRec(breakdown.get_Job_No());
             int type = Integer.parseInt(obj.type_failure);//2
             int cause = Integer.parseInt(obj.cause);//9
             int nature = Integer.parseInt(obj.detail_reason_code);//21
             spinnerType.setSelection(type);
 
             SetNatureSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
-            spinnerNature.setSelection(GetSubIndex(Failure.FailureNatureList,type,nature));
+            spinnerNature.setSelection(GetSubIndex(FailureNatureList,type,nature));
 
             SetCauseSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
-            spinnerCause.setSelection(GetSubIndex(Failure.FailureCauseList,nature,cause));
+            spinnerCause.setSelection(GetSubIndex(FailureCauseList,nature,cause));
 
             spinnerType.setEnabled(false);
             spinnerNature.setEnabled(false);
@@ -559,13 +563,15 @@ public class JobView {
                             "completedby",
                             "OTHERF");*/
                 JobCompletion jobCompletionRec = new JobCompletion();
-                jobCompletionRec.job_no = breakdown.get_Job_No();
+                jobCompletionRec.JOB_NO = breakdown.get_Job_No();
                 jobCompletionRec.job_completed_datetime = GetSelectedDateTime(dialog);
-                jobCompletionRec.type_failure = GetId(Failure.FailureTypeList, spinnerType.getSelectedItem().toString());
-                jobCompletionRec.detail_reason_code = GetId(Failure.FailureNatureList, spinnerNature.getSelectedItem().toString());
-                jobCompletionRec.cause = GetId(Failure.FailureCauseList, spinnerCause.getSelectedItem().toString());
+                jobCompletionRec.type_failure = GetId(FailureTypeList, spinnerType.getSelectedItem().toString());
+                jobCompletionRec.detail_reason_code = GetId(FailureNatureList, spinnerNature.getSelectedItem().toString());
+                jobCompletionRec.cause = GetId(FailureCauseList, spinnerCause.getSelectedItem().toString());
 
                 UpdateCompletedJob(fragment, jobCompletionRec, breakdown);
+                    JobListFragment.CreateListView(fragment);
+                    Globals.AverageTime = Globals.dbHandler.getAttendedTime();
                 dialog.dismiss();
                 } else {
                     Toast.makeText(fragment.getActivity().getApplicationContext(),
@@ -578,10 +584,8 @@ public class JobView {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fragment instanceof JobListFragment) {
-                    JobListFragment jobListFragment = (JobListFragment) fragment;
-                    jobListFragment.RestoreItem(breakdown, position);
-                }
+
+                RestoreCard(fragment,breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -593,11 +597,18 @@ public class JobView {
     }
 
 
+    private static void RestoreCard(Fragment fragment,Breakdown breakdown, int position){
+        if (fragment instanceof JobListFragment) {
+            JobListFragment jobListFragment = (JobListFragment) fragment;
+            jobListFragment.RestoreItem(breakdown, position);
+        }
+    }
+
+
     private static void UpdateJobStatusChange(Fragment fragment, JobChangeStatus jobchangestatus, Breakdown breakdown, int iStatus) {
-        DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
-        dbHandler.addJobStatusChangeRec(jobchangestatus);
-        dbHandler.UpdateBreakdownStatus(breakdown, iStatus);
-        BackgroundService.SyncBreakdownStatusChange(fragment.getActivity().getApplicationContext());
+        Globals.dbHandler.addJobStatusChangeRec(jobchangestatus);
+        Globals.dbHandler.UpdateBreakdownStatus(breakdown, iStatus);
+        SyncService.SyncBreakdownStatusChange(fragment.getActivity().getApplicationContext());
         if (fragment instanceof JobListFragment) {
             JobListFragment JobFrag = (JobListFragment) fragment;
             //JobFrag.CreateListView(fragment);
@@ -606,14 +617,12 @@ public class JobView {
             GmapFragment GmapFrag = (GmapFragment) fragment;
             GmapFrag.RefreshJobsFromDB();
         }
-        dbHandler.close();
     }
 
     private static void UpdateCompletedJob(Fragment fragment, JobCompletion jobcompletion, Breakdown breakdown) {
-        DBHandler dbHandler = new DBHandler(fragment.getActivity().getApplicationContext(), null, null, 1);
-        dbHandler.addJobCompletionRec(jobcompletion);
-        dbHandler.UpdateBreakdownStatus(breakdown, Breakdown.JOB_COMPLETED);
-        BackgroundService.SyncBreakdownCompletion(fragment.getActivity().getApplicationContext());
+        Globals.dbHandler.addJobCompletionRec(jobcompletion);
+        Globals.dbHandler.UpdateBreakdownStatus(breakdown, Breakdown.JOB_COMPLETED);
+        SyncService.SyncBreakdownCompletion(fragment.getActivity().getApplicationContext());
         if (fragment instanceof JobListFragment) {
             JobListFragment JobFrag = (JobListFragment) fragment;
             //JobFrag.CreateListView(fragment);
@@ -622,7 +631,6 @@ public class JobView {
             GmapFragment GmapFrag = (GmapFragment) fragment;
             GmapFrag.RefreshJobsFromDB();
         }
-        dbHandler.close();
     }
 
     private static void getDirections(final Fragment fragment, LatLng origin, LatLng destination) {
@@ -639,7 +647,7 @@ public class JobView {
 
     private static void SetNatureSpinners(Fragment fragment, Spinner spinnerType, Spinner spinnerNature, Spinner spinnerCause) {
        // int type = spinnerType.getSelectedItemPosition();
-        String type = GetId(Failure.FailureTypeList, spinnerType.getSelectedItem().toString());
+        String type = GetId(FailureTypeList, spinnerType.getSelectedItem().toString());
 
         if (type.equals("0")) {
             spinnerNature.setEnabled(false);
@@ -648,7 +656,7 @@ public class JobView {
             spinnerNature.setEnabled(true);
             spinnerCause.setEnabled(true);
             spinnerNature.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, R.id.textView, GetFilteredColumn(Failure.FailureNatureList, type)));
+                    R.layout.spinner_row, R.id.textView, GetFilteredColumn(FailureNatureList, type)));
         }
         spinnerNature.setSelection(0);
         spinnerCause.setSelection(0);
@@ -657,14 +665,14 @@ public class JobView {
     private static void SetCauseSpinners(Fragment fragment, Spinner spinnerType, Spinner spinnerNature, Spinner spinnerCause) {
         // int type = spinnerType.getSelectedItemPosition();
         //int nature = spinnerNature.getSelectedItemPosition();
-        String nature = GetId(Failure.FailureNatureList, spinnerNature.getSelectedItem().toString());
+        String nature = GetId(FailureNatureList, spinnerNature.getSelectedItem().toString());
 
         if (nature.equals("0")) {
             spinnerCause.setEnabled(false);
         } else {
             spinnerCause.setEnabled(true);
             spinnerCause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, R.id.textView, GetFilteredColumn(Failure.FailureCauseList,nature)));
+                    R.layout.spinner_row, R.id.textView, GetFilteredColumn(FailureCauseList,nature)));
         }
         spinnerCause.setSelection(0);
     }

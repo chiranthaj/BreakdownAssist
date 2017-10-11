@@ -2,6 +2,7 @@ package lk.steps.breakdownassistpluss;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -20,12 +21,13 @@ public class Globals
     public static String AreaCode2="";
     public static String AreaCode3="";
     public static int NoOfAreaCodes=0;
-
+    public static MediaPlayer mediaPlayer;
     public static String serverUrl = "http://192.168.137.1:31525";
-
+    public static boolean serverConnected = false;
     public static SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss" , Locale.US);//This format is used to store in SqLite db
     private static SimpleDateFormat timeFormat2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a" , Locale.US); // This format is used to easily identify to user
     public static long AverageTime = 0;
+    public static DBHandler dbHandler;
 
     public static void initAreaCodes(Context context)
     {

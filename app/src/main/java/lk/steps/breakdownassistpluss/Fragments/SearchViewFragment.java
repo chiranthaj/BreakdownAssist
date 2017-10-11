@@ -14,26 +14,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import java.util.ArrayList;
 import java.util.List;
-
 import lk.steps.breakdownassistpluss.Breakdown;
-import lk.steps.breakdownassistpluss.DBHandler;
+import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.RecyclerViewCards.JobsRecyclerAdapter;
 import lk.steps.breakdownassistpluss.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
 
 public class SearchViewFragment extends Fragment {
-    DBHandler dbHandler;
     private View mView;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate( R.layout.job_listview,container,false);
-        dbHandler = new DBHandler(getActivity(),null,null,1);
         Bundle bundle = this.getArguments();
         if (bundle != null) {
             String keyWord = bundle.getString("KEY_WORD","0");
@@ -60,7 +55,7 @@ public class SearchViewFragment extends Fragment {
     private void RefreshListView(String keyWord) {
 
         //final ArrayList<Breakdown> BreakdonwList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display));
-        final List<Breakdown> BreakdownsList = dbHandler.SearchInDatabase(keyWord);
+        final List<Breakdown> BreakdownsList = Globals.dbHandler.SearchInDatabase(keyWord);
         /*if (_BreakdownsList.size() == 0) {
             _BreakdownsList = dbHandler.SearchInCustomers(keyWord);
         }*/

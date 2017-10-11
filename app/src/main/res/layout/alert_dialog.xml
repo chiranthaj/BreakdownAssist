@@ -10,7 +10,7 @@
         android:layout_height="60dp"
         android:layout_alignEnd="@+id/textDialog"
         android:layout_alignStart="@+id/textDialog"
-        android:layout_margin="5dp"
+        android:layout_margin="20dp"
         android:src="@drawable/breackdownassist" />
 
     <TextView

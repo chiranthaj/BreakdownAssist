@@ -48,9 +48,8 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
     public void onBindViewHolder(MapLocationViewHolder holder, int position) {
 
         holder.acc_no.setText(breakdownList.get(position).get_Acct_Num());
-        holder.job_no.setText(breakdownList.get(position).get_Job_No().trim());
+        holder.JOB_NO.setText(breakdownList.get(position).get_Job_No());
         holder.received_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Received_Time()));
-
         holder.name.setText(breakdownList.get(position).get_Name());
         holder.address.setText(breakdownList.get(position).get_ADDRESS());
         holder.description.setText(breakdownList.get(position).get_Full_Description());
@@ -66,8 +65,14 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         }else if(breakdownList.get(position).get_Status()==Breakdown.JOB_COMPLETED){
             holder.completed_date_time.setText("Completed on "+Globals.parseDate(breakdownList.get(position).get_Completed_Time()));
         }
-
-
+        String src =breakdownList.get(position).get_OldJob_No();
+        if(src==null){
+            holder.imgSource.setVisibility(View.INVISIBLE);
+        }else if(src.equals("")){
+            holder.imgSource.setVisibility(View.INVISIBLE);
+        }else{
+            holder.imgSource.setVisibility(View.VISIBLE);
+        }
         /*else{
             holder.completed_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Completed_Time()));
         }*/
@@ -79,8 +84,28 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         }else{
             holder.imgMap.setVisibility(View.INVISIBLE);
         }
+
+        int priority = breakdownList.get(position).get_Priority();
+        if(priority == 4){
+            holder.imgPriority.setVisibility(View.VISIBLE);
+        }else{
+            holder.imgPriority.setVisibility(View.INVISIBLE);
+        }
+
         int status = breakdownList.get(position).get_Status();
+
         if(status == Breakdown.JOB_COMPLETED){
+            holder.JOB_NO.setTextColor(Color.parseColor("#0d7504"));
+        }else if(status == Breakdown.JOB_DONE){
+            holder.JOB_NO.setTextColor(Color.parseColor("#033e7c"));
+        }else if(status == Breakdown.JOB_ATTENDING){
+            holder.JOB_NO.setTextColor(Color.parseColor("#06823e"));
+        }else if(status == Breakdown.JOB_VISITED){
+            holder.JOB_NO.setTextColor(Color.parseColor("#9b8404"));
+        }else {
+            holder.JOB_NO.setTextColor(Color.parseColor("#c9082b"));
+        }
+        /*if(status == Breakdown.JOB_COMPLETED){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#d8d8d8"));
         }else if(status == Breakdown.JOB_DONE){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#f9ffce"));
@@ -90,7 +115,7 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
             holder.cardView.setCardBackgroundColor(Color.parseColor("#dbfffb"));
         }else {
             holder.cardView.setCardBackgroundColor(Color.parseColor("#fbddff"));
-        }
+        }*/
         holder.setBreakdown(breakdownList.get(position));
     }
 

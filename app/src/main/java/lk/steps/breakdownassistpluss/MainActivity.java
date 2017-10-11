@@ -1,7 +1,6 @@
 package lk.steps.breakdownassistpluss;
 
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -10,12 +9,10 @@ import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -25,7 +22,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -36,20 +32,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/*import com.arlib.floatingsearchview.FloatingSearchView;*/
 import com.facebook.stetho.Stetho;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.Marker;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
@@ -63,37 +53,30 @@ import lk.steps.breakdownassistpluss.Fragments.DashboardFragment;
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
 
 
-import lk.steps.breakdownassistpluss.Fragments.GmapAddTestBreakdownFragment;
 import lk.steps.breakdownassistpluss.Fragments.GmapFragment;
 
 import lk.steps.breakdownassistpluss.Fragments.SearchViewFragment;
 import lk.steps.breakdownassistpluss.GpsTracker.GpsTrackerAlarmReceiver;
-import lk.steps.breakdownassistpluss.GpsTracker.LocationService;
-import lk.steps.breakdownassistpluss.Sync.BackgroundService;
+import lk.steps.breakdownassistpluss.Sync.SyncService;
 import lk.steps.breakdownassistpluss.Sync.SignalRService;
-import lk.steps.breakdownassistpluss.Sync.SyncRESTService;
 import lk.steps.breakdownassistpluss.Sync.Token;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    DBHandler dbHandler;
     FragmentManager fm;
 
     protected PowerManager.WakeLock mWakeLock;
-    public static final String STATE_SCORE = "playerScore";
+    //public static final String STATE_SCORE = "playerScore";
     public static final String MAP_FRAGMENT_TAG = "TagMapFragment";
-    public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
+   // public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
     private NavigationView navigationView;
     private static Context context;
     public static Token mToken;
     public static boolean ReLoginRequired = false;
     boolean doubleBackToExitPressedOnce = false;
-
+    private String UserName;
     Timer timer;
     MyTimerTask myTimerTask;
 
@@ -124,8 +107,9 @@ public class MainActivity extends AppCompatActivity
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setCheckedItem(R.id.nav_dashboard);
 
-        dbHandler = new DBHandler(this, null, null, 1);
+        Globals.dbHandler = new DBHandler(this, null, null, 1);
 
         ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(), this);
 
@@ -140,7 +124,7 @@ public class MainActivity extends AppCompatActivity
         //delay 1000ms, repeat in 5000ms
         timer.schedule(myTimerTask, 1000, 10000);
 
-        startService(new Intent(getBaseContext(), BackgroundService.class));
+        startService(new Intent(getBaseContext(), SyncService.class));
         startService(new Intent(getBaseContext(), SignalRService.class));
 
         Globals.initAreaCodes(getApplicationContext());
@@ -158,19 +142,21 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
-        CalculateAttainedTime();
+       // CalculateAttainedTime();
         mToken = ReadToken();
 
         View v = navigationView.getHeaderView(0);
+        UserName=ReadStringPreferences("last_username", "[username]");
         TextView username = (TextView ) v.findViewById(R.id.txtUsername);
-        username.setText(ReadStringPreferences("last_username", "[username]"));//
+        username.setText(UserName);//
 
         username = (TextView ) v.findViewById(R.id.txtArea);
         username.setText(ReadStringPreferences("area_name", "[Area name]"));//
 
-        SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
-
         trackLocation();
+
+        //android.support.v7.app.ActionBar ab = getSupportActionBar();
+        //ab.setSubtitle("Offline");
 
         // Show the "What's New" screen once for each new release of the application
         new WhatsNewScreen(this).show();
@@ -195,6 +181,13 @@ public class MainActivity extends AppCompatActivity
         registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.NewBreakdownBroadcast"));
         if (!this.mWakeLock.isHeld())
             this.mWakeLock.acquire();
+        //Log.d("onResume","555");
+
+        List<Breakdown> notAckedBreakdowns = Globals.dbHandler.ReadNotAckedBreakdowns();
+        Log.d("onResume","notAckedBreakdowns="+notAckedBreakdowns.size());
+        if(notAckedBreakdowns.size()>0){
+            NewBreakdownsDialog(notAckedBreakdowns);
+        }
     }
 
     @Override
@@ -222,21 +215,21 @@ public class MainActivity extends AppCompatActivity
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String sID = intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
+            //String sID = intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
             //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
             String json = intent.getStringExtra("new_breakdowns");
-            String ring = intent.getStringExtra("ring");
+            //String ring = intent.getStringExtra("ring");
             String refreshReq = intent.getStringExtra("job_status_changed");
-            if(ring != null & json != null){
+            Log.d("TEST","BroadcastReceiver0");
+            //Log.e("TEST","555");
+            if(json != null){Log.d("TEST","BroadcastReceiver1");
                 Type type = new TypeToken<List<Breakdown>>(){}.getType();
                 Gson gson = new Gson();
                 List<Breakdown> breakdowns = gson.fromJson(json, type);
-                NewBreakdownsDialog(breakdowns,ring);
-            }else if(refreshReq!=null){
-                MediaPlayer mp= MediaPlayer.create(getApplicationContext(), R.raw.iphone);
-                mp.start();
+                NewBreakdownsDialog(breakdowns);
+            }else if(refreshReq!=null){Log.d("TEST","BroadcastReceiver2");
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
-                //mp.stop();
+                if(JobListFragment.mAdapter!=null)JobListFragment.mAdapter.notifyDataSetChanged();
             }
         }
     };
@@ -244,9 +237,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        stopService(new Intent(getBaseContext(), BackgroundService.class));
+        stopService(new Intent(getBaseContext(), SyncService.class));
         stopService(new Intent(getBaseContext(), SignalRService.class));
-        dbHandler.close();
+        Globals.dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
         StopTrackLocation();
         super.onDestroy();
@@ -254,14 +247,18 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
+        Log.e("TEST","005");
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
+            Log.e("TEST","006");
             drawer.closeDrawer(GravityCompat.START);
         } else {
+            Log.e("TEST","007");
             if (doubleBackToExitPressedOnce) {
+                Log.e("TEST","008");
                 super.onBackPressed();
-                return;
             } else if (navigationView.getMenu().findItem(R.id.nav_dashboard).isChecked()) {
+                Log.e("TEST","009");
                 this.doubleBackToExitPressedOnce = true;
                 Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
 
@@ -274,6 +271,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }, 2000);
             } else {
+                Log.e("TEST","010");
                 MenuItem target = navigationView.getMenu().findItem(R.id.nav_dashboard);
                 target.setChecked(true);
                 onNavigationItemSelected(target);
@@ -297,7 +295,7 @@ public class MainActivity extends AppCompatActivity
             //TODO : Move these to designated fragments and localize them
             @Override
             public boolean onQueryTextSubmit(String keyWord) {
-                List<Breakdown> BreakdownsList = dbHandler.SearchInDatabase(keyWord);
+                List<Breakdown> BreakdownsList = Globals.dbHandler.SearchInDatabase(keyWord);
                     /*if (BreakdownsList.size() == 0) {
                         BreakdownsList = dbHandler.SearchInCustomers(keyWord);
                     }*/
@@ -397,16 +395,23 @@ public class MainActivity extends AppCompatActivity
             JobListFragment fragment = new JobListFragment();
             fragment.setArguments(arguments);
             fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
-        } /*else if (id == R.id.nav_sync_sms_inbox) {
+        } else if (id == R.id.nav_sync_sms_inbox) {
             Toast.makeText(this, "Please wait.. This will take some time to complete", Toast.LENGTH_LONG).show();
             ReadSMS.SyncSMSInbox(this);
             Toast.makeText(this, "Synced !!", Toast.LENGTH_SHORT).show();
-        }*/ else if (id == R.id.nav_settings) {
+        } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         } else if (id == R.id.about) {
             Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);
+        } else if (id == R.id.nav_logout) {
+            WriteLongPreferences("keep_sign_in",false);
+            Intent i = getBaseContext().getPackageManager()
+                    .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
+            MainActivity.this.finish();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -477,14 +482,12 @@ public class MainActivity extends AppCompatActivity
         token.expires_in= prfs.getLong("expires_in", 0);
         return token;
     }
-    private void CalculateAttainedTime() {
+    /*private void CalculateAttainedTime() {
         final Handler handler = new Handler();
         final Runnable r = new Runnable() {
             public void run() {
                 try {
-                    DBHandler dbHandler = new DBHandler(getAppContext(), null, null, 1);
-                    Globals.AverageTime = dbHandler.getAttendedTime();
-                    dbHandler.close();
+                    Globals.AverageTime = Globals.dbHandler.getAttendedTime();
                     //handler.postDelayed(this, 1000*60*10);//Continue updating 10min
                 } catch (Exception e) {
                     Log.e("CalAttainedTime",e.getMessage());
@@ -492,60 +495,67 @@ public class MainActivity extends AppCompatActivity
             }
         };
         handler.postDelayed(r, 5000); //2Sec
-    }
+    }*/
 
 
     private Dialog newBreakdownDialog;
-    private void NewBreakdownsDialog(final List<Breakdown> breakdowns, final String ring){
-        final MediaPlayer mp;
-        if(ring.equals("1")){
-            mp = MediaPlayer.create(getBaseContext(), R.raw.buzzer);
-            mp.setLooping(true);
-           // mp.start();
-        }else{
-            mp= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
-          //  mp.start();
-        }
-        //if(newBreakdownDialog != null)newBreakdownDialog.cancel();
+    private void NewBreakdownsDialog(final List<Breakdown> breakdowns){
+        Log.d("TEST","5557");
         newBreakdownDialog = new Dialog(this);
         newBreakdownDialog.setContentView(R.layout.alert_dialog);
+        TextView msg = (TextView) newBreakdownDialog.findViewById(R.id.textDialog);
+        Log.d("TEST","1");
+        if(breakdowns.size() == 1){
+            msg.setText("New breakdown received.");
+        }else{
+            msg.setText("New "+breakdowns.size()+" breakdowns received.");
+        }
+        Log.d("TEST","2");
         //dialog.setTitle("BreakdownAssist...");
         newBreakdownDialog.setCancelable(false);
         Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
         dialogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(ring.equals("1")) {
-                    mp.pause();
-                    mp.stop();
+                Toast.makeText(getApplicationContext(), "001", Toast.LENGTH_SHORT).show();
+                try{
+                    UpdateJobStatusAcknowledged(breakdowns);
+                    Toast.makeText(getApplicationContext(), "002", Toast.LENGTH_SHORT).show();
+                    if(Globals.mediaPlayer!=null) {
+                        //Globals.mediaPlayer.pause();
+                        Toast.makeText(getApplicationContext(), "003", Toast.LENGTH_SHORT).show();
+                        Globals.mediaPlayer.stop();
+                        Toast.makeText(getApplicationContext(), "004", Toast.LENGTH_SHORT).show();
+                    }
+                }catch(Exception e){
+                    Toast.makeText(getApplicationContext(), "005", Toast.LENGTH_SHORT).show();
                 }
-                UpdateJobStatusAcknowledged(breakdowns);
+                Toast.makeText(getApplicationContext(), "006", Toast.LENGTH_SHORT).show();
                 newBreakdownDialog.dismiss();
+                Toast.makeText(getApplicationContext(), "007", Toast.LENGTH_SHORT).show();
             }
         });
         newBreakdownDialog.show();
-        mp.start();
         onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
     }
 
 
     private static void UpdateJobStatusAcknowledged(List<Breakdown> breakdowns) {
         try{
-            DBHandler dbHandler = new DBHandler(getAppContext(), null, null, 1);
             String time = "" + Globals.timeFormat.format(new Date());
             for (Breakdown breakdown :breakdowns) {
+                //String jobNo = dbHandler.GetNewJobNumber(breakdown.get_Job_No());
                 JobChangeStatus status = new JobChangeStatus();
-                status.job_no=breakdown.get_Job_No();
+                status.job_no=Globals.dbHandler.GetNewJobNumber(breakdown.get_Job_No());
                 status.change_datetime=time;
                 status.device_timestamp=time;
                 status.synchro_mobile_db=0;
                 status.st_code=String.valueOf(Breakdown.JOB_ACKNOWLEDGED);
 
-                dbHandler.addJobStatusChangeRec(status);
-                dbHandler.UpdateBreakdownStatusByJobNo(breakdown.get_Job_No(), "", String.valueOf(Breakdown.JOB_ACKNOWLEDGED));
+                Globals.dbHandler.addJobStatusChangeRec(status);
+                Globals.dbHandler.UpdateBreakdownStatusByJobNo(breakdown.get_Job_No(), "", String.valueOf(Breakdown.JOB_ACKNOWLEDGED));
             }
-            dbHandler.close();
-            BackgroundService.SyncBreakdownStatusChange(getAppContext());
+            SyncService.SyncBreakdownStatusChange(getAppContext());
         }catch(Exception e){
             Log.e("Error","UpdateJobStatusAcknowledged "+e.getMessage());
         }
@@ -563,8 +573,8 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putInt("intervalInMinutes", 1);
-        editor.putString("userName", "123");
-        editor.putString("defaultUploadWebsite", "123");
+        editor.putString("userName", UserName);
+       // editor.putString("defaultUploadWebsite", "123");
 
             startAlarmManager();
 
@@ -581,7 +591,7 @@ public class MainActivity extends AppCompatActivity
 
         editor.putInt("intervalInMinutes", 1);
         editor.putString("userName", "123");
-        editor.putString("defaultUploadWebsite", "123");
+      //  editor.putString("defaultUploadWebsite", "123");
         cancelAlarmManager();
         editor.putBoolean("currentlyTracking", false);
         editor.putString("sessionID", "");

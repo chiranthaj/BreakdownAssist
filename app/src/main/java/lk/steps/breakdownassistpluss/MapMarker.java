@@ -24,7 +24,7 @@ public class MapMarker {
             else
                 MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.domestic_complete);
         }else{
-            if(breakdown.get_Priority() == Breakdown.Priority_URGENT){ // Urgent jobs
+            if(breakdown.get_Priority() == Breakdown.Priority_Urgent){ // Urgent jobs
                 if(breakdown.get_TARIFF_COD() == null)
                     if(breakdown.get_Status() == Breakdown.JOB_STATUS_ANY){
                         MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.domestic_lv_critical_done);
@@ -55,7 +55,7 @@ public class MapMarker {
                     }else {
                         MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.domestic_lv_critical);
                     }
-            }else if(breakdown.get_Priority() == Breakdown.Priority_HIGH){ // Urgent jobs
+            }else if(breakdown.get_Priority() == Breakdown.Priority_High){ // Urgent jobs
                 if(breakdown.get_TARIFF_COD() == null)
                     if(breakdown.get_Status() == Breakdown.JOB_DONE){
                         MarkerICON = BitmapDescriptorFactory.fromResource(R.drawable.domestic_lv_high_done);

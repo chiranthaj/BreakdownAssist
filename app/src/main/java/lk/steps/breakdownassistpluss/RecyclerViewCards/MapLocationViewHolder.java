@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -47,10 +48,12 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
     protected GoogleMap mGoogleMap;
     protected Breakdown mBreakdown;
     public Context mContext;
-    public TextView acc_no,job_no,received_date_time,completed_date_time,name,address,description, txtTripInfo;
+    public TextView acc_no,JOB_NO,received_date_time,completed_date_time,name,address,description, txtTripInfo;
     private Button button1,button2;
     public CheckBox checkBox1;
     public ImageView imgMap;
+    public ImageView imgSource;
+    public ImageView imgPriority;
     public CardView cardView;
     public MapView mapView;
 
@@ -59,12 +62,14 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         mContext = context;
         cardView = (CardView) itemLayoutView.findViewById(R.id.card_view);
         acc_no = (TextView) itemLayoutView.findViewById(R.id.acct_num);
-        job_no = (TextView)itemLayoutView.findViewById(R.id.job_no);
+        JOB_NO = (TextView)itemLayoutView.findViewById(R.id.JOB_NO);
         received_date_time = (TextView) itemLayoutView.findViewById(R.id.received_date_time);
         completed_date_time = (TextView)itemLayoutView.findViewById(R.id.completed_date_time);
         name = (TextView) itemLayoutView.findViewById(R.id.name);
         address = (TextView) itemLayoutView.findViewById(R.id.address);
         imgMap = (ImageView) itemLayoutView.findViewById(R.id.imgMap);
+        imgSource= (ImageView) itemLayoutView.findViewById(R.id.imgSource);
+        imgPriority = (ImageView) itemLayoutView.findViewById(R.id.imgPriority);
         description = (TextView)itemLayoutView.findViewById(R.id.description);
         mapView = (MapView) itemView.findViewById(R.id.map_view);
         txtTripInfo = (TextView) itemLayoutView.findViewById(R.id.txtTripInfo);
@@ -169,7 +174,10 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
             }
         }
         polylinePaths.add(mGoogleMap.addPolyline(polylineOptions));
-        txtTripInfo.setText("Distance : "+routes.get(0).distance.text + "\nTime : "+routes.get(0).duration.text);
+        //txtTripInfo.setText("Distance : "+routes.get(0).distance.text + "\nTime : "+routes.get(0).duration.text);
+       // txtTripInfo.setText(routes.get(0).duration.text + " ( "+routes.get(0).distance.text+" )");
+        String text = "<font color='blue'>"+routes.get(0).duration.text + "</font><font color='gray'> ( "+routes.get(0).distance.text+" ) </font>";
+        txtTripInfo.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
 
     }

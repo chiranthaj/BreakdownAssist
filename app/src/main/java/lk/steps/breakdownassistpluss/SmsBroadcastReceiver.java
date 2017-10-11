@@ -9,8 +9,12 @@ import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class SmsBroadcastReceiver extends BroadcastReceiver
 {//TODO : Use a method to unregisterReceiver the BroadcastReceiver when app is not in use, on Destroy,
@@ -55,21 +59,51 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
             String sPhone_No=ReadSMS.extractPhoneNo(sFullMessage);
             int iPriority=ReadSMS.extractPriority(sFullMessage);
 
-
+            Log.d("SmsReceiver","sFullMessage ->"+sFullMessage);
             if (ReadSMS.IsValidJobNo(sJob_No)) {// Added on 2017/06/30 to prevent irrelevant sms to add as a breakdown
-                DBHandler dbHandler = new DBHandler(context, null, null, 1);
-                dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
-                String sIssuedBreakdownID=dbHandler.getLastBreakdownID();
-                dbHandler.close();
+                Breakdown breakdown = new Breakdown();
+                if(sAcct_num.equals("")){
+                    breakdown.set_Full_Description(sFullMessage);
+                }else{
+                    breakdown = Globals.dbHandler.GetCustomerData(sAcct_num);
+                }
+                /*String description =sFullMessage.replace(sAcct_num,"")
+                        .replace(sJob_No,"")
+                        .replace(time,"")
+                        .replace(sPhone_No,"")
+                        .replace(breakdown.get_ADDRESS(),"")
+                        .replace(breakdown.get_Name(),"");*/
+
+                breakdown.set_Received_Time(time);
+                breakdown.set_inbox_ref(sID + " " +time);
+                breakdown.set_Acct_Num(sAcct_num);
+                //breakdown.set_Full_Description(description);
+                breakdown.set_JOB_SOURCE("IT");//sAddress
+                breakdown.set_Job_No(sJob_No);
+                breakdown.set_Contact_No(sPhone_No);
+                breakdown.set_Priority(iPriority);
+                breakdown.set_BA_SERVER_SYNCED("0");
+                /*Log.d("sID","="+sID);// empty box, no SMS
+                Log.d("sAddress","="+sAddress);
+                Log.d("sFullMessage","="+sFullMessage);
+                Log.d("time","="+time);
+                Log.d("sJob_No","="+sJob_No);
+                Log.d("sAcct_num","="+sAcct_num);
+                Log.d("sPhone_No","="+sPhone_No);
+                Log.d("iPriority","="+iPriority);*/
+                //dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
+                Globals.dbHandler.addBreakdown2(breakdown);
+
 
                 //Informing the Map view about the new bd, then it can add it
                 Intent myintent=new Intent();
                 myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
-
-                myintent.putExtra("_id",sIssuedBreakdownID);
+                List<Breakdown> breakdowns = new ArrayList<>();
+                breakdowns.add(breakdown);
+                myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
                 context.sendBroadcast(myintent);
             }else{
-                Log.d("SmsReceiver","NOt a breakdown sms");
+                Log.d("SmsReceiver","NOt a breakdown sms ->"+sJob_No);
             }
 
 /*                MediaPlayer mPlayer2;

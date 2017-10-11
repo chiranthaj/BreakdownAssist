@@ -28,17 +28,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-
 import java.util.ArrayList;
-
 import lk.steps.breakdownassistpluss.Breakdown;
+import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.JobView;
 import lk.steps.breakdownassistpluss.MainActivity;
-import lk.steps.breakdownassistpluss.DBHandler;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
 import lk.steps.breakdownassistpluss.RecyclerViewCards.JobsRecyclerAdapter;
@@ -47,10 +42,12 @@ import lk.steps.breakdownassistpluss.RecyclerViewCards.JobsRecyclerAdapter;
 public class JobListFragment extends Fragment {
 
     private static View mView;
-    private static DBHandler dbHandler;
     private static int iJobs_to_Display = Breakdown.JOB_NOT_ATTENDED;
     public static RecyclerView mRecyclerView;
     public static LatLng currentLocation;
+    public static RecyclerView.Adapter mAdapter;
+    public static ArrayList<Breakdown> BreakdownList;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,7 +64,6 @@ public class JobListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.job_listview, container, false);
-        dbHandler = new DBHandler(getActivity(), null, null, 1); //TODO : Close on exit
         CreateListView(JobListFragment.this);
 
         return mView;
@@ -101,6 +97,42 @@ public class JobListFragment extends Fragment {
             iJobs_to_Display = Breakdown.JOB_NOT_ATTENDED;
             CreateListView(JobListFragment.this);
             return true;
+        }else if (id == R.id.menu_jobs_delivered) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            iJobs_to_Display = Breakdown.JOB_DELIVERED;
+            CreateListView(JobListFragment.this);
+            return true;
+        }else if (id == R.id.menu_jobs_acknowledged) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            iJobs_to_Display = Breakdown.JOB_ACKNOWLEDGED;
+            CreateListView(JobListFragment.this);
+            return true;
+        }else if (id == R.id.menu_jobs_visited) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            iJobs_to_Display = Breakdown.JOB_VISITED;
+            CreateListView(JobListFragment.this);
+            return true;
+        }else if (id == R.id.menu_jobs_attending) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            iJobs_to_Display = Breakdown.JOB_ATTENDING;
+            CreateListView(JobListFragment.this);
+            return true;
+        }else if (id == R.id.menu_jobs_temporary) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            iJobs_to_Display = Breakdown.JOB_DONE;
+            CreateListView(JobListFragment.this);
+            return true;
+        }else if (id == R.id.menu_jobs_rejected) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            iJobs_to_Display = Breakdown.JOB_REJECT;
+            CreateListView(JobListFragment.this);
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -108,26 +140,26 @@ public class JobListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(broadcastReceiver);
+       // getActivity().unregisterReceiver(broadcastReceiver);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getActivity().registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.NewBreakdownBroadcast"));
+        CreateListView(JobListFragment.this);
+        //getActivity().registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.NewBreakdownBroadcast"));
     }
 
-    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+   /* BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             //Add to list view
             CreateListView(JobListFragment.this);
 
         }
-    };
+    };*/
 
-    public static RecyclerView.Adapter mAdapter;
-    public static ArrayList<Breakdown> BreakdownList;
+
     public static void RestoreItem(Breakdown breakdown, int position){
         BreakdownList.add(position,breakdown);
         mAdapter.notifyItemInserted(position);
@@ -135,7 +167,8 @@ public class JobListFragment extends Fragment {
     }
 
     public static void CreateListView(final Fragment fragment) {
-        BreakdownList = new ArrayList<Breakdown>(dbHandler.ReadBreakdowns(iJobs_to_Display, false));
+        BreakdownList = new ArrayList<Breakdown>(Globals.dbHandler.ReadBreakdowns(iJobs_to_Display, false));
+
         mRecyclerView = (RecyclerView) mView.findViewById(R.id.recycleview);
 
         mRecyclerView.setHasFixedSize(true);

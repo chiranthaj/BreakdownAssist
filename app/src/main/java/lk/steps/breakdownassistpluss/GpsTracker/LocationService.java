@@ -20,12 +20,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 
 import lk.steps.breakdownassistpluss.DBHandler;
 import lk.steps.breakdownassistpluss.Globals;
@@ -137,20 +132,23 @@ public class LocationService extends Service implements
         String altitudeTxt = Double.toString(location.getAltitude());
         String directionTxt = Double.toString(location.getBearing());
 
-        Log.d(TAG, "GPSTEST accu="+accuracyTxt+"lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance);
+        Log.d(TAG, "GPS Tracker accu="+accuracyTxt+"lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance);
         //Log.d(TAG, "longitude="+lonTxt);
         //Log.d(TAG, "speed="+speedTxt);
         //Log.d(TAG, "distance="+distance);
-        if(location.getAccuracy() < 50.0f){
+        if(Globals.dbHandler==null){
+            Globals.dbHandler = new DBHandler(this, null, null, 1);
+        }
+        if(location.getAccuracy() < 20.0f & distance > 1){
             Toast.makeText(this, "GPS Tracker accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_LONG).show();
-            DBHandler dbHandler = new DBHandler(this, null, null, 1);
-            dbHandler.addTrackPoint(timestamp,latTxt,lonTxt,speedTxt,accuracyTxt,altitudeTxt,directionTxt,distanceTxt);
+            Globals.dbHandler.addTrackPoint(timestamp,latTxt,lonTxt,speedTxt,accuracyTxt,altitudeTxt,directionTxt,distanceTxt);
         }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+
     }
 
     @Override

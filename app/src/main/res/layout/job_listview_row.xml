@@ -16,15 +16,16 @@
         android:padding="5dp">
 
         <TextView
-            android:id="@+id/job_no"
+            android:id="@+id/JOB_NO"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:text="job_no"
+            android:text="JOB_NO"
             android:textColor="@android:color/black"
             android:textSize="30sp"
             android:textStyle="normal|bold" />
+
         <CheckBox
             android:id="@+id/card_view_checkBox1"
             android:layout_width="wrap_content"
@@ -35,18 +36,38 @@
         <ImageView
             android:id="@+id/imgMap"
             android:layout_width="30dp"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/job_no"
-            android:layout_alignBottom="@+id/job_no"
-            android:layout_marginLeft="5dp"
-            android:layout_toEndOf="@+id/job_no"
+            android:layout_height="30dp"
+            android:layout_alignBottom="@+id/JOB_NO"
+            android:layout_alignTop="@+id/JOB_NO"
+            android:layout_marginStart="20dp"
+            android:layout_toEndOf="@+id/JOB_NO"
             card_view:srcCompat="@drawable/google_maps_icon" />
+
+        <ImageView
+            android:id="@+id/imgPriority"
+            android:layout_width="25dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="20dp"
+            android:layout_above="@+id/acct_num"
+            android:layout_alignTop="@+id/JOB_NO"
+            android:layout_toEndOf="@+id/imgMap"
+            card_view:srcCompat="@drawable/warning" />
+
+        <ImageView
+            android:id="@+id/imgSource"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_above="@+id/acct_num"
+            android:layout_alignTop="@+id/JOB_NO"
+            android:layout_toStartOf="@+id/card_view_checkBox1"
+            card_view:srcCompat="@drawable/ic_cloud_download" />
+
         <TextView
             android:id="@+id/test4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/job_no"
+            android:layout_below="@+id/JOB_NO"
             android:layout_column="0"
             android:layout_row="1"
             android:text="Acct. No."
@@ -58,7 +79,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_below="@+id/job_no"
+            android:layout_below="@+id/JOB_NO"
             android:layout_column="0"
             android:layout_row="1"
             android:layout_toEndOf="@+id/text2"
@@ -106,21 +127,22 @@
             android:layout_alignParentEnd="true"
             android:layout_below="@+id/text2"
             android:layout_toEndOf="@+id/text2"
-            android:text="Description"
+            android:text="DESCRIPTION"
             android:textAlignment="viewStart"
             android:textColor="@android:color/holo_orange_dark"
             android:textSize="22sp" />
+
         <TextView
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/text5"
             android:layout_column="0"
             android:layout_row="2"
             android:text="Name not found"
             android:textSize="22sp"
-            android:textStyle="normal|bold"
-            android:layout_below="@+id/text5"
-            android:layout_alignParentStart="true" />
+            android:textStyle="normal|bold" />
 
         <TextView
             android:id="@+id/address"
@@ -174,28 +196,27 @@
             android:visibility="gone" />
 
 
-        <com.google.android.gms.maps.MapView
-            xmlns:map="http://schemas.android.com/apk/res-auto"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
+        <com.google.android.gms.maps.MapView xmlns:map="http://schemas.android.com/apk/res-auto"
             android:id="@+id/map_view"
-            map:liteMode="true"
-            map:mapType="normal"
-            android:layout_marginTop="10dp"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_below="@+id/address"/>
+            android:layout_below="@+id/address"
+            android:layout_marginTop="10dp"
+            map:liteMode="true"
+            map:mapType="normal" />
 
         <TextView
-            android:text=""
-            android:layout_marginTop="20dp"
-            android:layout_marginLeft="10dp"
-            android:padding="5dp"
-            android:layout_below="@+id/address"
+            android:id="@+id/txtTripInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/txtTripInfo"
-            android:textColor="@android:color/black"
+            android:layout_below="@+id/address"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"
             android:background="@android:color/white"
-            android:textSize="16sp" />
+            android:padding="5dp"
+            android:text=""
+            android:textColor="@android:color/black"
+            android:textSize="18sp" />
     </RelativeLayout>
 </lk.steps.breakdownassistpluss.RecyclerViewCards.MapCardView>
