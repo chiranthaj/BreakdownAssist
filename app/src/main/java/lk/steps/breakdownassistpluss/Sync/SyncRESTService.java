@@ -1,5 +1,7 @@
 package lk.steps.breakdownassistpluss.Sync;
 
+import android.util.Log;
+
 import java.util.concurrent.TimeUnit;
 
 import lk.steps.breakdownassistpluss.Globals;
@@ -17,15 +19,15 @@ public class SyncRESTService {
     //private static final String URL = "http://111.223.135.20/Team/";
 
     private SyncApi syncService;
+    private OkHttpClient okHttpClient;
 
-    public SyncRESTService()
+    public SyncRESTService(int timeout)
     {
-        OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(20, TimeUnit.SECONDS)
-                .writeTimeout(20, TimeUnit.SECONDS)
+        okHttpClient = new OkHttpClient().newBuilder()
+                .connectTimeout(timeout, TimeUnit.SECONDS)
+                .readTimeout(timeout, TimeUnit.SECONDS)
+                .writeTimeout(timeout, TimeUnit.SECONDS)
                 .build();
-
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Globals.serverUrl)
@@ -39,6 +41,18 @@ public class SyncRESTService {
     public SyncApi getService()
     {
         return syncService;
+    }
+
+    /** Close and remove all idle connections in the pool. */
+    public void CloseAllConnections(){
+        try {
+            Log.e("okHttpClient","1 connectionCount="+okHttpClient.connectionPool().connectionCount());
+            okHttpClient.connectionPool().evictAll();
+            Log.e("okHttpClient","2 connectionCount="+okHttpClient.connectionPool().connectionCount());
+        } catch (Exception e) {
+            Log.e("CloseAllConnections",""+e.getMessage());
+        }
+
     }
 
 }

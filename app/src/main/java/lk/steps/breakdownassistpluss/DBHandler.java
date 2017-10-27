@@ -22,10 +22,12 @@ import java.util.List;
 import java.util.Locale;
 
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
+import lk.steps.breakdownassistpluss.MaterialList.MaterialObject;
+import lk.steps.breakdownassistpluss.Sync.SyncMaterialObject;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version = 90;
+    private static final int Database_Version = 95;
     private static final String DatabaseNAME = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -126,6 +128,14 @@ public class DBHandler extends SQLiteOpenHelper
                 "sync_done              TEXT"+
                 ");";
         db.execSQL(query);
+
+        query = "CREATE TABLE Materials ("+
+                "BREAKDOWN_ID	        TEXT ,"+
+                "MATERIAL_CODE          TEXT,"+
+                "QUANTITY	            NUMBER,"+
+                "SYNC_DONE	            TEXT,"+
+                "PRIMARY KEY (BREAKDOWN_ID, MATERIAL_CODE));";
+        db.execSQL(query);
     }
 
     @Override
@@ -137,6 +147,7 @@ public class DBHandler extends SQLiteOpenHelper
         db.execSQL("DROP TABLE IF EXISTS JobStatusChange");
         db.execSQL("DROP TABLE IF EXISTS JobCompletion");
         db.execSQL("DROP TABLE IF EXISTS GpsTracking");
+        db.execSQL("DROP TABLE IF EXISTS Materials");
         onCreate(db);
     }
 
@@ -188,6 +199,74 @@ public class DBHandler extends SQLiteOpenHelper
         //db.close();
     }
 
+    public List<MaterialObject> getMaterials(String breakdownId){
+        SQLiteDatabase db = getWritableDatabase();
+        List<MaterialObject> list = new LinkedList<MaterialObject>();
+        String query = "SELECT * FROM Materials WHERE BREAKDOWN_ID="+breakdownId+";";//
+        Cursor c = db.rawQuery(query, null);
+        if(c==null)return list;
+        if(c.getCount() < 1 )return list;
+        c.moveToFirst();
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
+                MaterialObject obj = new MaterialObject(
+                        true,
+                        c.getString(c.getColumnIndex("MATERIAL_CODE")),
+                        "",
+                        c.getInt(c.getColumnIndex("QUANTITY"))
+                );
+                list.add(obj);
+            }
+            c.moveToNext();
+        }
+        c.close();
+        return list;
+    }
+    public List<SyncMaterialObject> getNotSyncMaterials(){
+        SyncMaterialObject obj=null;
+        SQLiteDatabase db = getWritableDatabase();
+        List<SyncMaterialObject> list = new LinkedList<SyncMaterialObject>();
+        String query = "SELECT * FROM Materials WHERE SYNC_DONE='0';";//
+        Cursor c = db.rawQuery(query, null);
+        if(c==null)return list;
+        if(c.getCount() < 1 )return list;
+        c.moveToFirst();
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
+                obj= new SyncMaterialObject();
+                obj.BreakdownId=c.getString(c.getColumnIndex("BREAKDOWN_ID"));
+                obj.MaterialId=c.getString(c.getColumnIndex("MATERIAL_CODE"));
+                obj.Quantity=c.getString(c.getColumnIndex("QUANTITY"));
+                obj.UserId=MainActivity.mToken.user_id;
+
+                list.add(obj);
+            }
+            c.moveToNext();
+        }
+        c.close();
+        return list;
+    }
+    public void addMaterials(String breakdownId, List<MaterialObject> list){
+        SQLiteDatabase db = getWritableDatabase();
+
+        for(MaterialObject obj : list){
+            Log.e("addMaterials",obj.getCode()+"="+obj.getQuantity());
+            String query = "INSERT OR REPLACE INTO Materials(BREAKDOWN_ID, MATERIAL_CODE, QUANTITY, SYNC_DONE) " +
+                    "VALUES('"+breakdownId+"', '"+obj.getCode()+"',"+obj.getQuantity()+",'0');";//
+            db.execSQL(query);
+        }
+    }
+    public void UpdateMaterials(SyncMaterialObject obj)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "UPDATE Materials SET SYNC_DONE='1' WHERE BREAKDOWN_ID='" +obj.BreakdownId + "' and MATERIAL_CODE ='"+obj.MaterialId+"';";
+        db.execSQL(query);
+        //db.close();
+    }
     public List<TrackerObject> getNotSyncTrackingData(){
         TrackerObject obj=null;
         SQLiteDatabase db = getWritableDatabase();
@@ -911,7 +990,7 @@ public class DBHandler extends SQLiteOpenHelper
 
         String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD, " +
                 " B.OLD_JOB_NO, B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
-                " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS,   " +
+                " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS, B.SUB,  " +
                 " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO,  " +
                 " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
                 " B.PRIORITY as PRIORITY " +
@@ -947,6 +1026,7 @@ public class DBHandler extends SQLiteOpenHelper
                 newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
                 newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                 newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
+                newBreakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
                 newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
                 newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
@@ -1083,20 +1163,20 @@ public class DBHandler extends SQLiteOpenHelper
         //db.close();
         return sBreakdownID;
     }
-    public Breakdown ReadBreakdown_by_ID(String sID){
+    public Breakdown ReadBreakdown_by_JonNo(String JOB_NO){
         Breakdown newBreakdown=null;
 
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE," +
                 " B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
                 " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS,   " +
-                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO,  " +
+                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO,B.SUB as SUB, B.CONTACT_NO as  CONTACT_NO,  " +
                 " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
                 " B.PRIORITY as PRIORITY " +
                 " FROM BreakdownRecords B " +
-            //    " LEFT JOIN Customers C ON C.ACCT_NUM = B.ACCT_NUM " +
+                //    " LEFT JOIN Customers C ON C.ACCT_NUM = B.ACCT_NUM " +
                 " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.ACCT_NUM " +
-                " WHERE B.id = '" + sID + "';";
+                " WHERE B.JOB_NO = '" + JOB_NO + "';";
 
         Cursor c = db.rawQuery(query, null);
 
@@ -1111,6 +1191,50 @@ public class DBHandler extends SQLiteOpenHelper
             newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
             newBreakdown.set_Status(c.getShort(c.getColumnIndex("STATUS")));
             newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
+            newBreakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
+            newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
+            newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
+            newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+            newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
+            newBreakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
+            newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
+            newBreakdown.set_Priority(c.getInt(c.getColumnIndex("PRIORITY")));
+            newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
+        }
+        c.close();
+        return newBreakdown;
+    }
+
+    public Breakdown ReadBreakdown_by_ID(String sID){
+        Breakdown newBreakdown=null;
+
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE," +
+                " B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
+                " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS,   " +
+                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO,B.SUB as SUB, B.CONTACT_NO as  CONTACT_NO,  " +
+                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
+                " B.PRIORITY as PRIORITY " +
+                " FROM BreakdownRecords B " +
+            //    " LEFT JOIN Customers C ON C.ACCT_NUM = B.ACCT_NUM " +
+                " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.ACCT_NUM " +
+                " WHERE B.id = '" + sID + "';";
+
+        Cursor c = db.rawQuery(query, null);
+
+        c.moveToFirst();
+
+        if (!c.isAfterLast() && c.getString(0) != null) //AND and AND only && not &
+        {
+            Log.e("SUB",c.getString(c.getColumnIndex("SUB")));
+            newBreakdown=new Breakdown();
+            newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
+            newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+            newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
+            newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
+            newBreakdown.set_Status(c.getShort(c.getColumnIndex("STATUS")));
+            newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
+            newBreakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
             newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
             newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
             newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
@@ -1269,9 +1393,9 @@ public class DBHandler extends SQLiteOpenHelper
         String time = Globals.timeFormat.format(System.currentTimeMillis());
         //Log.e("RRRRRRRR",breakdown.get_id() +","+time+","+Breakdown_Status);
         SQLiteDatabase db = getWritableDatabase();
-        String query = "UPDATE BreakdownRecords SET STATUS='" +
-                String.valueOf(Breakdown_Status) +
-                "', COMPLETED_TIME= '" +  time + "' " +
+        String query = "UPDATE BreakdownRecords SET STATUS='" + String.valueOf(Breakdown_Status) +"', " +
+                "COMPLETED_TIME= '" +  time + "', " +
+                "SUB= '" +  breakdown.get_SUB() + "' " +
                 " WHERE id='" +breakdown.get_id() + "';";
 
         db.execSQL(query);
@@ -1304,7 +1428,7 @@ public class DBHandler extends SQLiteOpenHelper
         int iResult=-1;
         SQLiteDatabase db = getWritableDatabase();
         String query = "UPDATE BreakdownRecords SET STATUS='" + Breakdown_Status + "', COMPLETED_TIME= '" +  time + "' " +
-                " WHERE JOB_NO='" +jobNo + "' or OLD_JOB_NO='" +jobNo + "';";
+                " WHERE (JOB_NO='" +jobNo + "' or OLD_JOB_NO='" +jobNo + "') and CAST(STATUS as INTEGER) < " + Breakdown_Status + " ;";
 
         db.execSQL(query);
         iResult=1; //Return Success*/

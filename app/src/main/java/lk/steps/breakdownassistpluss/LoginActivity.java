@@ -278,7 +278,7 @@ public class LoginActivity extends AppCompatActivity  {
             finish();
         }else if(!ForceLocalLogin){
             Log.e("Login","**Remote**");//Remote login
-            SyncRESTService syncAuthService = new SyncRESTService();
+            SyncRESTService syncAuthService = new SyncRESTService(2);
             Call<Token> call = syncAuthService.getService().GetJwt(username,password);
             call.enqueue(new Callback<Token>() {
                 @Override

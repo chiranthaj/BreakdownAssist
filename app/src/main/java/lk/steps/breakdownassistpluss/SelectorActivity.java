@@ -29,8 +29,7 @@ public class SelectorActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //Toast.makeText(this, "I'm alive", Toast.LENGTH_LONG).show();
-        boolean server = ReadBooleanPreferences("server",false);
-        if(!server)GetIpAddress();
+        if(!ReadBooleanPreferences("server",false))GetIpAddress();
         Log.e("SERVER",Globals.serverUrl);
         if(ReadBooleanPreferences2("keep_sign_in",false)){
             performAutoLogin();
@@ -50,7 +49,8 @@ public class SelectorActivity extends Activity {
             @Override
             public void run() {
                 try{
-                    String url = "http://meterasist.hopto.org";
+                    //String url = "http://meterasist.hopto.org";
+                    String url = "http://breakdownassist.ddns.net";
                     //String url = "http://cebkandy.ddns.net";
                     InetAddress address = InetAddress.getByName(new URL(url).getHost());
                     String ip = address.getHostAddress();
@@ -67,7 +67,7 @@ public class SelectorActivity extends Activity {
     private void performAutoLogin(){
         String lastUsername = ReadStringPreferences("last_username", "");
         String lastPassword = ReadStringPreferences("last_password", "");
-        SyncRESTService syncAuthService = new SyncRESTService();
+        SyncRESTService syncAuthService = new SyncRESTService(2);
         Call<Token> call = syncAuthService.getService().GetJwt(lastUsername,lastPassword);
         call.enqueue(new Callback<Token>() {
             @Override
@@ -100,12 +100,26 @@ public class SelectorActivity extends Activity {
                     Log.d("GetAuthToken","Fail"+response.errorBody());
                     Toast.makeText(getApplicationContext(),"Network failure..\nSwitch to local login"+response.errorBody(), Toast.LENGTH_LONG).show();
                     Globals.serverConnected = false;
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        public void run() {
+                            Intent myIntent = new Intent(SelectorActivity.this, LoginActivity.class);
+                            SelectorActivity.this.startActivity(myIntent);
+                        }
+                    });
                 }
             }
 
             @Override
             public void onFailure(Call<Token> call, Throwable t) {
                 Log.e("Login","Remote login onFailure"+t.getMessage());//Remote login
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    public void run() {
+                        Intent myIntent = new Intent(SelectorActivity.this, LoginActivity.class);
+                        SelectorActivity.this.startActivity(myIntent);
+                    }
+                });
             }
 
         });

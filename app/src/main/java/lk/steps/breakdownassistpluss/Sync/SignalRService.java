@@ -4,9 +4,11 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
@@ -20,17 +22,23 @@ import android.util.Log;
 import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import lk.steps.breakdownassistpluss.Breakdown;
+import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
 import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.JobChangeStatus;
 import lk.steps.breakdownassistpluss.JobCompletion;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
 import microsoft.aspnet.signalr.client.ErrorCallback;
+import microsoft.aspnet.signalr.client.LogLevel;
+import microsoft.aspnet.signalr.client.Logger;
 import microsoft.aspnet.signalr.client.MessageReceivedHandler;
 import microsoft.aspnet.signalr.client.Platform;
 import microsoft.aspnet.signalr.client.SignalRFuture;
@@ -51,6 +59,7 @@ public class SignalRService extends Service {
     private final IBinder mBinder = new LocalBinder(); // Binder given to clients
     Timer timer;
     MyTimerTask myTimerTask;
+    private MediaPlayer mediaPlayer;
     //private boolean ServerConnected=false;
     private boolean RetryTimerStarted=false;
     private boolean mBound = false;
@@ -66,14 +75,14 @@ public class SignalRService extends Service {
     public void onCreate() {
         super.onCreate();
         mHandler = new Handler(Looper.getMainLooper());
-
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.stopmediaplayer"));
         Log.e("SignalRService","002");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int result = super.onStartCommand(intent, flags, startId);
-        syncRESTService = new SyncRESTService();
+        syncRESTService = new SyncRESTService(10);
         //Toast.makeText(this, "SignalR Service Started", Toast.LENGTH_SHORT).show();
 
         StartRetryTimer();
@@ -84,7 +93,7 @@ public class SignalRService extends Service {
         if(RetryTimerStarted)return;
         timer = new Timer();
         myTimerTask = new MyTimerTask();
-        timer.schedule(myTimerTask, 1000, 10000);
+        timer.schedule(myTimerTask, 1000, 20000);
         RetryTimerStarted=true;
     }
     private void StopRetryTimer(){
@@ -145,9 +154,25 @@ public class SignalRService extends Service {
 
     private void startSignalR() {
         Platform.loadPlatformComponent(new AndroidPlatformComponent());
+
+        /*mHubConnection = new HubConnection(Globals.serverUrl,"CONNECTION_QUERYSTRING", true, new Logger() {
+            @Override
+            public void log(String message, LogLevel level) {
+                System.out.println(message);
+            }
+        });*/
+        /*mHubConnection = new HubConnection(Globals.serverUrl+"/BreakdownAssistAndroidHub",null, false, new Logger() {
+            @Override
+            public void log(String message, LogLevel level) {
+                System.out.println(message);
+            }
+        });*/
+
         mHubConnection = new HubConnection(Globals.serverUrl);
         String SERVER_HUB = "BreakdownAssistAndroidHub";
         mHubProxy = mHubConnection.createHubProxy(SERVER_HUB);
+
+
         ClientTransport clientTransport = new ServerSentEventsTransport(mHubConnection.getLogger());
         SignalRFuture<Void> signalRFuture = mHubConnection.start(clientTransport);
 
@@ -156,12 +181,14 @@ public class SignalRService extends Service {
         final String team_id = ReadStringPreferences("team_id","");
         Log.e("SignalR ", "*groupid*"+area_id+"_"+team_id);
         mHubConnection.setGroupsToken(area_id + "_" + team_id);
+
         try {
             signalRFuture.get();
+            StopRetryTimer();
             Globals.serverConnected = true;
             Log.e("SignalR ", "*Connected*");
             Log.e("SignalR ", "ID="+mHubConnection.getConnectionId());
-            StopRetryTimer();
+
             //Log.e("SimpleSignalR", "ServerConnected=true");
         } catch (InterruptedException | ExecutionException e) {
             Globals.serverConnected = false;
@@ -212,10 +239,10 @@ public class SignalRService extends Service {
                         //String msg = json.toString();
                         if(msg.M.equals("GetNewBreakdowns")){
                             Toast.makeText(getApplicationContext(),"SignalR NewBreakdowns request received", Toast.LENGTH_SHORT).show();
-                            GetNewBreakdownsFromServer(area_id, team_id);
+                            GetNewBreakdowns(area_id, team_id);
                         }else if(msg.M.equals("GetBreakdownStatusUpdate")){
                             Toast.makeText(getApplicationContext(),"SignalR BreakdownStatusUpdate request received", Toast.LENGTH_SHORT).show();
-                            GetBreakdownsStatusUpdateFromServer(msg.A.get(1));
+                            GetBreakdownsStatusChange(msg.A.get(1));
                         }
                     }
                 });
@@ -276,9 +303,9 @@ public class SignalRService extends Service {
     };
 
 
-    public void GetNewBreakdownsFromServer(String area_Id, String team_id){
+    public void GetNewBreakdowns(String area_Id, String team_id){
         try{
-            SyncRESTService syncRESTService = new SyncRESTService();
+            final SyncRESTService syncRESTService = new SyncRESTService(10);
             Call<List<Breakdown>> call = syncRESTService.getService()
                     .getNewBreakdowns( "Bearer "+ MainActivity.mToken.access_token,
                             MainActivity.mToken.user_id,area_Id,team_id);
@@ -304,13 +331,25 @@ public class SignalRService extends Service {
 
                             String sIssuedBreakdownID=Globals.dbHandler.getLastBreakdownID();
 
-                            if(ring.equals("1")){
-                                Globals.mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.buzzer);
-                                Globals.mediaPlayer.setLooping(true);
-                            }else{
-                                Globals.mediaPlayer= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
+                            if(mediaPlayer==null){
+                                if(ring.equals("1")){
+                                    mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.buzzer);
+                                    mediaPlayer.setLooping(true);
+                                }else{
+                                    mediaPlayer= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
+                                }
+                                mediaPlayer.setVolume(100,100);
+                                mediaPlayer.start();
+                            }else if(!mediaPlayer.isPlaying()){
+                                if(ring.equals("1")){
+                                    mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.buzzer);
+                                    mediaPlayer.setLooping(true);
+                                }else{
+                                    mediaPlayer= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
+                                }
+                                mediaPlayer.setVolume(100,100);
+                                mediaPlayer.start();
                             }
-                            Globals.mediaPlayer.start();
 
                             //Informing the Map view about the new bd, then it can add it
                             Intent myintent=new Intent();
@@ -336,6 +375,7 @@ public class SignalRService extends Service {
                         }
                         Log.e("GetNewBreakdowns","onResponse" + response.errorBody()+"*code*"+response.code());
                     }
+                    syncRESTService.CloseAllConnections();
                 }
 
                 @Override
@@ -343,6 +383,7 @@ public class SignalRService extends Service {
                     Globals.serverConnected = false;
                     Toast.makeText(getApplicationContext(), "Error in network..\n"+ t.getMessage(), Toast.LENGTH_SHORT).show();
                     Log.e("GetNewBreakdowns","5-" + t.getMessage());
+                    syncRESTService.CloseAllConnections();
                 }
             });
         }catch(Exception e){
@@ -351,9 +392,9 @@ public class SignalRService extends Service {
     }
 
 
-    public void GetBreakdownsStatusUpdateFromServer(String breakdownId){
+    public void GetBreakdownsStatusChange(String breakdownId){
         try{
-            SyncRESTService syncRESTService = new SyncRESTService();
+            final SyncRESTService syncRESTService = new SyncRESTService(10);
             Call<List<JobChangeStatus>> call = syncRESTService.getService()
                     .GetBreakdownsStatus( "Bearer "+ MainActivity.mToken.access_token,breakdownId);
 
@@ -364,16 +405,14 @@ public class SignalRService extends Service {
                         Log.e("GetBreakdownsStatus","Successful"+new Gson().toJson(response));
                         List<JobChangeStatus> jobChangeStatus = response.body();
                         Log.e("GetBreakdownsStatus","Number-"+jobChangeStatus.size());
-
-
                         if(jobChangeStatus.size()>0){
                             for (JobChangeStatus jobStatus :jobChangeStatus) {
-                                Log.e("GetBreakdownsStatus","JOB_NO-"+jobStatus.job_no);
+                                /*Log.e("GetBreakdownsStatus","JOB_NO-"+jobStatus.job_no);
                                 Log.e("GetBreakdownsStatus","change_datetime-"+jobStatus.change_datetime);
                                 Log.e("GetBreakdownsStatus","status-"+jobStatus.status);
                                 Log.e("GetBreakdownsStatus","type_failure-"+jobStatus.type_failure);
                                 Log.e("GetBreakdownsStatus","cause-"+jobStatus.cause);
-                                Log.e("GetBreakdownsStatus","detail_reason_code-"+jobStatus.detail_reason_code);
+                                Log.e("GetBreakdownsStatus","detail_reason_code-"+jobStatus.detail_reason_code);*/
                                 jobStatus.device_timestamp=jobStatus.change_datetime;
                                 jobStatus.synchro_mobile_db=1;//No need to send to server
 
@@ -407,12 +446,24 @@ public class SignalRService extends Service {
 
                                     Globals.dbHandler.addJobCompletionRec(jobCompletionRec);
                                     Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,jobStatus.change_datetime, jobStatus.status);
+                                }if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_REJECT)) |//reject
+                                        jobStatus.status.equals(String.valueOf(Breakdown.JOB_WITHDRAWN))){
+                                    Log.e("GetBreakdownsStatus","reject:"+jobStatus.job_no);
+                                    //Log.e("GetBreakdownsStatus","reject:"+jobStatus.change_datetime);
+                                    jobStatus.st_code="R";
+                                    Globals.dbHandler.addJobStatusChangeRec(jobStatus);
+                                    Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,jobStatus.change_datetime, jobStatus.status);
                                 }
-
                             }
-                            Globals.mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.iphone);
-                            Globals.mediaPlayer.start();
-
+                            if(mediaPlayer==null){
+                                mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.iphone);
+                                mediaPlayer.setVolume(1.0f , 1.0f);
+                                mediaPlayer.start();
+                            }else if(!mediaPlayer.isPlaying()){
+                                mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.iphone);
+                                mediaPlayer.setVolume(1.0f , 1.0f);
+                                mediaPlayer.start();
+                            }
 
                             //Informing the Map view about the new bd, then it can add it
                             Intent myintent=new Intent();
@@ -429,7 +480,6 @@ public class SignalRService extends Service {
                                 CreateNotification(jobChangeStatus.size()+" breakdowns has updated.");
                             }
                         }
-
                     } else if (response.errorBody() != null) {
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(getApplicationContext(), "Authentication fail..", Toast.LENGTH_SHORT).show();
@@ -439,16 +489,20 @@ public class SignalRService extends Service {
                         }
                         Log.e("GetNewBreakdowns","onResponse" + response.errorBody()+"*code*"+response.code());
                     }
+                    syncRESTService.CloseAllConnections();
                 }
 
                 @Override
                 public void onFailure(Call<List<JobChangeStatus>> call, Throwable t) {
                     Toast.makeText(getApplicationContext(), "Error in network..\n"+ t.getMessage(), Toast.LENGTH_SHORT).show();
                     Log.e("GetNewBreakdowns","5-" + t.getMessage());
+                    syncRESTService.CloseAllConnections();
                 }
             });
+
         }catch(Exception e){
             Log.e("GetNewBreakdowns","" + e.getMessage());
+            Log.e("SignalRTEST","6");
         }
     }
 
@@ -456,13 +510,8 @@ public class SignalRService extends Service {
     private class MyTimerTask extends TimerTask {
         @Override
         public void run() {
-            //if(!ServerConnected){
-
                 Log.e("SignalR ", "*NOT*Connected*");
                 startSignalR();
-           // }else{
-           //     Log.e("SignalR ", "*Connected*");
-           // }
         }
     }
 
@@ -497,6 +546,17 @@ public class SignalRService extends Service {
     }
 
 
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+                    if(mediaPlayer!=null) {
+                        if(mediaPlayer.isPlaying())mediaPlayer.stop();
+                        //Globals.mediaPlayer.pause();
+                       // Toast.makeText(getApplicationContext(), "003", Toast.LENGTH_SHORT).show();
 
+                       // Toast.makeText(getApplicationContext(), "004", Toast.LENGTH_SHORT).show();
+                    }
+        }
+    };
 }
 

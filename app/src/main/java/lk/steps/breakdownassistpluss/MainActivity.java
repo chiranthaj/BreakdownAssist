@@ -229,6 +229,7 @@ public class MainActivity extends AppCompatActivity
                 NewBreakdownsDialog(breakdowns);
             }else if(refreshReq!=null){Log.d("TEST","BroadcastReceiver2");
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
+                NewStatusDialog();
                 if(JobListFragment.mAdapter!=null)JobListFragment.mAdapter.notifyDataSetChanged();
             }
         }
@@ -500,45 +501,57 @@ public class MainActivity extends AppCompatActivity
 
     private Dialog newBreakdownDialog;
     private void NewBreakdownsDialog(final List<Breakdown> breakdowns){
-        Log.d("TEST","5557");
+
+        final List<Breakdown> AllNotAckedBreakdowns = Globals.dbHandler.ReadNotAckedBreakdowns();
+
+        if(newBreakdownDialog!=null)newBreakdownDialog.dismiss();;
         newBreakdownDialog = new Dialog(this);
         newBreakdownDialog.setContentView(R.layout.alert_dialog);
         TextView msg = (TextView) newBreakdownDialog.findViewById(R.id.textDialog);
-        Log.d("TEST","1");
-        if(breakdowns.size() == 1){
+        if(AllNotAckedBreakdowns.size() == 1){
             msg.setText("New breakdown received.");
         }else{
-            msg.setText("New "+breakdowns.size()+" breakdowns received.");
+            msg.setText("New "+AllNotAckedBreakdowns.size()+" breakdowns received.");
         }
-        Log.d("TEST","2");
         //dialog.setTitle("BreakdownAssist...");
         newBreakdownDialog.setCancelable(false);
         Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
         dialogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "001", Toast.LENGTH_SHORT).show();
-                try{
-                    UpdateJobStatusAcknowledged(breakdowns);
-                    Toast.makeText(getApplicationContext(), "002", Toast.LENGTH_SHORT).show();
-                    if(Globals.mediaPlayer!=null) {
-                        //Globals.mediaPlayer.pause();
-                        Toast.makeText(getApplicationContext(), "003", Toast.LENGTH_SHORT).show();
-                        Globals.mediaPlayer.stop();
-                        Toast.makeText(getApplicationContext(), "004", Toast.LENGTH_SHORT).show();
-                    }
-                }catch(Exception e){
-                    Toast.makeText(getApplicationContext(), "005", Toast.LENGTH_SHORT).show();
-                }
-                Toast.makeText(getApplicationContext(), "006", Toast.LENGTH_SHORT).show();
+                    UpdateJobStatusAcknowledged(AllNotAckedBreakdowns);
+                    Intent myintent=new Intent();
+                    myintent.setAction("lk.steps.breakdownassistpluss.stopmediaplayer");
+                    getApplicationContext().sendBroadcast(myintent);
                 newBreakdownDialog.dismiss();
-                Toast.makeText(getApplicationContext(), "007", Toast.LENGTH_SHORT).show();
+                newBreakdownDialog = null;
             }
         });
         newBreakdownDialog.show();
         onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
     }
 
+
+    private void NewStatusDialog(){
+
+        if(newBreakdownDialog!=null)return;
+        newBreakdownDialog = new Dialog(this);
+        newBreakdownDialog.setContentView(R.layout.alert_dialog);
+        TextView msg = (TextView) newBreakdownDialog.findViewById(R.id.textDialog);
+        msg.setText("Job status has updated.");
+        //dialog.setTitle("BreakdownAssist...");
+        newBreakdownDialog.setCancelable(false);
+        Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                newBreakdownDialog.dismiss();
+                newBreakdownDialog = null;
+            }
+        });
+        newBreakdownDialog.show();
+        onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
+    }
 
     private static void UpdateJobStatusAcknowledged(List<Breakdown> breakdowns) {
         try{
@@ -555,7 +568,7 @@ public class MainActivity extends AppCompatActivity
                 Globals.dbHandler.addJobStatusChangeRec(status);
                 Globals.dbHandler.UpdateBreakdownStatusByJobNo(breakdown.get_Job_No(), "", String.valueOf(Breakdown.JOB_ACKNOWLEDGED));
             }
-            SyncService.SyncBreakdownStatusChange(getAppContext());
+            SyncService.PostBreakdownStatusChange(getAppContext());
         }catch(Exception e){
             Log.e("Error","UpdateJobStatusAcknowledged "+e.getMessage());
         }

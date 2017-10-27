@@ -20,6 +20,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.Date;
 
 import lk.steps.breakdownassistpluss.DBHandler;
@@ -48,7 +50,7 @@ public class LocationService extends Service implements
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e(TAG, "onCreate");
+        //Log.e(TAG, "onCreate");
     }
 
     @Override
@@ -60,12 +62,12 @@ public class LocationService extends Service implements
             currentlyProcessingLocation = true;
             startTracking();
         }
-        Log.e(TAG, "onStartCommand");
+        //Log.e(TAG, "onStartCommand");
         return START_NOT_STICKY;
     }
 
     private void startTracking() {
-        Log.d(TAG, "startTracking");
+        //Log.d(TAG, "startTracking");
 
         if (GooglePlayServicesUtil.isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS) {
 
@@ -125,12 +127,12 @@ public class LocationService extends Service implements
             distanceTxt= "0.0";
         }
 
-        String latTxt = Double.toString(location.getLatitude());
-        String lonTxt = Double.toString(location.getLongitude());
-        String speedTxt = Double.toString(location.getSpeed());
+        String latTxt = String.format("%.8f",location.getLatitude());//Double.toString(location.getLatitude());
+        String lonTxt = String.format("%.8f",location.getLongitude());//Double.toString(location.getLongitude());
+        String speedTxt = String.format("%.1f",location.getSpeed());//Double.toString(location.getSpeed());
         String accuracyTxt = String.format("%.1f",location.getAccuracy());
-        String altitudeTxt = Double.toString(location.getAltitude());
-        String directionTxt = Double.toString(location.getBearing());
+        String altitudeTxt = String.format("%.1f",location.getAltitude());//Double.toString(location.getAltitude());
+        String directionTxt = String.format("%.1f",location.getBearing());//Double.toString(location.getBearing());
 
         Log.d(TAG, "GPS Tracker accu="+accuracyTxt+"lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance);
         //Log.d(TAG, "longitude="+lonTxt);
@@ -160,11 +162,12 @@ public class LocationService extends Service implements
     public void onLocationChanged(Location location) {
 
         if (location != null) {
-            Log.e(TAG, "position: " + location.getLatitude() + ", " + location.getLongitude() + " accuracy: " + location.getAccuracy());
+            //Log.e(TAG, "position: " + location.getLatitude() + ", " + location.getLongitude() + " accuracy: " + location.getAccuracy());
 
             // we have our desired accuracy of 500 meters so lets quit this service,
             // onDestroy will be called and stop our location uodates
             if (location.getAccuracy() < 500.0f) {
+                Globals.LastLocation = new LatLng(location.getLatitude(),location.getLongitude());
                 stopLocationUpdates();
                 SaveLocation(location);
             }

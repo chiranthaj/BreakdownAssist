@@ -21,6 +21,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -31,6 +32,7 @@ import java.util.List;
 
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
+import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.MapMarker;
 import lk.steps.breakdownassistpluss.GpsModules.DirectionFinder;
 import lk.steps.breakdownassistpluss.GpsModules.DirectionFinderListener;
@@ -123,7 +125,8 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
 
         MapsInitializer.initialize(mContext);
         googleMap.getUiSettings().setMapToolbarEnabled(false);
-
+        //mGoogleMap.setMapStyle(
+        //        MapStyleOptions.loadRawResourceStyle(mContext, R.raw.style_json_silver));
         // If we have map data, update the map content.
         if (mBreakdown != null) {
             updateMapContents();
@@ -147,9 +150,9 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         }else if(JobListFragment.currentLocation != null){
             BitmapDescriptor icon = MapMarker.GetBitmap(mBreakdown);
             BitmapDescriptor iconBk = BitmapDescriptorFactory.fromResource(R.drawable.breakdown_vehicle);
-            setDirections(JobListFragment.currentLocation,mBreakdown.get_location());
+            setDirections(Globals.LastLocation,mBreakdown.get_location());
             mGoogleMap.addMarker(new MarkerOptions().position(mBreakdown.get_location()).icon(icon));
-            mGoogleMap.addMarker(new MarkerOptions().position(JobListFragment.currentLocation).icon(iconBk));
+            mGoogleMap.addMarker(new MarkerOptions().position(Globals.LastLocation).icon(iconBk));
         }
     }
 
@@ -178,6 +181,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
        // txtTripInfo.setText(routes.get(0).duration.text + " ( "+routes.get(0).distance.text+" )");
         String text = "<font color='blue'>"+routes.get(0).duration.text + "</font><font color='gray'> ( "+routes.get(0).distance.text+" ) </font>";
         txtTripInfo.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
 
     }

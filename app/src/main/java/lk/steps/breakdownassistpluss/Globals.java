@@ -6,6 +6,8 @@ import android.media.MediaPlayer;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,7 +23,8 @@ public class Globals
     public static String AreaCode2="";
     public static String AreaCode3="";
     public static int NoOfAreaCodes=0;
-    public static MediaPlayer mediaPlayer;
+    public static LatLng  LastLocation = new LatLng(7.2944796,80.5906218);
+    //public static MediaPlayer mediaPlayer;
     public static String serverUrl = "http://192.168.137.1:31525";
     public static boolean serverConnected = false;
     public static SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss" , Locale.US);//This format is used to store in SqLite db

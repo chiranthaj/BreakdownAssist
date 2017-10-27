@@ -66,14 +66,10 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
         //delay 1000ms, repeat in 5000ms
         timer.schedule(myTimerTask, 1000, 20000);
 
-
-
         mapView = (MapView)mView.findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
         //mapView.setPadding(20, 20, 20, 20);
         mapView.getMapAsync(this);
-
-
 
         mActionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
         if(mActionBar!=null)mActionBar.setSubtitle("Offline");

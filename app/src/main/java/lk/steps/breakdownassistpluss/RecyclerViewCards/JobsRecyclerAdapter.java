@@ -3,6 +3,9 @@ package lk.steps.breakdownassistpluss.RecyclerViewCards;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,16 +57,49 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         holder.address.setText(breakdownList.get(position).get_ADDRESS());
         holder.description.setText(breakdownList.get(position).get_Full_Description());
        // holder.description.setText("-");
-        if(breakdownList.get(position).get_Completed_Time() == null){
-            holder.completed_date_time.setText("Unattained");
-        }else if(breakdownList.get(position).get_Status()==Breakdown.JOB_ATTENDING){
+
+        int status = breakdownList.get(position).get_Status();
+        Drawable drawable = (Drawable)holder.completed_date_time.getBackground();
+        String Completed_Time = "*";
+        try{
+            Completed_Time = Globals.parseDate(breakdownList.get(position).get_Completed_Time());
+        }catch(Exception e){
+
+        }
+
+
+        if(status==Breakdown.JOB_DELIVERED){
+            holder.JOB_NO.setTextColor(Color.parseColor("#6c0082"));
+            holder.completed_date_time.setText("Not acknowledged");
+            drawable.setColorFilter(Color.parseColor("#6c0082"), PorterDuff.Mode.SRC_IN);
+        }if(status==Breakdown.JOB_ATTENDING){
+            holder.JOB_NO.setTextColor(Color.parseColor("#06823e"));
             holder.completed_date_time.setText("Attending");
-        }else if(breakdownList.get(position).get_Status()==Breakdown.JOB_VISITED){
+            drawable.setColorFilter(Color.parseColor("#06823e"), PorterDuff.Mode.SRC_IN);
+        }else if(status==Breakdown.JOB_VISITED){
+            holder.JOB_NO.setTextColor(Color.parseColor("#9b8404"));
             holder.completed_date_time.setText("Visited");
-        }else if(breakdownList.get(position).get_Status()==Breakdown.JOB_DONE){
-            holder.completed_date_time.setText("Done");
-        }else if(breakdownList.get(position).get_Status()==Breakdown.JOB_COMPLETED){
-            holder.completed_date_time.setText("Completed on "+Globals.parseDate(breakdownList.get(position).get_Completed_Time()));
+            drawable.setColorFilter(Color.parseColor("#9b8404"), PorterDuff.Mode.SRC_IN);
+        }else if(status==Breakdown.JOB_DONE){
+            holder.JOB_NO.setTextColor(Color.parseColor("#033e7c"));
+            holder.completed_date_time.setText("Temporary completed on " +Completed_Time);
+            drawable.setColorFilter(Color.parseColor("#033e7c"), PorterDuff.Mode.SRC_IN);
+        }else if(status==Breakdown.JOB_COMPLETED){
+            holder.JOB_NO.setTextColor(Color.parseColor("#0d7504"));
+            holder.completed_date_time.setText("Completed on "+Completed_Time);
+            drawable.setColorFilter(Color.parseColor("#0d7504"), PorterDuff.Mode.SRC_IN);
+        }else if(status==Breakdown.JOB_REJECT){
+            holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
+            holder.completed_date_time.setText("Rejected on "+Completed_Time);
+            drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
+        }else if(status==Breakdown.JOB_WITHDRAWN){
+            holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
+            holder.completed_date_time.setText("Withdrawn on "+Completed_Time);
+            drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
+        }else {
+            holder.completed_date_time.setText("Unattained");
+            holder.JOB_NO.setTextColor(Color.parseColor("#c9082b"));
+            drawable.setColorFilter(Color.parseColor("#c9082b"), PorterDuff.Mode.SRC_IN);
         }
         String src =breakdownList.get(position).get_OldJob_No();
         if(src==null){
@@ -92,19 +128,8 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
             holder.imgPriority.setVisibility(View.INVISIBLE);
         }
 
-        int status = breakdownList.get(position).get_Status();
 
-        if(status == Breakdown.JOB_COMPLETED){
-            holder.JOB_NO.setTextColor(Color.parseColor("#0d7504"));
-        }else if(status == Breakdown.JOB_DONE){
-            holder.JOB_NO.setTextColor(Color.parseColor("#033e7c"));
-        }else if(status == Breakdown.JOB_ATTENDING){
-            holder.JOB_NO.setTextColor(Color.parseColor("#06823e"));
-        }else if(status == Breakdown.JOB_VISITED){
-            holder.JOB_NO.setTextColor(Color.parseColor("#9b8404"));
-        }else {
-            holder.JOB_NO.setTextColor(Color.parseColor("#c9082b"));
-        }
+
         /*if(status == Breakdown.JOB_COMPLETED){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#d8d8d8"));
         }else if(status == Breakdown.JOB_DONE){

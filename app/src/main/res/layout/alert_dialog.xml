@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
@@ -8,23 +8,17 @@
         android:id="@+id/image"
         android:layout_width="wrap_content"
         android:layout_height="60dp"
-        android:layout_alignEnd="@+id/textDialog"
-        android:layout_alignStart="@+id/textDialog"
         android:layout_margin="20dp"
         android:src="@drawable/breackdownassist" />
 
     <TextView
         android:id="@+id/textDialog"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
+        android:layout_margin="20dp"
         android:layout_below="@+id/image"
-        android:layout_marginBottom="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
         android:text="New breakdown(s) received."
-        android:textAlignment="center"
+        android:gravity="center"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="36sp" />
 
@@ -32,12 +26,10 @@
         android:id="@+id/btnOk"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/textDialog"
-        android:layout_alignStart="@+id/textDialog"
+        android:layout_margin="20dp"
+        android:text=" Acknowledge"
         android:layout_below="@+id/textDialog"
-        android:layout_marginBottom="20dp"
-        android:text=" Acknowledged "
         android:textAllCaps="false"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="30sp" />
-</RelativeLayout>
+</RelativeLayout >

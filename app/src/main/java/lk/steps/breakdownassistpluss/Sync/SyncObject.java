@@ -9,6 +9,7 @@ public class SyncObject {
     public String StatusId;
     public String StatusTime;
     public String UserId;
+    public String Sin;
     public String FailureTypeId;
     public String FailureCauseId;
     public String FailureNatureId;

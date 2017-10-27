@@ -7,6 +7,7 @@ import java.util.List;
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
 import lk.steps.breakdownassistpluss.JobChangeStatus;
+import lk.steps.breakdownassistpluss.MaterialList.MaterialObject;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.http.Body;
@@ -47,8 +48,16 @@ public interface SyncApi {
     Call<List<JobChangeStatus>> GetBreakdownsStatus(@Header("Authorization") String auth,
                                               @Path("breakdownId") String BreakdownId);
 
+    @GET("/Mobile/GetBreakdownsStatus2/{areaId_ecscId}")
+    Call<List<JobChangeStatus>> GetBreakdownsStatus2(@Header("Authorization") String auth,
+                                                    @Path("areaId_ecscId") String areaId_ecscId);
+
     @POST("/Mobile/UpdateTrackingData/")
     Call<TrackerObject> PushTrackingData(@Header("Authorization") String auth,
                                          @Body List<TrackerObject> list);
+
+    @POST("/Mobile/InsertMaterials/")
+    Call<SyncMaterialObject> PushMaterials(@Header("Authorization") String auth,
+                                       @Body List<SyncMaterialObject> list);
 
 }

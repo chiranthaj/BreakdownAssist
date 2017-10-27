@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/layout_border"
+    android:weightSum="1">
+
+    <CheckBox
+        android:id="@+id/chkItem"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="10dp"
+        android:layout_weight="0.7"
+        android:text="Material name"
+        android:textSize="24sp" />
+
+    <ImageButton
+        android:id="@+id/btnDown"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1"
+        android:src="@drawable/ic_remove"
+        android:textSize="25sp" />
+
+    <EditText
+        android:id="@+id/etCount"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1"
+        android:ems="10"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@android:color/black"
+        android:textSize="24sp" />
+
+    <ImageButton
+        android:id="@+id/btnUp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="10dp"
+        android:layout_weight="0.1"
+        android:src="@drawable/ic_add"
+        android:textSize="25sp" />
+</LinearLayout>
