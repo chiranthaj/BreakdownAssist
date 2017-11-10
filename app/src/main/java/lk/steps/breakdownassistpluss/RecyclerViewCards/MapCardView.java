@@ -18,6 +18,7 @@ package lk.steps.breakdownassistpluss.RecyclerViewCards;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 /**
@@ -32,6 +33,8 @@ public class MapCardView extends android.support.v7.widget.CardView {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return true;
+       // Log.e("YYY","8888"+ev.toString());
+        //return true;
+        return false;
     }
 }

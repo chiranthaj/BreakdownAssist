@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<lk.steps.breakdownassistpluss.RecyclerViewCards.MapCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<lk.steps.breakdownassistpluss.RecyclerViewCards.MapCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     android:id="@+id/card_view"
@@ -30,6 +31,8 @@
             android:id="@+id/card_view_checkBox1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:scaleX="1.2"
+            android:scaleY="1.2"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true" />
 
@@ -55,12 +58,13 @@
 
         <ImageView
             android:id="@+id/imgSource"
-            android:layout_width="25dp"
+            android:layout_width="wrap_content"
             android:layout_height="25dp"
             android:layout_above="@+id/acct_num"
             android:layout_alignTop="@+id/JOB_NO"
-            android:layout_toStartOf="@+id/card_view_checkBox1"
-            card_view:srcCompat="@drawable/ic_cloud_download" />
+            android:layout_marginLeft="20dp"
+            card_view:srcCompat="@drawable/ic_cloud_download"
+            android:layout_toEndOf="@+id/imgPriority" />
 
         <TextView
             android:id="@+id/test4"
@@ -195,9 +199,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
+            android:visibility="gone"
             android:layout_below="@+id/address"
-            android:text="button2"
-            android:visibility="gone" />
+            android:text="button2"/>
 
 
         <com.google.android.gms.maps.MapView xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -222,5 +226,12 @@
             android:text=""
             android:textColor="@android:color/black"
             android:textSize="18sp" />
+
+        <lk.steps.breakdownassistpluss.RecyclerViewCards.ChildListView
+            android:id="@+id/childrenList"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/map_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
     </RelativeLayout>
 </lk.steps.breakdownassistpluss.RecyclerViewCards.MapCardView>

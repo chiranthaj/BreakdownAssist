@@ -68,7 +68,7 @@ public class SyncService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Toast.makeText(this, "Service Destroyed", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Sync Service Destroyed", Toast.LENGTH_SHORT).show();
     }
 
     public static void PostBreakdownStatusChange(final Context context){
@@ -149,8 +149,15 @@ public class SyncService extends Service {
         final String area_id = ReadStringPreferences(context, "area_id","");
         final String team_id = ReadStringPreferences(context, "team_id","");
         final String user_id = ReadStringPreferences(context, "user_id","");
+
+        if(area_id == null | team_id == null | user_id == null) return;
+        if(area_id.isEmpty() | team_id.isEmpty() | user_id.isEmpty()) return;
+
         for (final Breakdown breakdown: breakdowns)
         {
+            if(breakdown.get_Name()==null | breakdown.get_ADDRESS()==null) continue;
+            if(breakdown.get_Name().isEmpty() | breakdown.get_ADDRESS().isEmpty()) continue;
+
             breakdown.set_ECSC(team_id);
             breakdown.set_Area(area_id);
             breakdown.set_TeamId(team_id);
@@ -212,8 +219,6 @@ public class SyncService extends Service {
                     syncRESTService.CloseAllConnections();
                 }
             });
-
-
         }
     }
 
@@ -232,7 +237,12 @@ public class SyncService extends Service {
             syncObject.FailureNatureId=obj.detail_reason_code;
             syncObject.FailureCauseId=obj.cause;
             syncObject.UserId= MainActivity.mToken.user_id;
-            syncObject.Sin=breakdown.get_SUB();
+
+            if(breakdown!=null){
+                syncObject.Sin=breakdown.get_SUB();
+            }
+
+
             Globals.dbHandler.UpdateSyncState_JobCompletionObj(obj, -1);//Uploading Started
             final SyncRESTService syncRESTService = new SyncRESTService(10);
             Call<SyncObject> call = syncRESTService.getService()
@@ -282,185 +292,6 @@ public class SyncService extends Service {
         }
     }
 
-    public void GetNewBreakdowns(){
-        try{
-            final SyncRESTService syncRESTService = new SyncRESTService(10);
-            Call<List<Breakdown>> call = syncRESTService.getService()
-                    .getNewBreakdowns( "Bearer "+ MainActivity.mToken.access_token,
-                            MainActivity.mToken.user_id,area_id,team_id);
-
-            call.enqueue(new Callback<List<Breakdown>>(){
-                @Override
-                public void onResponse(Call<List<Breakdown>> call, Response<List<Breakdown>> response) {
-                    if (response.isSuccessful()) {
-                        Globals.serverConnected = true;
-                        //Log.e("GetNewBreakdowns","Successful");
-                        List<Breakdown> breakdowns = response.body();
-                        Log.e("GetNewBreakdowns","Number-"+breakdowns.size());
-
-                        if(breakdowns.size()>0){
-                            String ring = "0";
-                            for (Breakdown breakdown :breakdowns) {
-                                breakdown.set_BA_SERVER_SYNCED("1");
-                                breakdown.set_JOB_SOURCE("BA");
-                                Globals.dbHandler.addBreakdown2(breakdown);
-                                Log.e("breakdown","breakdown-"+breakdown.get_Job_No());
-                                if(breakdown.get_Priority() == 4) ring = "1";
-                            }
-
-                            String sIssuedBreakdownID=Globals.dbHandler.getLastBreakdownID();
-
-                            /*if(ring.equals("1")){
-                                Globals.mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.buzzer);
-                                Globals.mediaPlayer.setLooping(true);
-                            }else{
-                                Globals.mediaPlayer= MediaPlayer.create(getApplicationContext(), R.raw.fb_sound);
-                            }
-                            Globals.mediaPlayer.setVolume(100,100);
-                            Globals.mediaPlayer.start();*/
-
-                            //Informing the Map view about the new bd, then it can add it
-                            Intent myintent=new Intent();
-                            myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
-                            myintent.putExtra("_id",sIssuedBreakdownID);
-                            myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
-                            //myintent.putExtra("ring",ring);
-                            getApplicationContext().sendBroadcast(myintent);
-
-                            if(breakdowns.size() == 1){
-                                CreateNotification("New breakdown received.");
-                            }else{
-                                CreateNotification("New "+breakdowns.size()+" breakdowns received.");
-                            }
-                        }
-                    } else if (response.errorBody() != null) {
-                        Globals.serverConnected = false;
-                        if(response.code() == 401) { //Authentication fail
-                            Toast.makeText(getApplicationContext(), "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            MainActivity.ReLoginRequired=true;
-                        }else{
-                            Toast.makeText(getApplicationContext(), "GetNewBreakdowns\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
-                        }
-                        Log.e("GetNewBreakdowns","onResponse" + response.errorBody()+"*code*"+response.code());
-                    }
-                    syncRESTService.CloseAllConnections();
-                }
-
-                @Override
-                public void onFailure(Call<List<Breakdown>> call, Throwable t) {
-                    Globals.serverConnected = false;
-                    Toast.makeText(getApplicationContext(), "Error in network..\n"+ t.getMessage(), Toast.LENGTH_SHORT).show();
-                    Log.e("GetNewBreakdowns","5-" + t.getMessage());
-                    syncRESTService.CloseAllConnections();
-                }
-            });
-        }catch(Exception e){
-            Log.e("GetNewBreakdowns","" + e.getMessage());
-        }
-    }
-
-    public void GetBreakdownsStatusChange(){
-        try{
-            final SyncRESTService syncRESTService = new SyncRESTService(10);
-            Call<List<JobChangeStatus>> call = syncRESTService.getService()
-                    .GetBreakdownsStatus2( "Bearer "+ MainActivity.mToken.access_token,area_id+"_"+team_id);
-
-            call.enqueue(new Callback<List<JobChangeStatus>>(){
-                @Override
-                public void onResponse(Call<List<JobChangeStatus>> call, Response<List<JobChangeStatus>> response) {
-                    if (response.isSuccessful()) {
-                        Log.e("GetBreakdownsStatus","Successful"+new Gson().toJson(response));
-                        List<JobChangeStatus> jobChangeStatus = response.body();
-
-                        if(jobChangeStatus.size()>0){
-                            Log.e("GetBreakdownsStatus","Number-"+jobChangeStatus.size());
-                            for (JobChangeStatus jobStatus :jobChangeStatus) {
-                                //Log.e("GetBreakdownsStatus","JOB_NO-"+jobStatus.job_no);
-                                //Log.e("GetBreakdownsStatus","change_datetime-"+jobStatus.change_datetime);
-                                //Log.e("GetBreakdownsStatus","status-"+jobStatus.status);
-                                //Log.e("GetBreakdownsStatus","type_failure-"+jobStatus.type_failure);
-                                //Log.e("GetBreakdownsStatus","cause-"+jobStatus.cause);
-                                //Log.e("GetBreakdownsStatus","detail_reason_code-"+jobStatus.detail_reason_code);
-                                jobStatus.device_timestamp=jobStatus.change_datetime;
-                                jobStatus.synchro_mobile_db=1;//No need to send to server
-
-                                if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_VISITED))){//Visited
-                                    Log.e("GetBreakdownsStatus","Visited:"+jobStatus.job_no);
-                                    jobStatus.st_code="V";
-                                    Globals.dbHandler.addJobStatusChangeRec(jobStatus);
-                                    Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
-
-                                }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_ATTENDING))){//Attending
-                                    Log.e("GetBreakdownsStatus","Attending:"+jobStatus.job_no);
-                                    jobStatus.st_code="A";
-                                    Globals.dbHandler.addJobStatusChangeRec(jobStatus);
-                                    Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
-
-                                }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_DONE))){//Done
-                                    Log.e("GetBreakdownsStatus","Done:"+jobStatus.job_no);
-                                    jobStatus.st_code="D";
-                                    Globals.dbHandler.addJobStatusChangeRec(jobStatus);
-                                    Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
-
-                                }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_COMPLETED))){//Completed
-                                    Log.e("GetBreakdownsStatus","Completed:"+jobStatus.job_no);
-                                    jobStatus.st_code="C";
-                                    JobCompletion jobCompletionRec = new JobCompletion();
-                                    jobCompletionRec.JOB_NO = jobStatus.job_no;
-                                    jobCompletionRec.job_completed_datetime = jobStatus.change_datetime;
-                                    jobCompletionRec.type_failure = jobStatus.type_failure;
-                                    jobCompletionRec.cause = jobStatus.cause;
-                                    jobCompletionRec.detail_reason_code = jobStatus.detail_reason_code;
-
-                                    Globals.dbHandler.addJobCompletionRec(jobCompletionRec);
-                                    Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,jobStatus.change_datetime, jobStatus.status);
-                                }
-
-                            }
-                            /*Globals.mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.iphone);
-                            Globals.mediaPlayer.setVolume(1.0f , 1.0f);
-                            Globals.mediaPlayer.start();*/
-
-
-                            //Informing the Map view about the new bd, then it can add it
-                            Intent myintent=new Intent();
-                            myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
-                            myintent.putExtra("job_status_changed","refresh_list");
-                            // myintent.putExtra("_id",sIssuedBreakdownID);
-                            //  myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
-                            // myintent.putExtra("ring",ring);
-                            getApplicationContext().sendBroadcast(myintent);
-
-                            if(jobChangeStatus.size() == 1){
-                                CreateNotification("One breakdown has updated.");
-                            }else{
-                                CreateNotification(jobChangeStatus.size()+" breakdowns has updated.");
-                            }
-                        }
-
-                    } else if (response.errorBody() != null) {
-                        if(response.code() == 401) { //Authentication fail
-                            Toast.makeText(getApplicationContext(), "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            MainActivity.ReLoginRequired=true;
-                        }else{
-                            Toast.makeText(getApplicationContext(), "GetNewBreakdowns\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
-                        }
-                        Log.e("GetNewBreakdowns","onResponse" + response.errorBody()+"*code*"+response.code());
-                    }
-                    syncRESTService.CloseAllConnections();
-                }
-
-                @Override
-                public void onFailure(Call<List<JobChangeStatus>> call, Throwable t) {
-                    Toast.makeText(getApplicationContext(), "Error in network..\n"+ t.getMessage(), Toast.LENGTH_SHORT).show();
-                    Log.e("GetNewBreakdowns","5-" + t.getMessage());
-                    syncRESTService.CloseAllConnections();
-                }
-            });
-        }catch(Exception e){
-            Log.e("GetNewBreakdowns","" + e.getMessage());
-        }
-    }
 
     public static void PostMaterials(final Context context){
         final List<SyncMaterialObject> list = Globals.dbHandler.getNotSyncMaterials();
@@ -476,22 +307,22 @@ public class SyncService extends Service {
             public void onResponse(Call<SyncMaterialObject> call, Response<SyncMaterialObject> response) {
                 if (response.isSuccessful()) {
                     Globals.serverConnected = true;
-                    Log.e("PostTrackingData","Successfull");
+                    Log.e("PostMaterials","Successfull");
                     for (final SyncMaterialObject obj: list) {
                         Globals.dbHandler.UpdateMaterials(obj);//Successfully done
                     }
                 } else if (response.errorBody() != null) {
                     Globals.serverConnected = false;
-                    Log.e("PostTrackingData","Error"+response.errorBody());
-                    Toast.makeText(context,"PostTrackingData-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
+                    Log.e("PostMaterials","Error"+response.errorBody());
+                    Toast.makeText(context,"PostMaterials-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
                         MainActivity.ReLoginRequired=true;
                     }else{
-                        Toast.makeText(context, "PostTrackingData\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "PostMaterials\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
-                    Log.e("PostTrackingData","onResponse" + response.errorBody()+"*code*"+response.code());
+                    Log.e("PostMaterials","onResponse" + response.errorBody()+"*code*"+response.code());
                 }
                 syncRESTService.CloseAllConnections();
             }
@@ -552,6 +383,50 @@ public class SyncService extends Service {
 
     }
 
+    public static void PostGroups(final Context context){
+        final List<BreakdownGroup> list = Globals.dbHandler.getNotSyncGroups();
+        if(list.size()< 1)return;
+
+        final SyncRESTService syncRESTService = new SyncRESTService(10);
+        Call<BreakdownGroup> call = syncRESTService.getService()
+                .PostGroups( "Bearer "+ MainActivity.mToken.access_token, list);
+
+        call.enqueue(new Callback<BreakdownGroup>(){
+
+            @Override
+            public void onResponse(Call<BreakdownGroup> call, Response<BreakdownGroup> response) {
+                if (response.isSuccessful()) {
+                    Globals.serverConnected = true;
+                    Log.e("PostGroups","Successfull");
+                    for (final BreakdownGroup obj: list) {
+                        Globals.dbHandler.UpdateGroupSynced(obj);//Successfully done
+                    }
+                } else if (response.errorBody() != null) {
+                    Globals.serverConnected = false;
+                    Log.e("PostGroups","Error"+response.errorBody());
+                    Toast.makeText(context,"PostGroups-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
+                    //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
+                    if(response.code() == 401) { //Authentication fail
+                        Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
+                        MainActivity.ReLoginRequired=true;
+                    }else{
+                        Toast.makeText(context, "PostGroups\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                    Log.e("PostGroups","onResponse" + response.errorBody()+"*code*"+response.code());
+                }
+                syncRESTService.CloseAllConnections();
+            }
+
+            @Override
+            public void onFailure(Call<BreakdownGroup> call, Throwable t) {
+                Globals.serverConnected = false;
+                // dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
+                Toast.makeText(context,"PostGroups-Failure\n"+t, Toast.LENGTH_SHORT).show();
+                syncRESTService.CloseAllConnections();
+            }
+        });
+    }
+
     private void CreateNotification(String msg){
         Intent i = new Intent(this, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, i,
@@ -606,9 +481,13 @@ public class SyncService extends Service {
                 Log.e("Sync","PostBreakdownStatusChange");
                 PostBreakdownStatusChange(getApplicationContext());
             }else if(i==4){
-                i=0;
+                i=5;
                 Log.e("Sync","PostMaterials");
                 PostMaterials(getApplicationContext());
+            }else if(i==5){
+                i=0;
+                Log.e("Sync","PostGroups");
+                PostGroups(getApplicationContext());
             }
             /*else if(i==4){
                 i=5;

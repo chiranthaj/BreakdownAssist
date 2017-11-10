@@ -142,7 +142,7 @@ public class LocationService extends Service implements
             Globals.dbHandler = new DBHandler(this, null, null, 1);
         }
         if(location.getAccuracy() < 20.0f & distance > 1){
-            Toast.makeText(this, "GPS Tracker accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_LONG).show();
+           // Toast.makeText(this, "GPS Tracker accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_LONG).show();
             Globals.dbHandler.addTrackPoint(timestamp,latTxt,lonTxt,speedTxt,accuracyTxt,altitudeTxt,directionTxt,distanceTxt);
         }
     }

@@ -13,6 +13,8 @@ import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.util.Log;
 
+import lk.steps.breakdownassistpluss.Sync.SignalRService;
+
 public class GpsTrackerBootReceiver extends BroadcastReceiver {
     private static final String TAG = "GpsTrackerBootReceiver";
     @Override
@@ -33,6 +35,11 @@ public class GpsTrackerBootReceiver extends BroadcastReceiver {
                     pendingIntent);
         } else {
             alarmManager.cancel(pendingIntent);
+        }
+
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            Intent signalRService = new Intent(context, SignalRService.class);
+            context.startService(signalRService);
         }
     }
 }

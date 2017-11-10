@@ -7,10 +7,17 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.SimpleCursorAdapter;
+
 import com.google.android.gms.maps.MapView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import lk.steps.breakdownassistpluss.Breakdown;
@@ -66,7 +73,6 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         }catch(Exception e){
 
         }
-
 
         if(status==Breakdown.JOB_DELIVERED){
             holder.JOB_NO.setTextColor(Color.parseColor("#6c0082"));
@@ -126,8 +132,26 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
             holder.imgPriority.setVisibility(View.VISIBLE);
         }else{
             holder.imgPriority.setVisibility(View.INVISIBLE);
+
         }
 
+        if(breakdownList.get(position).get_ParentBreakdownId() == null){
+            holder.childrenList.setVisibility(View.GONE);
+        }else if(breakdownList.get(position).get_ParentBreakdownId().equals("PARENT")){
+            ArrayList<Breakdown> children = new ArrayList<Breakdown>(Globals.dbHandler.GetChildBreakdowns(breakdownList.get(position).get_Job_No()));
+            if(children.size()>0){
+                //Log.e("children","="+children.size());
+                //ArrayAdapter adapter = new ArrayAdapter<String>(context, R.layout.child_row,R.id.textview, children);
+                //holder.childrenList.setAdapter(adapter);
+
+                ChildAdapter adapter = new ChildAdapter(context, children);
+                holder.childrenList.setAdapter(adapter);
+            }else{
+                holder.childrenList.setVisibility(View.GONE);
+            }
+        }else{
+            holder.childrenList.setVisibility(View.GONE);
+        }
 
 
         /*if(status == Breakdown.JOB_COMPLETED){

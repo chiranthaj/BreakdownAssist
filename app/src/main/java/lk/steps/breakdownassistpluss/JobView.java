@@ -697,7 +697,9 @@ public class JobView {
                 //    MaterialObject item = MaterialViewsAdapter.selectedMaterials.get(i);
                 //}
                 Globals.dbHandler.addMaterials(breakdown.get_Job_No(), MaterialViewsAdapter.selectedMaterials);
-                SyncService.PostMaterials(fragment.getActivity().getApplicationContext());
+                try{
+                    SyncService.PostMaterials(fragment.getActivity().getApplicationContext());
+                }catch(Exception e){}
                 dialog.dismiss();
             }
         });

@@ -79,7 +79,7 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap map)
     {
         googleMap = map;
-        List<Breakdown> BreakdownList = new ArrayList<>(Globals.dbHandler.ReadBreakdowns(Breakdown.JOB_NOT_ATTENDED, true));
+        List<Breakdown> BreakdownList = new ArrayList<>(Globals.dbHandler.ReadBreakdowns(Breakdown.JOB_NOT_ATTENDED, true, false));
 
         try {
             map.setMapStyle(

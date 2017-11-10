@@ -8,12 +8,14 @@ import android.database.Cursor;
 import android.content.Context;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteStatement;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -23,11 +25,13 @@ import java.util.Locale;
 
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
 import lk.steps.breakdownassistpluss.MaterialList.MaterialObject;
+import lk.steps.breakdownassistpluss.RecyclerViewCards.ChildInfo;
+import lk.steps.breakdownassistpluss.Sync.BreakdownGroup;
 import lk.steps.breakdownassistpluss.Sync.SyncMaterialObject;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version = 95;
+    private static final int Database_Version = 98;
     private static final String DatabaseNAME = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -42,6 +46,7 @@ public class DBHandler extends SQLiteOpenHelper
         query = "CREATE TABLE BreakdownRecords ("+
                 "id	                INTEGER PRIMARY KEY AUTOINCREMENT, "+
                 "JOB_NO	                TEXT UNIQUE,"+
+                "PARENT_BREAKDOWN_ID    TEXT,"+
                 "OLD_JOB_NO             TEXT,"+
                 "DateTime	            TEXT,"+
                 "ACCT_NUM 	            TEXT,"+
@@ -61,6 +66,7 @@ public class DBHandler extends SQLiteOpenHelper
                 "inbox_ref	            TEXT UNIQUE,"+
                 "last_timestamp         TEXT,"+
                 "BA_SERVER_SYNCED       TEXT,"+
+                "GROUP_SYNCED           TEXT,"+
                 "COMPLETED_TIME         TEXT"+
                 ");";
         db.execSQL(query);
@@ -94,7 +100,7 @@ public class DBHandler extends SQLiteOpenHelper
                 "comment                TEXT,"+
                 "device_timestamp       TEXT,"+
                 "synchro_mobile_db      TEXT,"+
-                "PRIMARY KEY (JOB_NO,st_code,change_datetime)" +
+                "PRIMARY KEY (JOB_NO,st_code)" +
                 ");";
         db.execSQL(query);
 
@@ -250,6 +256,8 @@ public class DBHandler extends SQLiteOpenHelper
         c.close();
         return list;
     }
+
+
     public void addMaterials(String breakdownId, List<MaterialObject> list){
         SQLiteDatabase db = getWritableDatabase();
 
@@ -260,6 +268,8 @@ public class DBHandler extends SQLiteOpenHelper
             db.execSQL(query);
         }
     }
+
+
     public void UpdateMaterials(SyncMaterialObject obj)
     {
         SQLiteDatabase db = getWritableDatabase();
@@ -267,11 +277,12 @@ public class DBHandler extends SQLiteOpenHelper
         db.execSQL(query);
         //db.close();
     }
+
     public List<TrackerObject> getNotSyncTrackingData(){
         TrackerObject obj=null;
         SQLiteDatabase db = getWritableDatabase();
         List<TrackerObject> list = new LinkedList<TrackerObject>();
-        String query = "SELECT * FROM GpsTracking WHERE sync_done=0;";//
+        String query = "SELECT * FROM GpsTracking WHERE sync_done=0 limit 10;";//
         Cursor c = db.rawQuery(query, null);
         if(c==null)return list;
         if(c.getCount() < 1 )return list;
@@ -299,6 +310,33 @@ public class DBHandler extends SQLiteOpenHelper
         return list;
     }
 
+
+    public List<BreakdownGroup> getNotSyncGroups(){
+        BreakdownGroup obj=null;
+        SQLiteDatabase db = getWritableDatabase();
+        List<BreakdownGroup> list = new LinkedList<BreakdownGroup>();
+        String query = "SELECT * FROM BreakdownRecords WHERE GROUP_SYNCED = 0 limit 10;";//
+        Cursor c = db.rawQuery(query, null);
+        if(c==null)return list;
+        if(c.getCount() < 1 )return list;
+        c.moveToFirst();
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
+                obj= new BreakdownGroup();
+                obj.SetBreakdownId(c.getString(c.getColumnIndex("JOB_NO")));
+                obj.SetParentBreakdownId(c.getString(c.getColumnIndex("PARENT_BREAKDOWN_ID")));
+                obj.SetParentStatusId(c.getString(c.getColumnIndex("STATUS")));
+                list.add(obj);
+            }
+            c.moveToNext();
+        }
+        c.close();
+        return list;
+    }
+
+
     public void UpdateTrackingData(TrackerObject obj)
     {
         SQLiteDatabase db = getWritableDatabase();
@@ -307,23 +345,35 @@ public class DBHandler extends SQLiteOpenHelper
         //db.close();
     }
 
-    public void addJobCompletionRec(JobCompletion jobcompletion_obj){
+    public void UpdateGroupSynced(BreakdownGroup obj)
+    {
         SQLiteDatabase db = getWritableDatabase();
+        String query = "UPDATE BreakdownRecords SET GROUP_SYNCED='1' WHERE JOB_NO='" +obj.GetBreakdownId() + "';";
+        db.execSQL(query);
+    }
+    public long addJobCompletionRec(JobCompletion jobcompletion_obj){
 
-        ContentValues values = new ContentValues();
-        values.put("JOB_NO",jobcompletion_obj.JOB_NO);  //TODO : Change to job no
-        values.put("st_code",jobcompletion_obj.st_code);
-        values.put("job_completed_datetime",jobcompletion_obj.job_completed_datetime);
-        values.put("comment",jobcompletion_obj.comment);
-        values.put("detail_reason_code",jobcompletion_obj.detail_reason_code);
-        values.put("cause",jobcompletion_obj.cause);
-        values.put("type_failure",jobcompletion_obj.type_failure);
-        values.put("job_completed_by",jobcompletion_obj.job_completed_by);
-        values.put("action_code",jobcompletion_obj.action_code);
-        values.put("synchro_mobile_db",jobcompletion_obj.synchro_mobile_db);
-        values.put("device_timestamp",jobcompletion_obj.device_timestamp);
-        db.insert( "JobCompletion", null,values); //TODO : Use insertOrThrow
+        List<String> family = getFamily(jobcompletion_obj.JOB_NO);
+        SQLiteDatabase db = getWritableDatabase();
+        long result = 0;
+        for (String member:family) {
+            ContentValues values = new ContentValues();
+            values.put("JOB_NO",member);  //TODO : Change to job no
+            values.put("st_code",jobcompletion_obj.st_code);
+            values.put("job_completed_datetime",jobcompletion_obj.job_completed_datetime);
+            values.put("comment",jobcompletion_obj.comment);
+            values.put("detail_reason_code",jobcompletion_obj.detail_reason_code);
+            values.put("cause",jobcompletion_obj.cause);
+            values.put("type_failure",jobcompletion_obj.type_failure);
+            values.put("job_completed_by",jobcompletion_obj.job_completed_by);
+            values.put("action_code",jobcompletion_obj.action_code);
+            values.put("synchro_mobile_db",jobcompletion_obj.synchro_mobile_db);
+            values.put("device_timestamp",jobcompletion_obj.device_timestamp);
+            result=db.insert( "JobCompletion", null,values); //TODO : Use insertOrThrow
+        }
 
+
+        return result;
         //db.close();
     }
 
@@ -446,59 +496,89 @@ public class DBHandler extends SQLiteOpenHelper
 
 
     public List<JobCompletion> getBreakdownCompletion()
+{
+    JobCompletion _jobcompletion_obj=null;
+    SQLiteDatabase db = getWritableDatabase();
+
+    List<JobCompletion> newJobCompletion = new LinkedList<JobCompletion>();
+
+    String query = "SELECT * " +
+            " FROM JobCompletion " +
+            " WHERE synchro_mobile_db=0 and length(JOB_NO)=10;";//
+
+    Cursor c = db.rawQuery(query, null);
+    if(c==null)return newJobCompletion;
+    if(c.getCount() < 1 )return newJobCompletion;
+    c.moveToFirst();
+    while (!c.isAfterLast())
     {
-        JobCompletion _jobcompletion_obj=null;
+        if (c.getString(0) != null)
+        {
+            _jobcompletion_obj= new JobCompletion();
+            _jobcompletion_obj.JOB_NO=c.getString(c.getColumnIndex("JOB_NO"));
+            _jobcompletion_obj.st_code=c.getString(c.getColumnIndex("st_code"));
+            _jobcompletion_obj.job_completed_datetime=c.getString(c.getColumnIndex("job_completed_datetime"));
+            _jobcompletion_obj.comment=c.getString(c.getColumnIndex("comment"));
+            _jobcompletion_obj.detail_reason_code = c.getString(c.getColumnIndex("detail_reason_code"));
+            _jobcompletion_obj.cause = c.getString(c.getColumnIndex("cause"));
+            _jobcompletion_obj.type_failure = c.getString(c.getColumnIndex("type_failure"));
+            _jobcompletion_obj.job_completed_by = c.getString(c.getColumnIndex("job_completed_by"));
+            _jobcompletion_obj.action_code = c.getString(c.getColumnIndex("action_code"));
+            _jobcompletion_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
+            _jobcompletion_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
+            newJobCompletion.add(_jobcompletion_obj);
+        }
+        c.moveToNext();
+    }
+    c.close();
+    return newJobCompletion;
+}
+
+    public List<String> getFamily(String parentId)
+    {
         SQLiteDatabase db = getWritableDatabase();
 
-        List<JobCompletion> newJobCompletion = new LinkedList<JobCompletion>();
+        List<String> family = new LinkedList<String>();
 
-        String query = "SELECT * " +
-                " FROM JobCompletion " +
-                " WHERE synchro_mobile_db=0 and length(JOB_NO)=10;";//
+        String query = "SELECT * FROM BreakdownRecords WHERE " +
+                "PARENT_BREAKDOWN_ID ='"+parentId+"' or " +
+                "JOB_NO ='"+parentId+"';";//
 
         Cursor c = db.rawQuery(query, null);
-        if(c==null)return newJobCompletion;
-        if(c.getCount() < 1 )return newJobCompletion;
+        if(c==null)return family;
+        if(c.getCount() < 1 )return family;
         c.moveToFirst();
         while (!c.isAfterLast())
         {
             if (c.getString(0) != null)
             {
-                _jobcompletion_obj= new JobCompletion();
-                _jobcompletion_obj.JOB_NO=c.getString(c.getColumnIndex("JOB_NO"));
-                _jobcompletion_obj.st_code=c.getString(c.getColumnIndex("st_code"));
-                _jobcompletion_obj.job_completed_datetime=c.getString(c.getColumnIndex("job_completed_datetime"));
-                _jobcompletion_obj.comment=c.getString(c.getColumnIndex("comment"));
-                _jobcompletion_obj.detail_reason_code = c.getString(c.getColumnIndex("detail_reason_code"));
-                _jobcompletion_obj.cause = c.getString(c.getColumnIndex("cause"));
-                _jobcompletion_obj.type_failure = c.getString(c.getColumnIndex("type_failure"));
-                _jobcompletion_obj.job_completed_by = c.getString(c.getColumnIndex("job_completed_by"));
-                _jobcompletion_obj.action_code = c.getString(c.getColumnIndex("action_code"));
-                _jobcompletion_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
-                _jobcompletion_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
-                newJobCompletion.add(_jobcompletion_obj);
+                family.add(c.getString(c.getColumnIndex("JOB_NO")));
             }
             c.moveToNext();
         }
         c.close();
-        return newJobCompletion;
+        return family;
     }
-    public void addJobStatusChangeRec(JobChangeStatus jobchangestatus_obj)
+    public long addJobStatusChangeRec(JobChangeStatus jobchangestatus_obj)
     {
+        List<String> family = getFamily(jobchangestatus_obj.job_no);
         SQLiteDatabase db = getWritableDatabase();
+        long result = 0;
+        for (String member:family) {
+            try{
+                ContentValues values = new ContentValues();
+                values.put("JOB_NO",member);  //TODO : Change to job no
+                values.put("st_code",jobchangestatus_obj.st_code);
+                values.put("change_datetime",jobchangestatus_obj.change_datetime);
+                values.put("comment",jobchangestatus_obj.comment);
+                values.put("synchro_mobile_db",jobchangestatus_obj.synchro_mobile_db);
+                values.put("device_timestamp",jobchangestatus_obj.device_timestamp);
+                result = db.insert( "JobStatusChange", null,values); //TODO : Use insertOrThrow
 
-        ContentValues values = new ContentValues();
-        values.put("JOB_NO",jobchangestatus_obj.job_no);  //TODO : Change to job no
-        values.put("st_code",jobchangestatus_obj.st_code);
-        values.put("change_datetime",jobchangestatus_obj.change_datetime);
-        values.put("comment",jobchangestatus_obj.comment);
-        values.put("synchro_mobile_db",jobchangestatus_obj.synchro_mobile_db);
-        values.put("device_timestamp",jobchangestatus_obj.device_timestamp);
-        try{
-            db.insert( "JobStatusChange", null,values); //TODO : Use insertOrThrow
-        }catch(Exception e){
-
+            }catch(Exception e){
+            }
         }
+        return result;
         //db.close();
     }
 
@@ -689,7 +769,9 @@ public class DBHandler extends SQLiteOpenHelper
             //db.close();
         }
     }
-    public void addBreakdown2(Breakdown breakdown)
+
+
+    public long addBreakdown2(Breakdown breakdown)
     {
         SQLiteDatabase db = getWritableDatabase();
         //Using Try Catch to suppress duplicate entries warnings, when Synching Inbox
@@ -697,6 +779,7 @@ public class DBHandler extends SQLiteOpenHelper
             ContentValues values = new ContentValues();
             values.put("DateTime",breakdown.get_Received_Time());
             values.put("ACCT_NUM",breakdown.get_Acct_Num());
+            values.put("PARENT_BREAKDOWN_ID",breakdown.get_ParentBreakdownId());
             values.put("DESCRIPTION",breakdown.get_Full_Description());
             values.put("JOB_NO",breakdown.get_Job_No());
             values.put("SUB",breakdown.get_SUB());
@@ -710,20 +793,36 @@ public class DBHandler extends SQLiteOpenHelper
             values.put("LONGITUDE",breakdown.get_LONGITUDE());
             values.put("GPS_ACCURACY",breakdown.get_GPS_ACCURACY());
             values.put("BA_SERVER_SYNCED",breakdown.get_BA_SERVER_SYNCED());
-
             values.put("STATUS",1);
 
-            db.insert("BreakdownRecords",null,values); //TODO: Use insertOrthrow
+            long result =  db.insert("BreakdownRecords",null,values); //TODO: Use insertOrthrow
+            Log.e("result","="+result);
+            return result;
         }
         catch (Exception e)
         {
             Log.e("CalAttainedTime",e.getMessage());
-        }
-        finally {
-            //db.close();
+            return 0;
         }
     }
-
+    public void AddBreakdownGroups(List<BreakdownGroup> groups) {
+        Log.e("UPDATEQ","AddBreakdownGroups");
+        SQLiteDatabase db = getWritableDatabase();
+        for (BreakdownGroup group:groups) {
+            //Log.e("TTTT0",group.GetParentBreakdownId()+"/"+group.GetParentStatusId()+"/"+group.GetBreakdownId());
+            String query = "UPDATE BreakdownRecords SET " +
+                    " PARENT_BREAKDOWN_ID='" + group.GetParentBreakdownId() + "',"+
+                    " STATUS='" + group.GetParentStatusId() + "' "+
+                    " WHERE JOB_NO= '" + group.GetBreakdownId() + "';";
+            db.execSQL(query);
+            //Log.e("TTTT0",group.GetParentBreakdownId()+"/"+group.GetParentStatusId()+"/"+group.GetBreakdownId());
+        }
+        String query = "UPDATE BreakdownRecords SET " +
+                " PARENT_BREAKDOWN_ID='PARENT',"+
+                " STATUS='" + groups.get(0).GetParentStatusId() + "' "+
+                " WHERE JOB_NO= '" + groups.get(0).GetParentBreakdownId() + "';";
+        db.execSQL(query);
+    }
 
     public int AddTestBreakdownObj(Breakdown breakdown,Context context)
     {
@@ -761,7 +860,7 @@ public class DBHandler extends SQLiteOpenHelper
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT COUNT(*) AS TOTAL," +
                         "SUM(CASE STATUS  WHEN "+Breakdown.JOB_COMPLETED +" THEN 1 ELSE 0 END) AS COMPLETED," +
-                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_DELIVERED +" THEN 1 ELSE 0 END) AS DELIVERED," +
+                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_DELIVERED +"  THEN 1 ELSE 0 END) AS DELIVERED," +
                 "SUM(CASE STATUS  WHEN "+Breakdown.JOB_ACKNOWLEDGED +" THEN 1 ELSE 0 END) AS ACKNOWLEDGED," +
                 "SUM(CASE STATUS  WHEN "+Breakdown.JOB_ATTENDING +" THEN 1 ELSE 0 END) AS ATTENDING," +
                 "SUM(CASE STATUS  WHEN "+Breakdown.JOB_VISITED +" THEN 1 ELSE 0 END) AS VISITED " +
@@ -965,7 +1064,7 @@ public class DBHandler extends SQLiteOpenHelper
         //db.close();
     }
 
-    public Cursor ReadBreakdownsToCursor(int iStatus, Boolean GPS_Only)
+    public Cursor ReadBreakdownsToCursor(int iStatus, Boolean GPS_Only, Boolean NoChildren )
     {
         SQLiteDatabase db = getWritableDatabase();
         //String query = "SELECT id as ID,NAME,LONGITUDE,LATITUDE FROM Customers limit 3;";
@@ -983,6 +1082,11 @@ public class DBHandler extends SQLiteOpenHelper
             statusQuery=" AND B.STATUS =  '" + iStatus + "' ";
         }
 
+        if(NoChildren){
+            statusQuery = statusQuery + " and ( PARENT_BREAKDOWN_ID = '0000000000' or PARENT_BREAKDOWN_ID = 'PARENT' or PARENT_BREAKDOWN_ID IS NULL )";
+        }
+
+
         String gpsQuery ="";
         if (GPS_Only){
             gpsQuery=" AND B.GPS_ACCURACY <>  '-1' ";
@@ -991,7 +1095,7 @@ public class DBHandler extends SQLiteOpenHelper
         String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD, " +
                 " B.OLD_JOB_NO, B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
                 " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS, B.SUB,  " +
-                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO,  " +
+                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO, B.PARENT_BREAKDOWN_ID,  " +
                 " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
                 " B.PRIORITY as PRIORITY " +
                 " FROM BreakdownRecords B " +
@@ -1000,6 +1104,8 @@ public class DBHandler extends SQLiteOpenHelper
                 " WHERE 1 " + statusQuery  + gpsQuery +
                 " ORDER BY DateTime DESC, ACCT_NUM ASC;";
 
+
+        Log.e("query",query);
         Cursor c = db.rawQuery(query, null);
 
         if (c != null) {
@@ -1008,10 +1114,10 @@ public class DBHandler extends SQLiteOpenHelper
         return c;
     }
 
-    public List<Breakdown> ReadBreakdowns(int iStatus, Boolean GPS_Only)
+    public List<Breakdown> ReadBreakdowns(int iStatus, Boolean GPS_Only, Boolean NoChildren)
     {
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
-        Cursor c = ReadBreakdownsToCursor(iStatus,GPS_Only);
+        Cursor c = ReadBreakdownsToCursor(iStatus,GPS_Only,NoChildren);
         while (!c.isAfterLast())
         {
             if (c.getString(0) != null)
@@ -1019,7 +1125,60 @@ public class DBHandler extends SQLiteOpenHelper
                 Breakdown newBreakdown=new Breakdown();
                 newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
                 newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
-                //newBreakdown.set_BREAKDOWN_ID(c.getString(c.getColumnIndex("BREAKDOWN_ID")));
+                newBreakdown.set_ParentBreakdownId(c.getString(c.getColumnIndex("PARENT_BREAKDOWN_ID")));
+                newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
+                newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
+                newBreakdown.set_Status(c.getShort(c.getColumnIndex("STATUS")));
+                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
+                newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
+                newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
+                newBreakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
+                newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
+                newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
+                newBreakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
+                newBreakdown.set_OldJob_No(c.getString(c.getColumnIndex("OLD_JOB_NO")));
+                newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
+                newBreakdown.set_Priority(c.getInt(c.getColumnIndex("PRIORITY")));
+                newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
+                BreakdownsList.add(newBreakdown);
+            }
+            c.moveToNext();
+        }
+        c.close();
+        //TODO : find a way to close the db ( db.close()) of the c cursor
+        return BreakdownsList;
+    }
+
+
+
+    public List<Breakdown> GetChildBreakdowns(String parentBreakdownId)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
+        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD, " +
+                " B.OLD_JOB_NO, B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
+                " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS, B.SUB,  " +
+                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO, B.PARENT_BREAKDOWN_ID,  " +
+                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
+                " B.PRIORITY as PRIORITY " +
+                " FROM BreakdownRecords B " +
+                " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.ACCT_NUM " +
+                " WHERE PARENT_BREAKDOWN_ID = '"+parentBreakdownId+"' " +
+                " ORDER BY DateTime DESC, ACCT_NUM ASC;";
+
+        Cursor c = db.rawQuery(query, null);
+
+        c.moveToFirst();
+
+        while (!c.isAfterLast())
+        {
+            if (c.getString(0) != null)
+            {
+                Breakdown newBreakdown=new Breakdown();
+                newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
+                newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                newBreakdown.set_ParentBreakdownId(c.getString(c.getColumnIndex("PARENT_BREAKDOWN_ID")));
                 newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 newBreakdown.set_Status(c.getShort(c.getColumnIndex("STATUS")));
@@ -1387,18 +1546,145 @@ public class DBHandler extends SQLiteOpenHelper
 
 
     public int UpdateBreakdownStatus(Breakdown breakdown,int Breakdown_Status)
-    {// TODO : Maintain to two tables, one for Current status, one for status changed with all the status changes list with timesatamp
+    {
+        Log.e("UPDATEQ","UpdateBreakdownStatus");
+        int iResult=-1;
+        List<String> family = getFamily(breakdown.get_Job_No());
+        SQLiteDatabase db = getWritableDatabase();
+        String time = Globals.timeFormat.format(System.currentTimeMillis());
+        for (String member:family) {
+            String query = "UPDATE BreakdownRecords SET STATUS='" + String.valueOf(Breakdown_Status) +"', " +
+                    "COMPLETED_TIME= '" +  time + "', " +
+                    "SUB= '" +  breakdown.get_SUB() + "' " +
+                    " WHERE JOB_NO='" +member + "';";
+
+            db.execSQL(query);
+        }
+        //db.close();
+
+        iResult=1; //Return Success
+        return iResult;
+    }
+
+    private List<String> GetMegaFamily(List<String> family, String extraId){
+        family.add(extraId);
+        List<String> megaFamily =  new ArrayList<>();
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT JOB_NO FROM BreakdownRecords WHERE " +
+                " JOB_NO = '" + TextUtils.join("' or  JOB_NO = '", family ) +"' " +
+                " or PARENT_BREAKDOWN_ID = '" + TextUtils.join("' or  PARENT_BREAKDOWN_ID = '", family )+ "';";
+
+        Log.e("query",query);
+        Cursor c = db.rawQuery(query, null);
+        if (c != null) {
+            if (c.getCount()>0) {
+                c.moveToFirst();
+                do {
+                    megaFamily.add(c.getString(c.getColumnIndex("JOB_NO")));
+                    Log.e("megaFamily",c.getString(c.getColumnIndex("JOB_NO")));
+                } while (c.moveToNext());
+            }
+            c.close();
+        }
+        return megaFamily;
+    }
+
+    private BreakdownGroup FindForParent(List<String> children, BreakdownGroup parent){
+        SQLiteDatabase db = getWritableDatabase();
+        BreakdownGroup defaultParent = new BreakdownGroup();
+        defaultParent.SetBreakdownId(parent.GetBreakdownId());
+        defaultParent.SetParentBreakdownId(parent.GetParentBreakdownId());
+        defaultParent.SetParentStatusId(parent.GetParentStatusId());
+
+        String query = "SELECT JOB_NO , PARENT_BREAKDOWN_ID, STATUS FROM BreakdownRecords WHERE PARENT_BREAKDOWN_ID ='PARENT' " +
+                "and ( JOB_NO = '" + TextUtils.join("' or  JOB_NO = '", children ) +"');";
+
+        Log.e("query",query);
+        Cursor c = db.rawQuery(query, null);
+
+        try{
+            c.moveToFirst();
+            if (!c.isAfterLast() && c.getString(0) != null)
+            {
+                Log.e("TEST125",c.getString(c.getColumnIndex("JOB_NO")));
+                defaultParent.SetBreakdownId(c.getString(c.getColumnIndex("JOB_NO")));
+                defaultParent.SetParentBreakdownId(c.getString(c.getColumnIndex("PARENT_BREAKDOWN_ID")));
+                defaultParent.SetParentStatusId(c.getString(c.getColumnIndex("STATUS")));
+            }
+        }catch (Exception ex){
+            Log.e("FindForParent",ex.getMessage());
+        }
+        return defaultParent;
+    }
+    private BreakdownGroup GetBreakdownGroup(String parentId){
+        SQLiteDatabase db = getWritableDatabase();
+        BreakdownGroup parent = new BreakdownGroup();
+
+        String query = "SELECT JOB_NO , PARENT_BREAKDOWN_ID, STATUS FROM BreakdownRecords WHERE JOB_NO ='"+parentId+"';";
+
+        Log.e("query",query);
+        Cursor c = db.rawQuery(query, null);
+
+        try{
+            c.moveToFirst();
+            if (!c.isAfterLast() && c.getString(0) != null)
+            {
+                Log.e("TEST125",c.getString(c.getColumnIndex("JOB_NO")));
+                parent.SetBreakdownId(c.getString(c.getColumnIndex("JOB_NO")));
+                parent.SetParentBreakdownId(c.getString(c.getColumnIndex("PARENT_BREAKDOWN_ID")));
+                parent.SetParentStatusId(c.getString(c.getColumnIndex("STATUS")));
+            }
+        }catch (Exception ex){
+            Log.e("FindForParent",ex.getMessage());
+        }
+        return parent;
+    }
+
+    public int UpdateChildren(List<String> children,String parentId)
+    {Log.e("UPDATEQ","UpdateChildren");
+        children = GetMegaFamily(children,parentId);
+
+        BreakdownGroup parent = GetBreakdownGroup(parentId);
+        //Log.e("TEST1","="+parent.GetBreakdownId());
+        //Log.e("TEST2","="+parent.GetParentStatusId());
+        BreakdownGroup _parent = FindForParent(children, parent);
+
+        //Log.e("TEST3","="+_parent.GetBreakdownId());
+        //Log.e("TEST4","="+_parent.GetParentStatusId());
+        //Log.e("TEST11","="+_parent.GetBreakdownId()+","+parent.GetBreakdownId());
+        if(!_parent.GetBreakdownId().equals(parent.GetBreakdownId())){
+            //Log.e("TEST11","=");
+            children.add(parent.GetBreakdownId());
+            children.remove(_parent.GetBreakdownId());
+
+            parent.SetBreakdownId(_parent.GetBreakdownId());
+            parent.SetParentStatusId(_parent.GetParentStatusId());
+        }
+
+        //Log.e("TEST5","="+parent.GetBreakdownId());
+        //Log.e("TEST6","="+parent.GetParentStatusId());
+
         int iResult=-1;
         //SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/d h:m:s a");
         String time = Globals.timeFormat.format(System.currentTimeMillis());
         //Log.e("RRRRRRRR",breakdown.get_id() +","+time+","+Breakdown_Status);
         SQLiteDatabase db = getWritableDatabase();
-        String query = "UPDATE BreakdownRecords SET STATUS='" + String.valueOf(Breakdown_Status) +"', " +
-                "COMPLETED_TIME= '" +  time + "', " +
-                "SUB= '" +  breakdown.get_SUB() + "' " +
-                " WHERE id='" +breakdown.get_id() + "';";
-
+        for (String child:children) {
+            //Log.e("TEST7","="+child);
+            String query = "UPDATE BreakdownRecords SET " +
+                    "PARENT_BREAKDOWN_ID ='" + parent.GetBreakdownId() +"', " +
+                    "STATUS ='" + parent.GetParentStatusId() +"', " +
+                    "GROUP_SYNCED= '0' " +
+                    " WHERE JOB_NO ='" +child + "';";
+            db.execSQL(query);
+        }
+        String query = "UPDATE BreakdownRecords SET " +
+                "PARENT_BREAKDOWN_ID ='PARENT', " +
+                "STATUS ='" + parent.GetParentStatusId() +"', " +
+                "GROUP_SYNCED= '0' " +
+                " WHERE JOB_NO='" +parent.GetBreakdownId() + "';";
         db.execSQL(query);
+
         //db.close();
 
         iResult=1; //Return Success
@@ -1424,6 +1710,7 @@ public class DBHandler extends SQLiteOpenHelper
     }*/
     public int UpdateBreakdownStatusByJobNo(String jobNo,String time, String Breakdown_Status)
     {
+        Log.e("UPDATEQ","UpdateBreakdownStatusByJobNo");
         // TODO : Maintain to two tables, one for Current status, one for status changed with all the status changes list with timesatamp
         int iResult=-1;
         SQLiteDatabase db = getWritableDatabase();
@@ -1431,6 +1718,7 @@ public class DBHandler extends SQLiteOpenHelper
                 " WHERE (JOB_NO='" +jobNo + "' or OLD_JOB_NO='" +jobNo + "') and CAST(STATUS as INTEGER) < " + Breakdown_Status + " ;";
 
         db.execSQL(query);
+        Log.e("GetBreakdownsStatus","jobStatus.status:"+Breakdown_Status);
         iResult=1; //Return Success*/
         return iResult;
     }

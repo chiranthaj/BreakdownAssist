@@ -5,28 +5,6 @@
     android:background="@android:color/white"
     android:orientation="horizontal">
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/layout1"
-        android:visibility="gone"
-        android:orientation="horizontal">
-
-        <CheckBox
-            android:id="@+id/chkTodayOnly"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="Today's breakdowns only" />
-
-        <CheckBox
-            android:id="@+id/chkNoMap"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="Do not show Map" />
-    </TableRow>
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycleview"
         android:layout_below="@+id/layout1"

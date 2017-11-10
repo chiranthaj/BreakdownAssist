@@ -1,16 +1,22 @@
 package lk.steps.breakdownassistpluss.RecyclerViewCards;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -58,6 +64,8 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
     public ImageView imgPriority;
     public CardView cardView;
     public MapView mapView;
+    public ChildListView childrenList;
+
 
     public MapLocationViewHolder(Context context, View itemLayoutView) {
         super(itemLayoutView);
@@ -78,11 +86,20 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         button1 = (Button) itemView.findViewById(R.id.card_view_button1);
         button2 = (Button) itemView.findViewById(R.id.card_view_button2);
         checkBox1 = (CheckBox) itemView.findViewById(R.id.card_view_checkBox1);
+        childrenList= (ChildListView) itemView.findViewById(R.id.childrenList);
 
-        itemLayoutView.setOnClickListener(new View.OnClickListener() {
+        cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onItemTouchListener.onCardViewTap(v, getLayoutPosition());
+            }
+        });
+        cardView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Log.e("YYY","8888 long");
+                onItemTouchListener.onCardViewLongTap(v, getLayoutPosition());
+                return true;
             }
         });
         button1.setOnClickListener(new View.OnClickListener() {
@@ -105,9 +122,9 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
             }
         });
 
-
         mapView.onCreate(null);
         mapView.getMapAsync(this);
+
     }
 
     public void setBreakdown(Breakdown breakdown) {
@@ -131,6 +148,13 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         if (mBreakdown != null) {
             updateMapContents();
         }
+        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng arg0) {
+                cardView.performClick();
+            }
+        });
+
     }
 
     private void updateMapContents() {
@@ -153,6 +177,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
             setDirections(Globals.LastLocation,mBreakdown.get_location());
             mGoogleMap.addMarker(new MarkerOptions().position(mBreakdown.get_location()).icon(icon));
             mGoogleMap.addMarker(new MarkerOptions().position(Globals.LastLocation).icon(iconBk));
+
         }
     }
 
@@ -196,4 +221,5 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
             e.printStackTrace();
         }
     }
+
 }

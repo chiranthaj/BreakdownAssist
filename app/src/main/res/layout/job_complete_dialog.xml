@@ -70,10 +70,10 @@
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
-                android:text="Type :"
+                android:text="පද්ධතිය :"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
-                android:textStyle="normal" />
+                android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spinner_failure_type"
@@ -92,11 +92,11 @@
                 android:id="@+id/text2"
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
-                android:text="Nature :"
+                android:text="ස්වභාවය :"
                 android:gravity="center_vertical"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
-                android:textStyle="normal" />
+                android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spinner_failure_nature"
@@ -115,11 +115,11 @@
                 android:id="@+id/text3"
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
-                android:text="Cause :"
+                android:text="හේතුව :"
                 android:gravity="center_vertical"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"
-                android:textStyle="normal" />
+                android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spinner_failure_cause"
@@ -138,7 +138,7 @@
                 android:id="@+id/text5"
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
-                android:text="Cause :"
+                android:text="SIN :"
                 android:gravity="center_vertical"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="25sp"

@@ -3,10 +3,12 @@ package lk.steps.breakdownassistpluss.Fragments;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -90,7 +92,11 @@ public class SearchViewFragment extends Fragment {
                         }
                     }
                 }, 2000);
+            }
 
+            @Override
+            public void onCardViewLongTap(View view, int position) {
+                //
             }
 
             @Override

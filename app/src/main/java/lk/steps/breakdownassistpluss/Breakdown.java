@@ -49,7 +49,7 @@ public class Breakdown {
     private String CONTACT_NO;
     private String PREMISES_ID;
     private String inbox_ref;
-
+    private String PARENT_BREAKDOWN_ID;
 
     public String get_PremisesID() {
         return PREMISES_ID;
@@ -100,7 +100,12 @@ public class Breakdown {
     public String get_Acct_Num() {
         return ACCT_NUM;
     }
-
+    public String get_ParentBreakdownId() {
+        return PARENT_BREAKDOWN_ID;
+    }
+    public void set_ParentBreakdownId(String ParentBreakdownId) {
+        this.PARENT_BREAKDOWN_ID=ParentBreakdownId;
+    }
     public void set_Acct_Num(String ACCT_NUM) {
         this.ACCT_NUM = ACCT_NUM;
     }

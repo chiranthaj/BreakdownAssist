@@ -4,6 +4,8 @@ import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
@@ -13,6 +15,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -20,6 +23,7 @@ import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
@@ -41,6 +45,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -57,9 +62,14 @@ import lk.steps.breakdownassistpluss.Fragments.GmapFragment;
 
 import lk.steps.breakdownassistpluss.Fragments.SearchViewFragment;
 import lk.steps.breakdownassistpluss.GpsTracker.GpsTrackerAlarmReceiver;
+import lk.steps.breakdownassistpluss.Sync.BreakdownGroup;
+import lk.steps.breakdownassistpluss.Sync.SyncRESTService;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
 import lk.steps.breakdownassistpluss.Sync.SignalRService;
 import lk.steps.breakdownassistpluss.Sync.Token;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class MainActivity extends AppCompatActivity
@@ -155,6 +165,17 @@ public class MainActivity extends AppCompatActivity
 
         trackLocation();
 
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            String M = extras.getString("SignalR-msg.M");
+            String A = extras.getString("SignalR-msg.A");
+            if(M != null & A != null){
+                SignalRService.HandleMsg(getApplicationContext(),M,A);
+
+            }
+        }
+
         //android.support.v7.app.ActionBar ab = getSupportActionBar();
         //ab.setSubtitle("Offline");
 
@@ -239,7 +260,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         stopService(new Intent(getBaseContext(), SyncService.class));
-        stopService(new Intent(getBaseContext(), SignalRService.class));
+        //stopService(new Intent(getBaseContext(), SignalRService.class));
         Globals.dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
         StopTrackLocation();
@@ -248,7 +269,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        Log.e("TEST","005");
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             Log.e("TEST","006");
@@ -638,4 +658,5 @@ public class MainActivity extends AppCompatActivity
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
     }
+
 }

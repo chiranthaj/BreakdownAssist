@@ -11,25 +11,36 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
+import java.util.List;
+
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.JobView;
@@ -37,6 +48,8 @@ import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
 import lk.steps.breakdownassistpluss.RecyclerViewCards.JobsRecyclerAdapter;
+import lk.steps.breakdownassistpluss.Sync.BreakdownGroup;
+import lk.steps.breakdownassistpluss.Sync.SyncService;
 
 
 public class JobListFragment extends Fragment {
@@ -58,6 +71,7 @@ public class JobListFragment extends Fragment {
             Log.d("JOB_STATUS", "JOB_STATUS=" + iJobs_to_Display);
             currentLocation = getLastLocation();
         }
+
     }
 
     @Nullable
@@ -166,17 +180,40 @@ public class JobListFragment extends Fragment {
         mRecyclerView.scrollToPosition(position);
     }
 
+    private static List<String> SelectedBreakdownIds = new ArrayList<String>();;
+
     public static void CreateListView(final Fragment fragment) {
-        BreakdownList = new ArrayList<Breakdown>(Globals.dbHandler.ReadBreakdowns(iJobs_to_Display, false));
-
+        BreakdownList = new ArrayList<Breakdown>(Globals.dbHandler.ReadBreakdowns(iJobs_to_Display, false, true));
         mRecyclerView = (RecyclerView) mView.findViewById(R.id.recycleview);
-
         mRecyclerView.setHasFixedSize(true);
         // use a linear layout manager
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(fragment.getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         OnItemTouchListener itemTouchListener = new OnItemTouchListener() {
+
+            @Override
+            public void onButton1Click(View view, int position) {
+                Toast.makeText(fragment.getActivity(), "Clicked Button1 in " + BreakdownList.get(position), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onButton2Click(View view, int position) {
+                Toast.makeText(fragment.getActivity(), "Clicked Button2 in " + BreakdownList.get(position), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCheckBox1Click(View view, int position) {
+                CheckBox checkBox = (CheckBox)view;
+                if(checkBox.isChecked()){
+                    SelectedBreakdownIds.add(BreakdownList.get(position).get_Job_No());
+                }else{
+                    SelectedBreakdownIds.remove(BreakdownList.get(position).get_Job_No());
+                }
+
+                //Toast.makeText(fragment.getActivity(), "Clicked onCheckBox1Click in " + BreakdownList.get(position), Toast.LENGTH_SHORT).show();
+            }
+
             @Override
             public void onCardViewTap(View view, final int position) {
                 if (TextUtils.isEmpty(BreakdownList.get(position).get_LATITUDE())) {
@@ -221,18 +258,14 @@ public class JobListFragment extends Fragment {
             }
 
             @Override
-            public void onButton1Click(View view, int position) {
-                Toast.makeText(fragment.getActivity(), "Clicked Button1 in " + BreakdownList.get(position), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onButton2Click(View view, int position) {
-                Toast.makeText(fragment.getActivity(), "Clicked Button2 in " + BreakdownList.get(position), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onCheckBox1Click(View view, int position) {
-                Toast.makeText(fragment.getActivity(), "Clicked onCheckBox1Click in " + BreakdownList.get(position), Toast.LENGTH_SHORT).show();
+            public void onCardViewLongTap(View view, int position) {
+                if(SelectedBreakdownIds.size()>0){
+                    //BreakdownGroup bg = new BreakdownGroup();
+                   // bg.SetBreakdownId(BreakdownList.get(position).get_Job_No());
+                   // bg.SetParentBreakdownId("PARENT");
+                   // bg.SetParentStatusId(String.valueOf(BreakdownList.get(position).get_Status()));
+                    GroupDialog(fragment,BreakdownList.get(position).get_Job_No());
+                }
             }
         };
 
@@ -298,18 +331,38 @@ public class JobListFragment extends Fragment {
         Log.d("CreateListView","done");
     }
 
+    private static void GroupDialog(final Fragment fragment,final String parentId){
+        final Dialog dialog = new Dialog(fragment.getActivity());
+        dialog.setContentView(R.layout.dialog_ask_grouping);
+        dialog.setCancelable(false);
+        Button btnYes = (Button) dialog.findViewById(R.id.btnYes);
+        Button btnNo = (Button) dialog.findViewById(R.id.btnNo);
+
+        btnYes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SelectedBreakdownIds.remove(parentId);
+                Globals.dbHandler.UpdateChildren(SelectedBreakdownIds,parentId);
+                SelectedBreakdownIds.clear();
+                SyncService.PostGroups(fragment.getActivity().getApplicationContext());
+                CreateListView(fragment);
+                dialog.cancel();
+            }
+        });
+        btnNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.cancel();
+            }
+        });
+        dialog.show();
+
+    }
 
     /**
      * Interface for the touch events in each item
      */
     public interface OnItemTouchListener {
-        /**
-         * Callback invoked when the user Taps one of the RecyclerView items
-         *
-         * @param view     the CardView touched
-         * @param position the index of the item touched in the RecyclerView
-         */
-        void onCardViewTap(View view, int position);
 
         /**
          * Callback invoked when the Button1 of an item is touched
@@ -334,9 +387,28 @@ public class JobListFragment extends Fragment {
          * @param position the index of the item touched in the RecyclerView
          */
         void onCheckBox1Click(View view, int position);
-    }
-    public LatLng getLastLocation() {
 
+        /**
+         * Callback invoked when the user Taps one of the RecyclerView items
+         *
+         * @param view     the CardView touched
+         * @param position the index of the item touched in the RecyclerView
+         */
+        void onCardViewTap(View view, int position);
+
+        /**
+         * Callback invoked when the user Taps one of the RecyclerView items
+         *
+         * @param view     the CardView touched
+         * @param position the index of the item touched in the RecyclerView
+         */
+        void onCardViewLongTap(View view, int position);
+    }
+
+    public LatLng getLastLocation() {
         return new LatLng(7.2944796,80.5906218);
     }
+
+
+
 }
