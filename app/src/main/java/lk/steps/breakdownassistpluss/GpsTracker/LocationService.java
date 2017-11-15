@@ -1,6 +1,8 @@
 package lk.steps.breakdownassistpluss.GpsTracker;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -66,6 +69,22 @@ public class LocationService extends Service implements
         return START_NOT_STICKY;
     }
 
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        // TODO Auto-generated method stub
+        Intent restartService = new Intent(getApplicationContext(),
+                this.getClass());
+        restartService.setPackage(getPackageName());
+        PendingIntent restartServicePI = PendingIntent.getService(
+                getApplicationContext(), 1, restartService,
+                PendingIntent.FLAG_ONE_SHOT);
+
+        //Restart the service once it has been killed android
+
+        AlarmManager alarmService = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() +100, restartServicePI);
+    }
+
     private void startTracking() {
         //Log.d(TAG, "startTracking");
 
@@ -99,6 +118,8 @@ public class LocationService extends Service implements
 
         boolean firstTimeGettingPosition = sharedPreferences.getBoolean("firstTimeGettingPosition", true);
         float distance = 0;
+
+
         if (firstTimeGettingPosition) {
             editor.putBoolean("firstTimeGettingPosition", false);
         } else {
@@ -115,6 +136,8 @@ public class LocationService extends Service implements
             editor.putFloat("totalDistanceInMeters", totalDistanceInMeters);
         }
 
+
+
         editor.putFloat("previousLatitude", (float)location.getLatitude());
         editor.putFloat("previousLongitude", (float)location.getLongitude());
         editor.apply();
@@ -127,12 +150,22 @@ public class LocationService extends Service implements
             distanceTxt= "0.0";
         }
 
+        float speed = location.getSpeed();
+        float accuracy = location.getAccuracy();
+        double altitude = location.getAltitude();
+        float bearing = location.getBearing();
+
+        if(distance>10000)distance=0;
+        if(speed>999)speed=0;
+        if(altitude>999)altitude=0;
+        if(bearing>999)bearing=0;
+
         String latTxt = String.format("%.8f",location.getLatitude());//Double.toString(location.getLatitude());
         String lonTxt = String.format("%.8f",location.getLongitude());//Double.toString(location.getLongitude());
-        String speedTxt = String.format("%.1f",location.getSpeed());//Double.toString(location.getSpeed());
-        String accuracyTxt = String.format("%.1f",location.getAccuracy());
-        String altitudeTxt = String.format("%.1f",location.getAltitude());//Double.toString(location.getAltitude());
-        String directionTxt = String.format("%.1f",location.getBearing());//Double.toString(location.getBearing());
+        String speedTxt = String.format("%.1f",speed);//Double.toString(location.getSpeed());
+        String accuracyTxt = String.format("%.1f",accuracy);
+        String altitudeTxt = String.format("%.1f",altitude);//Double.toString(location.getAltitude());
+        String directionTxt = String.format("%.1f",bearing);//Double.toString(location.getBearing());
 
         Log.d(TAG, "GPS Tracker accu="+accuracyTxt+"lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance);
         //Log.d(TAG, "longitude="+lonTxt);

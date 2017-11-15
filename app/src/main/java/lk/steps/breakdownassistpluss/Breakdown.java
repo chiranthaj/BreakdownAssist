@@ -13,7 +13,7 @@ public class Breakdown {
     public static final int JOB_ACKNOWLEDGED = 2;
     public static final int JOB_VISITED = 3;
     public static final int JOB_ATTENDING = 4;
-    public static final int JOB_DONE = 5;
+    public static final int JOB_TEMPORARY_COMPLETED = 5;
     public static final int JOB_COMPLETED = 6;
     public static final int JOB_WITHDRAWN = 7;
     public static final int JOB_REJECT = 8;

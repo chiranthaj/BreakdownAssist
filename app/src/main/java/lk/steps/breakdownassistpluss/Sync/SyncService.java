@@ -1,6 +1,7 @@
 package lk.steps.breakdownassistpluss.Sync;
 
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,6 +10,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
@@ -18,6 +22,11 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,6 +37,7 @@ import lk.steps.breakdownassistpluss.JobChangeStatus;
 import lk.steps.breakdownassistpluss.JobCompletion;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -40,6 +50,7 @@ import retrofit2.Response;
 public class SyncService extends Service {
     SyncRESTService syncRESTService;
     Timer timer;
+
     MyTimerTask myTimerTask;
     String area_id ;
     String team_id ;
@@ -427,6 +438,100 @@ public class SyncService extends Service {
         });
     }
 
+
+    public void DownloadApk() {
+        final SyncRESTService syncRESTService = new SyncRESTService(10);
+        Call<ResponseBody> call = syncRESTService.getService()
+                .GetApk( "Bearer "+ MainActivity.mToken.access_token,Globals.VERSION_CODE);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("DownloadApk", "Got the body for the file");
+
+                    new AsyncTask<Void, Long, Void>() {
+                        @Override
+                        protected Void doInBackground(Void... voids) {
+                            saveApk(response.body());
+                            return null;
+                        }
+                    }.execute();
+
+                } else {
+                    Log.d("DownloadApk", "Connection failed " + response.errorBody());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                t.printStackTrace();
+                Log.e("DownloadApk", "-"+t.getMessage());
+            }
+        });
+    }
+
+    public void saveApk(ResponseBody body) {
+        try {
+            String destinationPath = Environment.getExternalStorageDirectory()+"/apk";
+            new File(destinationPath).mkdir();
+          //  File destinationFile = new File("/data/data/" + getPackageName() + "/games/gameplay3d.zip");
+            File destinationFile = new File(destinationPath+"/app-release.apk");
+            if(destinationFile.exists())
+                destinationFile.delete();
+
+            Log.d("saveApk", "destinationPath=" +destinationPath);
+            InputStream is = null;
+            OutputStream os = null;
+
+            try {
+                Log.d("saveApk", "File Size=" + body.contentLength());
+
+                is = body.byteStream();
+                os = new FileOutputStream(destinationFile);
+
+                byte data[] = new byte[4096];
+                int count;
+                int progress = 0;
+                while ((count = is.read(data)) != -1) {
+                    os.write(data, 0, count);
+                    progress +=count;
+                    Log.d("saveApk", "Progress: " + progress + "/" + body.contentLength() + " >>>> " + (float) progress/body.contentLength());
+                }
+
+                os.flush();
+
+                Log.d("saveApk", "File saved successfully!");
+                InstallApk(destinationFile);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d("saveApk", "Failed to save the file!");
+
+            } finally {
+                if (is != null) is.close();
+                if (os != null) os.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d("saveApk", "Failed to save the file!");
+
+        }
+    }
+    private void InstallApk(File apkFile){
+        Intent myintent=new Intent();
+        myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
+        myintent.putExtra("finish_app_req","finish_app_req");
+        getApplicationContext().sendBroadcast(myintent);
+
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+
     private void CreateNotification(String msg){
         Intent i = new Intent(this, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, i,
@@ -466,8 +571,8 @@ public class SyncService extends Service {
         public void run() {
             if(i==0){
                 i=1;
-                Log.e("Sync","PostBreakdowns");
-                PostBreakdowns(getApplicationContext());
+                Log.e("Sync","DownloadApk");
+                DownloadApk();
             }else if(i==1){
                 i=2;
                 Log.e("Sync","PostBreakdownCompletion");
@@ -485,19 +590,15 @@ public class SyncService extends Service {
                 Log.e("Sync","PostMaterials");
                 PostMaterials(getApplicationContext());
             }else if(i==5){
-                i=0;
+                i=6;
                 Log.e("Sync","PostGroups");
                 PostGroups(getApplicationContext());
-            }
-            /*else if(i==4){
-                i=5;
-                Log.e("Sync","GetNewBreakdowns");
-                GetNewBreakdowns();
-            }else if(i==5){
+            }else if(i==6){
                 i=0;
-                Log.e("Sync","GetBreakdownsStatusChange");
-                GetBreakdownsStatusChange();
-            }*/
+                Log.e("Sync","PostBreakdowns");
+                PostBreakdowns(getApplicationContext());
+            }
+
         }
 
     }

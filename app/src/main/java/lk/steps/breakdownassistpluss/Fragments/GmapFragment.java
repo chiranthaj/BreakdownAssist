@@ -594,7 +594,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     /*@Override
     public boolean onMarkerClick(Marker marker) {
         //TODO : Create a Marker object and assign a Tag using setTag, then when removing getTag and remove it from db
-        //send to main activity to update the status after the user confirmation
+        //send to main activity to update the STATUS after the user confirmation
 
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         marker.showInfoWindow();
@@ -618,7 +618,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public void UpdateBreakDown(Breakdown selectedBreakdown, int iStatus) {
         Globals.dbHandler.UpdateBreakdownStatus(selectedBreakdown, iStatus);
         RefreshJobsFromDB();
-        //TODO : Add methods to handle other status like Visited etc may be with custom time, then change the marker
+        //TODO : Add methods to handle other STATUS like Visited etc may be with custom time, then change the marker
     }
 
     @Override

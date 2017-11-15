@@ -26,52 +26,37 @@ public class RepeatListener implements OnTouchListener {
 
     private Handler handler = new Handler();
 
-    private final boolean immediateClick;
-    private final int initialInterval;
+    private int initialInterval;
     private final int normalInterval;
-    private boolean haveClicked;
+    private final OnClickListener clickListener;
 
     private Runnable handlerRunnable = new Runnable() {
         @Override
         public void run() {
-            haveClicked = true;
             handler.postDelayed(this, normalInterval);
-            downView.performLongClick();
+            clickListener.onClick(downView);
         }
     };
 
     private View downView;
 
     /**
-     * @param immediateClick Whether to call onClick immediately, or only on ACTION_UP
      * @param initialInterval The interval after first click event
      * @param normalInterval The interval after second and subsequent click
      *       events
      * @param clickListener The OnClickListener, that will be called
      *       periodically
      */
-    public RepeatListener(
-            boolean immediateClick,
-            int initialInterval,
-            int normalInterval)
-    {
+    public RepeatListener(int initialInterval, int normalInterval,
+                          OnClickListener clickListener) {
+        if (clickListener == null)
+            throw new IllegalArgumentException("null runnable");
         if (initialInterval < 0 || normalInterval < 0)
             throw new IllegalArgumentException("negative interval");
 
-        this.immediateClick = immediateClick;
         this.initialInterval = initialInterval;
         this.normalInterval = normalInterval;
-    }
-
-    /**
-     * Constructs a repeat-listener with the system standard long press time
-     * for both intervals, and no immediate click.
-     */
-    public RepeatListener()
-    {
-        immediateClick = false;
-        initialInterval = android.view.ViewConfiguration.getLongPressTimeout();
-        normalInterval = initialInterval;
+        this.clickListener = clickListener;
     }
 
     public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -80,17 +65,13 @@ public class RepeatListener implements OnTouchListener {
                 handler.removeCallbacks(handlerRunnable);
                 handler.postDelayed(handlerRunnable, initialInterval);
                 downView = view;
-                if (immediateClick)
-                    downView.performClick();
-                haveClicked = immediateClick;
+                downView.setPressed(true);
+                clickListener.onClick(view);
                 return true;
             case MotionEvent.ACTION_UP:
-                // If we haven't clicked yet, click now
-                if (!haveClicked)
-                    downView.performClick();
-                // Fall through
             case MotionEvent.ACTION_CANCEL:
                 handler.removeCallbacks(handlerRunnable);
+                downView.setPressed(false);
                 downView = null;
                 return true;
         }

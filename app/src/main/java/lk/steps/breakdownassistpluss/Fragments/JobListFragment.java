@@ -138,7 +138,7 @@ public class JobListFragment extends Fragment {
         }else if (id == R.id.menu_jobs_temporary) {
             if (item.isChecked()) item.setChecked(false);
             else item.setChecked(true);
-            iJobs_to_Display = Breakdown.JOB_DONE;
+            iJobs_to_Display = Breakdown.JOB_TEMPORARY_COMPLETED;
             CreateListView(JobListFragment.this);
             return true;
         }else if (id == R.id.menu_jobs_rejected) {

@@ -166,7 +166,7 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
     @Override
     public boolean onMarkerClick(Marker marker) {
         //TODO : Create a Marker object and assign a Tag using setTag, then when removing getTag and remove it from db
-        //send to main activity to update the status after the user confirmation
+        //send to main activity to update the STATUS after the user confirmation
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         marker.showInfoWindow();
 

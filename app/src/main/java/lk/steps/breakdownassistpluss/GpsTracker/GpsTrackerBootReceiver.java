@@ -40,6 +40,9 @@ public class GpsTrackerBootReceiver extends BroadcastReceiver {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
             Intent signalRService = new Intent(context, SignalRService.class);
             context.startService(signalRService);
+
+            Intent locationService = new Intent(context, LocationService.class);
+            context.startService(locationService);
         }
     }
 }

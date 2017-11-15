@@ -44,7 +44,7 @@ public class SelectorActivity extends Activity {
         }
         finish();
     }
-    private void GetIpAddress(){
+    public static  void GetIpAddress(){
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {

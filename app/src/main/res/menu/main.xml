@@ -23,11 +23,11 @@
         android:id="@+id/action_Test_API"
         android:orderInCategory="99"
         android:title="Test API"
-        app:showAsAction="never" />-->
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/myico"
         android:icon="@drawable/end_green"
         android:title="New Breakdowns"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" />-->
 </menu>

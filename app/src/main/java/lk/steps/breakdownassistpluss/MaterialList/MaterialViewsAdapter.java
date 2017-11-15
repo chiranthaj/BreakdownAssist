@@ -6,6 +6,7 @@ import android.os.SystemClock;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -90,7 +91,7 @@ public class MaterialViewsAdapter extends ArrayAdapter<MaterialObject> {
             }
         );
 
-        up.setOnClickListener(new View.OnClickListener() {
+        /*up.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
             int n = Integer.parseInt(etCount.getText().toString())+1 ;
@@ -110,10 +111,20 @@ public class MaterialViewsAdapter extends ArrayAdapter<MaterialObject> {
                 selectedMaterials.add(item);
                 return true;
             }
-        });
+        });*/
+        up.setOnTouchListener(new RepeatListener(1000, 100, new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // the code to execute repeatedly
+                int n = Integer.parseInt(etCount.getText().toString())+1 ;
+                etCount.setText(String.valueOf(n));
+                down.setEnabled(true);
+                item.setQuantity(n);
+                selectedMaterials.add(item);
+            }
+        }));
 
-
-        down.setOnClickListener(new View.OnClickListener() {
+        /*down.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
             if(!etCount.getText().toString().equals("0")){
@@ -146,9 +157,24 @@ public class MaterialViewsAdapter extends ArrayAdapter<MaterialObject> {
                 }
                 return true;
             }
-        });
+        });*/
+        down.setOnTouchListener(new RepeatListener(1000, 100, new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // the code to execute repeatedly
+                if(!etCount.getText().toString().equals("0")){
+                    int n = Integer.parseInt(etCount.getText().toString())-1 ;
+                    etCount.setText(String.valueOf(n));
+                    item.setQuantity(n);
 
+                    if(item.getQuantity()>0)selectedMaterials.add(item);
+                    else selectedMaterials.remove(item);
 
+                }else{
+                    down.setEnabled(false);
+                }
+            }
+        }));
 
 
         return convertView;

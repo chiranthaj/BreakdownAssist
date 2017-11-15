@@ -10,7 +10,7 @@ import java.util.Date;
 public class JobChangeStatus {
     public String job_no;
     public String status;
-    public String st_code;
+   // public String STATUS;
     public String change_datetime;  //TODO :Change this to a suitable variable format
     public String comment;
     public String device_timestamp; //TODO :Change this to a suitable variable format
@@ -19,9 +19,9 @@ public class JobChangeStatus {
     public String detail_reason_code;
     public String type_failure;
 
-    public JobChangeStatus(String _job_no, String st_code, String change_datetime, String comment) {
+    public JobChangeStatus(String _job_no, int STATUS, String change_datetime, String comment) {
         this.job_no = _job_no;
-        this.st_code = st_code;
+        this.status = String.valueOf(STATUS);
         this.change_datetime = change_datetime;
         this.comment = comment;
         this.device_timestamp=Globals.timeFormat.format(new Date( System.currentTimeMillis()));

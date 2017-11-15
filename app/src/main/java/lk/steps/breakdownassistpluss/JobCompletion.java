@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class JobCompletion {
     public String JOB_NO;
-    public String st_code;
+    public String STATUS;
     public String job_completed_datetime;  //TODO :Change this to a suitable variable format
     public String comment;
     public String device_timestamp; //TODO :Change this to a suitable variable format
@@ -24,11 +24,11 @@ public class JobCompletion {
     public JobCompletion() {
     }
 
-    public JobCompletion(String JOB_NO, String st_code, String job_completed_datetime,
+    public JobCompletion(String JOB_NO, String STATUS, String job_completed_datetime,
                          String comment, String detail_reason_code, String cause, String type_failure,
                          String job_completed_by, String action_code) {
         this.JOB_NO = JOB_NO;
-        this.st_code = st_code;
+        this.STATUS = STATUS;
         this.job_completed_datetime = job_completed_datetime;
         this.comment = comment;
         this.detail_reason_code = detail_reason_code;

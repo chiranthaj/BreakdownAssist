@@ -181,7 +181,7 @@ public class JobView {
             }
         });
         //Toast.makeText(fragment.getActivity().getApplicationContext(),
-        //        "Breakdown status ="+breakdown.get_Status(), Toast.LENGTH_LONG).show();
+        //        "Breakdown STATUS ="+breakdown.get_Status(), Toast.LENGTH_LONG).show();
         if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
             btnAttending.setEnabled(false);
             btnVisted.setEnabled(false);
@@ -189,7 +189,7 @@ public class JobView {
             btnReject.setEnabled(false);
             btnCompleted.setEnabled(false);
             btnCompleted.setTextColor(Color.RED);
-        } else if (breakdown.get_Status() == Breakdown.JOB_DONE) {
+        } else if (breakdown.get_Status() == Breakdown.JOB_TEMPORARY_COMPLETED) {
             btnAttending.setEnabled(false);
             btnVisted.setEnabled(false);
             btnDone.setEnabled(false);
@@ -263,7 +263,7 @@ public class JobView {
             @Override
             public void onClick(View v) {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        "V", GetSelectedDateTime(dialog), etComment.getText().toString());
+                        Breakdown.JOB_VISITED, GetSelectedDateTime(dialog), etComment.getText().toString());
                 UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_VISITED);
                 JobListFragment.CreateListView(fragment);
                 dialog.dismiss();
@@ -318,7 +318,7 @@ public class JobView {
             @Override
             public void onClick(View v) {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        "A", GetSelectedDateTime(dialog), etComment.getText().toString());
+                        Breakdown.JOB_ATTENDING, GetSelectedDateTime(dialog), etComment.getText().toString());
                 UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_ATTENDING);
                 JobListFragment.CreateListView(fragment);
                 dialog.dismiss();
@@ -375,8 +375,8 @@ public class JobView {
             @Override
             public void onClick(View v) {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        "D", GetSelectedDateTime(dialog), etComment.getText().toString());
-                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_DONE);
+                        Breakdown.JOB_TEMPORARY_COMPLETED, GetSelectedDateTime(dialog), etComment.getText().toString());
+                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_TEMPORARY_COMPLETED);
                 JobListFragment.CreateListView(fragment);
                 JobMaterialDialog(fragment, breakdown, position);
                 dialog.dismiss();
@@ -637,7 +637,7 @@ public class JobView {
             @Override
             public void onClick(View v) {
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        "R", GetSelectedDateTime(dialog), etComment.getText().toString());
+                        Breakdown.JOB_REJECT, GetSelectedDateTime(dialog), etComment.getText().toString());
                 UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_REJECT);
                 JobListFragment.CreateListView(fragment);
                 dialog.dismiss();

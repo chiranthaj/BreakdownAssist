@@ -8,6 +8,7 @@ import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
 import lk.steps.breakdownassistpluss.JobChangeStatus;
 import lk.steps.breakdownassistpluss.MaterialList.MaterialObject;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.http.Body;
@@ -17,6 +18,8 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.Streaming;
+import retrofit2.http.Url;
 
 /**
  * Created by JagathPrasnaga on 24/08/2017.
@@ -76,5 +79,9 @@ public interface SyncApi {
                                                     @Path("areaId_ecscId") String areaId_ecscId);*/
 
 
+    @Streaming
+    @GET("/Mobile/GetApk/{id}")
+    Call<ResponseBody> GetApk(@Header("Authorization") String auth,
+                                        @Path("id") int id);
 
 }

@@ -31,6 +31,7 @@ public class Globals
     private static SimpleDateFormat timeFormat2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a" , Locale.US); // This format is used to easily identify to user
     public static long AverageTime = 0;
     public static DBHandler dbHandler;
+    public static int VERSION_CODE;
 
     public static void initAreaCodes(Context context)
     {

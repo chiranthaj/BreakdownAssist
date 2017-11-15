@@ -15,6 +15,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -175,7 +179,7 @@ public class MainActivity extends AppCompatActivity
 
             }
         }
-
+        SetVersion();
         //android.support.v7.app.ActionBar ab = getSupportActionBar();
         //ab.setSubtitle("Offline");
 
@@ -186,6 +190,18 @@ public class MainActivity extends AppCompatActivity
     private String ReadStringPreferences(String key, String defaultValue){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getString(key, defaultValue);
+    }
+
+    private void SetVersion(){
+        try{
+            PackageManager manager = context.getPackageManager();
+            PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
+            Globals.VERSION_CODE = info.versionCode;
+            Log.e("VERSION_CODE","="+info.versionCode);
+        }catch(Exception e){
+            Log.e("VERSION_CODE","="+e.getMessage());
+        }
+
     }
 
     @Override
@@ -238,20 +254,32 @@ public class MainActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
             //String sID = intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
             //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
-            String json = intent.getStringExtra("new_breakdowns");
+
             //String ring = intent.getStringExtra("ring");
-            String refreshReq = intent.getStringExtra("job_status_changed");
+            String statusUpdate = intent.getStringExtra("job_status_changed");
+            String newBreakdowns = intent.getStringExtra("new_breakdowns");
+            String finish_app_req = intent.getStringExtra("finish_app_req");
+
             Log.d("TEST","BroadcastReceiver0");
             //Log.e("TEST","555");
-            if(json != null){Log.d("TEST","BroadcastReceiver1");
+            if(newBreakdowns != null){
+                String json = intent.getStringExtra("new_breakdown_list");
                 Type type = new TypeToken<List<Breakdown>>(){}.getType();
                 Gson gson = new Gson();
                 List<Breakdown> breakdowns = gson.fromJson(json, type);
                 NewBreakdownsDialog(breakdowns);
-            }else if(refreshReq!=null){Log.d("TEST","BroadcastReceiver2");
+            }else if(statusUpdate!=null){
+                String json = intent.getStringExtra("updated_breakdowns");
+                Type type = new TypeToken<List<JobChangeStatus>>(){}.getType();
+                Gson gson = new Gson();
+                List<JobChangeStatus> jobChangeStatus = gson.fromJson(json, type);
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
-                NewStatusDialog();
+                NewStatusDialog(jobChangeStatus);
                 if(JobListFragment.mAdapter!=null)JobListFragment.mAdapter.notifyDataSetChanged();
+            }
+            else if(finish_app_req!=null){
+                //Log.d("TEST","BroadcastReceiver"+finish_app_req);
+                finish();
             }
         }
     };
@@ -519,17 +547,18 @@ public class MainActivity extends AppCompatActivity
     }*/
 
 
-    private Dialog newBreakdownDialog;
+    //private Dialog newBreakdownDialog;
     private void NewBreakdownsDialog(final List<Breakdown> breakdowns){
 
-        final List<Breakdown> AllNotAckedBreakdowns = Globals.dbHandler.ReadNotAckedBreakdowns();
-
-        if(newBreakdownDialog!=null)newBreakdownDialog.dismiss();;
+        final List<Breakdown> AllNotAckedBreakdowns=breakdowns;
+        //final List<Breakdown> AllNotAckedBreakdowns = Globals.dbHandler.ReadNotAckedBreakdowns();
+        final Dialog newBreakdownDialog;
+      //  if(newBreakdownDialog!=null)newBreakdownDialog.dismiss();;
         newBreakdownDialog = new Dialog(this);
         newBreakdownDialog.setContentView(R.layout.alert_dialog);
         TextView msg = (TextView) newBreakdownDialog.findViewById(R.id.textDialog);
         if(AllNotAckedBreakdowns.size() == 1){
-            msg.setText("New breakdown received.");
+            msg.setText("New breakdown received.\n( ID : "+AllNotAckedBreakdowns.get(0).get_Job_No()+" )");
         }else{
             msg.setText("New "+AllNotAckedBreakdowns.size()+" breakdowns received.");
         }
@@ -544,7 +573,7 @@ public class MainActivity extends AppCompatActivity
                     myintent.setAction("lk.steps.breakdownassistpluss.stopmediaplayer");
                     getApplicationContext().sendBroadcast(myintent);
                 newBreakdownDialog.dismiss();
-                newBreakdownDialog = null;
+                //newBreakdownDialog = null;
             }
         });
         newBreakdownDialog.show();
@@ -552,13 +581,33 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void NewStatusDialog(){
+    private void NewStatusDialog(List<JobChangeStatus> jobChangeStatus){
+        int STATUS = Integer.parseInt(jobChangeStatus.get(0).status);
+        String statusWord = "-";
+        if(STATUS==Breakdown.JOB_DELIVERED){
+            statusWord="Not acknowledged";
+        }if(STATUS==Breakdown.JOB_ATTENDING){
+            statusWord=("Attending");
+        }else if(STATUS==Breakdown.JOB_VISITED){
+            statusWord=("Visited");
+        }else if(STATUS==Breakdown.JOB_TEMPORARY_COMPLETED){
+            statusWord=("Temporary completed" );
+        }else if(STATUS==Breakdown.JOB_COMPLETED){
+            statusWord=("Completed");
+        }else if(STATUS==Breakdown.JOB_REJECT){
+            statusWord=("Rejected");
+        }else if(STATUS==Breakdown.JOB_WITHDRAWN){
+            statusWord=("Withdrawn");
+        }
 
-        if(newBreakdownDialog!=null)return;
+
+
+        final Dialog newBreakdownDialog;
+       // if(newBreakdownDialog!=null)return;
         newBreakdownDialog = new Dialog(this);
         newBreakdownDialog.setContentView(R.layout.alert_dialog);
         TextView msg = (TextView) newBreakdownDialog.findViewById(R.id.textDialog);
-        msg.setText("Job status has updated.");
+        msg.setText("Breakdown \n( ID : "+jobChangeStatus.get(0).job_no+" ) status changed to "+statusWord+".");
         //dialog.setTitle("BreakdownAssist...");
         newBreakdownDialog.setCancelable(false);
         Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
@@ -566,7 +615,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 newBreakdownDialog.dismiss();
-                newBreakdownDialog = null;
+               // newBreakdownDialog = null;
             }
         });
         newBreakdownDialog.show();
@@ -578,14 +627,14 @@ public class MainActivity extends AppCompatActivity
             String time = "" + Globals.timeFormat.format(new Date());
             for (Breakdown breakdown :breakdowns) {
                 //String jobNo = dbHandler.GetNewJobNumber(breakdown.get_Job_No());
-                JobChangeStatus status = new JobChangeStatus();
-                status.job_no=Globals.dbHandler.GetNewJobNumber(breakdown.get_Job_No());
-                status.change_datetime=time;
-                status.device_timestamp=time;
-                status.synchro_mobile_db=0;
-                status.st_code=String.valueOf(Breakdown.JOB_ACKNOWLEDGED);
+                JobChangeStatus STATUS = new JobChangeStatus();
+                STATUS.job_no=Globals.dbHandler.GetNewJobNumber(breakdown.get_Job_No());
+                STATUS.change_datetime=time;
+                STATUS.device_timestamp=time;
+                STATUS.synchro_mobile_db=0;
+                STATUS.status=String.valueOf(Breakdown.JOB_ACKNOWLEDGED);
 
-                Globals.dbHandler.addJobStatusChangeRec(status);
+                Globals.dbHandler.addJobStatusChangeRec(STATUS);
                 Globals.dbHandler.UpdateBreakdownStatusByJobNo(breakdown.get_Job_No(), "", String.valueOf(Breakdown.JOB_ACKNOWLEDGED));
             }
             SyncService.PostBreakdownStatusChange(getAppContext());

@@ -65,40 +65,42 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         holder.description.setText(breakdownList.get(position).get_Full_Description());
        // holder.description.setText("-");
 
-        int status = breakdownList.get(position).get_Status();
+        int STATUS = breakdownList.get(position).get_Status();
         Drawable drawable = (Drawable)holder.completed_date_time.getBackground();
         String Completed_Time = "*";
         try{
-            Completed_Time = Globals.parseDate(breakdownList.get(position).get_Completed_Time());
+            if(!breakdownList.get(position).get_Completed_Time().isEmpty()){
+                Completed_Time = Globals.parseDate(breakdownList.get(position).get_Completed_Time());
+            }
         }catch(Exception e){
 
         }
 
-        if(status==Breakdown.JOB_DELIVERED){
+        if(STATUS==Breakdown.JOB_DELIVERED){
             holder.JOB_NO.setTextColor(Color.parseColor("#6c0082"));
             holder.completed_date_time.setText("Not acknowledged");
             drawable.setColorFilter(Color.parseColor("#6c0082"), PorterDuff.Mode.SRC_IN);
-        }if(status==Breakdown.JOB_ATTENDING){
+        }if(STATUS==Breakdown.JOB_ATTENDING){
             holder.JOB_NO.setTextColor(Color.parseColor("#06823e"));
             holder.completed_date_time.setText("Attending");
             drawable.setColorFilter(Color.parseColor("#06823e"), PorterDuff.Mode.SRC_IN);
-        }else if(status==Breakdown.JOB_VISITED){
+        }else if(STATUS==Breakdown.JOB_VISITED){
             holder.JOB_NO.setTextColor(Color.parseColor("#9b8404"));
             holder.completed_date_time.setText("Visited");
             drawable.setColorFilter(Color.parseColor("#9b8404"), PorterDuff.Mode.SRC_IN);
-        }else if(status==Breakdown.JOB_DONE){
+        }else if(STATUS==Breakdown.JOB_TEMPORARY_COMPLETED){
             holder.JOB_NO.setTextColor(Color.parseColor("#033e7c"));
             holder.completed_date_time.setText("Temporary completed on " +Completed_Time);
             drawable.setColorFilter(Color.parseColor("#033e7c"), PorterDuff.Mode.SRC_IN);
-        }else if(status==Breakdown.JOB_COMPLETED){
+        }else if(STATUS==Breakdown.JOB_COMPLETED){
             holder.JOB_NO.setTextColor(Color.parseColor("#0d7504"));
             holder.completed_date_time.setText("Completed on "+Completed_Time);
             drawable.setColorFilter(Color.parseColor("#0d7504"), PorterDuff.Mode.SRC_IN);
-        }else if(status==Breakdown.JOB_REJECT){
+        }else if(STATUS==Breakdown.JOB_REJECT){
             holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
             holder.completed_date_time.setText("Rejected on "+Completed_Time);
             drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
-        }else if(status==Breakdown.JOB_WITHDRAWN){
+        }else if(STATUS==Breakdown.JOB_WITHDRAWN){
             holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
             holder.completed_date_time.setText("Withdrawn on "+Completed_Time);
             drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
@@ -154,13 +156,13 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         }
 
 
-        /*if(status == Breakdown.JOB_COMPLETED){
+        /*if(STATUS == Breakdown.JOB_COMPLETED){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#d8d8d8"));
-        }else if(status == Breakdown.JOB_DONE){
+        }else if(STATUS == Breakdown.JOB_TEMPORARY_COMPLETED){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#f9ffce"));
-        }else if(status == Breakdown.JOB_ATTENDING){
+        }else if(STATUS == Breakdown.JOB_ATTENDING){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#c9ffcb"));
-        }else if(status == Breakdown.JOB_VISITED){
+        }else if(STATUS == Breakdown.JOB_VISITED){
             holder.cardView.setCardBackgroundColor(Color.parseColor("#dbfffb"));
         }else {
             holder.cardView.setCardBackgroundColor(Color.parseColor("#fbddff"));

@@ -21,6 +21,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -29,6 +30,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.net.InetAddress;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -42,6 +45,7 @@ import lk.steps.breakdownassistpluss.JobChangeStatus;
 import lk.steps.breakdownassistpluss.JobCompletion;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
+import lk.steps.breakdownassistpluss.SelectorActivity;
 import microsoft.aspnet.signalr.client.ErrorCallback;
 import microsoft.aspnet.signalr.client.LogLevel;
 import microsoft.aspnet.signalr.client.Logger;
@@ -83,6 +87,7 @@ public class SignalRService extends Service {
         mHandler = new Handler(Looper.getMainLooper());
         try{
             registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.stopmediaplayer"));
+            if(!ReadBooleanPreferences("server",false))SelectorActivity.GetIpAddress();
         }catch(Exception e){
         }
     }
@@ -437,7 +442,8 @@ public class SignalRService extends Service {
                                 Intent myintent=new Intent();
                                 myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
                                 myintent.putExtra("_id",sIssuedBreakdownID);
-                                myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
+                                myintent.putExtra("new_breakdowns","new_breakdowns");
+                                myintent.putExtra("new_breakdown_list",new Gson().toJson(breakdowns));
                                 //myintent.putExtra("ring",ring);
                                 context.sendBroadcast(myintent);
 
@@ -545,7 +551,7 @@ public class SignalRService extends Service {
                                 breakdownIds.add(jobStatus.job_no);
                                 /*Log.e("GetBreakdownsStatus","JOB_NO-"+jobStatus.job_no);
                                 Log.e("GetBreakdownsStatus","change_datetime-"+jobStatus.change_datetime);
-                                Log.e("GetBreakdownsStatus","status-"+jobStatus.status);
+                                Log.e("GetBreakdownsStatus","STATUS-"+jobStatus.STATUS);
                                 Log.e("GetBreakdownsStatus","type_failure-"+jobStatus.type_failure);
                                 Log.e("GetBreakdownsStatus","cause-"+jobStatus.cause);
                                 Log.e("GetBreakdownsStatus","detail_reason_code-"+jobStatus.detail_reason_code);*/
@@ -554,25 +560,25 @@ public class SignalRService extends Service {
 
                                 if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_VISITED))){//Visited
                                     Log.e("GetBreakdownsStatus","Visited:"+jobStatus.job_no);
-                                    jobStatus.st_code="V";
+                                    //jobStatus.STATUS="V";
                                     result=Globals.dbHandler.addJobStatusChangeRec(jobStatus);
                                     Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
 
                                 }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_ATTENDING))){//Attending
                                     Log.e("GetBreakdownsStatus","Attending:"+jobStatus.job_no);
-                                    jobStatus.st_code="A";
+                                   // jobStatus.STATUS="A";
                                     result=Globals.dbHandler.addJobStatusChangeRec(jobStatus);
                                     Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
 
-                                }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_DONE))){//Done
+                                }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_TEMPORARY_COMPLETED))){//Done
                                     Log.e("GetBreakdownsStatus","Done:"+jobStatus.job_no);
-                                    jobStatus.st_code="D";
+                                   // jobStatus.STATUS="D";
                                     result=Globals.dbHandler.addJobStatusChangeRec(jobStatus);
                                     Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,"", jobStatus.status);
 
                                 }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_COMPLETED))){//Completed
                                     Log.e("GetBreakdownsStatus","Completed:"+jobStatus.job_no);
-                                    jobStatus.st_code="C";
+                                   // jobStatus.STATUS="C";
                                     JobCompletion jobCompletionRec = new JobCompletion();
                                     jobCompletionRec.JOB_NO = jobStatus.job_no;
                                     jobCompletionRec.job_completed_datetime = jobStatus.change_datetime;
@@ -585,11 +591,11 @@ public class SignalRService extends Service {
                                 }else if(jobStatus.status.equals(String.valueOf(Breakdown.JOB_REJECT)) |//reject
                                         jobStatus.status.equals(String.valueOf(Breakdown.JOB_WITHDRAWN))){
                                     Log.e("GetBreakdownsStatus","reject:"+jobStatus.job_no);
-                                    jobStatus.st_code="R";
+                                   // jobStatus.STATUS="R";
                                     result=Globals.dbHandler.addJobStatusChangeRec(jobStatus);
                                     Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no,jobStatus.change_datetime, jobStatus.status);
                                 }
-                                Log.e("GetBreakdownsStatus","jobStatus.status:"+jobStatus.status);
+                                Log.e("GetBreakdownsStatus","jobStatus.STATUS:"+jobStatus.status);
                             }
 
                             PostFeedback("BS",breakdownIds);
@@ -609,6 +615,7 @@ public class SignalRService extends Service {
                                 Intent myintent=new Intent();
                                 myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
                                 myintent.putExtra("job_status_changed","refresh_list");
+                                myintent.putExtra("updated_breakdowns",new Gson().toJson(jobChangeStatus));
                                 context.sendBroadcast(myintent);
 
                                 if(jobChangeStatus.size() == 1){
@@ -685,6 +692,7 @@ public class SignalRService extends Service {
         @Override
         public void run() {
                 Log.e("SignalR ", "*NOT*Connected*");
+                if(!ReadBooleanPreferences("server",false))SelectorActivity.GetIpAddress();
                 startSignalR();
         }
     }
@@ -732,5 +740,11 @@ public class SignalRService extends Service {
                     }
         }
     };
+
+    private boolean ReadBooleanPreferences(String key, boolean defaultValue){
+        SharedPreferences prfs = PreferenceManager.getDefaultSharedPreferences(this);
+        //SharedPreferences prfs = getPreferences(Context.MODE_PRIVATE);
+        return prfs.getBoolean(key, defaultValue);
+    }
 }
 
