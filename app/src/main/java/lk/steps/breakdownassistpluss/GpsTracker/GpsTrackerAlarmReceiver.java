@@ -11,10 +11,10 @@ import android.util.Log;
 
 // make sure we use a WakefulBroadcastReceiver so that we acquire a partial wakelock
 public class GpsTrackerAlarmReceiver extends WakefulBroadcastReceiver {
-    private static final String TAG = "GpsTrackerAlarmReceiver";
+    private static final String TAG = "GpsTracker";
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.e(TAG, "onReceive");
+        Log.e(TAG, "GpsTrackerAlarmReceiver onReceive");
         context.startService(new Intent(context, LocationService.class));
     }
 }

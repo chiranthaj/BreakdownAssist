@@ -33,6 +33,7 @@ import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,6 +41,7 @@ import java.util.concurrent.ExecutionException;
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
 import lk.steps.breakdownassistpluss.Globals;
+import lk.steps.breakdownassistpluss.GpsTracker.GpsTrackerAlarmReceiver;
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
 import lk.steps.breakdownassistpluss.JobChangeStatus;
 import lk.steps.breakdownassistpluss.JobCompletion;
@@ -63,8 +65,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class SignalRService extends Service {
-    private HubConnection mHubConnection;
-    private HubProxy mHubProxy;
+    private static HubConnection mHubConnection;
+    private static HubProxy mHubProxy;
     private Handler mHandler; // to display Toast message
     private final IBinder mBinder = new LocalBinder(); // Binder given to clients
     Timer timer;
@@ -74,9 +76,8 @@ public class SignalRService extends Service {
     private boolean RetryTimerStarted=false;
     private boolean mBound = false;
     SyncRESTService syncRESTService;
-    //String serverUrl = "http://192.168.0.196:8099";
-    //String serverUrl = "http://192.168.137.1:31525";
-    //String serverUrl = "http://111.223.135.20";
+    private static String area_id;
+    private static String team_id;
 
     public SignalRService() {
     }
@@ -150,6 +151,9 @@ public class SignalRService extends Service {
         AlarmManager alarmService = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
         alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() +100, restartServicePI);
     }
+
+
+
     /**
      * Class used for the client Binder.  Because we know this service always
      * runs in the same process as its clients, we don't need to deal with IPC.
@@ -182,6 +186,23 @@ public class SignalRService extends Service {
         return prfs.getString(key, defaultValue);
     }
 
+    public static void PostGpsLocation(String Timestamp, String lat, String lon, String accu) {
+        String SERVER_METHOD_SEND_TO = "PostGpsLocation";
+        String groupId = area_id+"_"+team_id;
+
+        if(!Globals.serverConnected) return;
+        try{
+            mHubProxy.invoke(SERVER_METHOD_SEND_TO,
+                    mHubConnection.getConnectionId(),
+                    Globals.mToken.user_id,
+                    groupId,Timestamp, lat, lon, accu );
+
+        }catch(Exception e){
+        }
+    }
+
+
+
     private void startSignalR() {
         Platform.loadPlatformComponent(new AndroidPlatformComponent());
 
@@ -207,8 +228,8 @@ public class SignalRService extends Service {
         SignalRFuture<Void> signalRFuture = mHubConnection.start(clientTransport);
 
         //final String group_token = ReadStringPreferences("group_token","");
-        final String area_id = ReadStringPreferences("area_id","");
-        final String team_id = ReadStringPreferences("team_id","");
+        area_id = ReadStringPreferences("area_id","");
+        team_id = ReadStringPreferences("team_id","");
         Log.e("SignalR ", "*groupid*"+area_id+"_"+team_id);
         mHubConnection.setGroupsToken(area_id + "_" + team_id);
 
@@ -248,42 +269,25 @@ public class SignalRService extends Service {
                 }
                 , String.class,String.class);
 
-
         // Subscribe to the received event
         mHubConnection.received(new MessageReceivedHandler() {
 
             @Override
             public void onMessageReceived(final JsonElement json) {
 
-                //Log.e("onMessageReceived ", json.toString());
+                Log.e("onMessageReceived ", json.toString());
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         Gson gson = new Gson();
                         SignalRObject msg = gson.fromJson(json, SignalRObject.class);
-
-
-                        StartMainActivityIfRequired(getApplicationContext(), msg);
-                      // Log.d("obj-H","-"+msg.H);
-                     //   Log.d("obj-M","-"+msg.M);
-                     //   Log.d("obj-A","-"+msg.A);
-                     //   JsonObject jobject = json.getAsJsonObject();
-                       // String result = jobject.get("A").toString().replace("\"","").replace("[","").replace("]","");
-                        //String msg = json.toString();
-                       /* if(msg.M.equals("GetNewBreakdowns")){
-                            Log.e("SignalR", "GetNewBreakdowns");
-                            Toast.makeText(getApplicationContext(),"SignalR NewBreakdowns request received", Toast.LENGTH_SHORT).show();
-                            GetBreakdowns(getApplicationContext(), msg.A.get(1));
-                        }else if(msg.M.equals("GetBreakdownStatusUpdate")){
-                            Log.e("SignalR", "GetBreakdownStatusUpdate");
-                            Toast.makeText(getApplicationContext(),"SignalR BreakdownStatusUpdate request received", Toast.LENGTH_SHORT).show();
-                            GetBreakdownsStatusChange(getApplicationContext(),msg.A.get(1));
-                        }else if(msg.M.equals("GetBreakdownGroups")){
-                            Log.e("SignalR", "GetBreakdownGroups");
-                            Toast.makeText(getApplicationContext(),"SignalR BreakdownGroups request received", Toast.LENGTH_SHORT).show();
-                            GetBreakdownGroups(getApplicationContext(),msg.A.get(1));
-                        }*/
-                        HandleMsg(getApplicationContext(),msg.M,msg.A.get(1));
+                       // Log.e("onMessageReceived ", msg.toString());
+                        if(msg.M!=null) {
+                            if(!msg.M.equals("PostFeedback")){//Post feedback not required running activity
+                                StartMainActivityIfRequired(getApplicationContext(), msg);
+                            }
+                            HandleMsg(getApplicationContext(), msg.M, msg.A);
+                        }
                     }
                 });
             }
@@ -323,19 +327,32 @@ public class SignalRService extends Service {
         });
     }
 
-    public static void HandleMsg(Context context,String method, String breakdownId){
+    public static void HandleMsg(Context context,String method, List<String> data){
         if(method.equals("GetNewBreakdowns")){
             Log.e("SignalR", "GetNewBreakdowns");
             Toast.makeText(context,"SignalR NewBreakdowns request received", Toast.LENGTH_SHORT).show();
+            String breakdownId = data.get(1);
             GetBreakdowns(context, breakdownId);
         }else if(method.equals("GetBreakdownStatusUpdate")){
             Log.e("SignalR", "GetBreakdownStatusUpdate");
             Toast.makeText(context,"SignalR BreakdownStatusUpdate request received", Toast.LENGTH_SHORT).show();
+            String breakdownId = data.get(1);
             GetBreakdownsStatusChange(context,breakdownId);
         }else if(method.equals("GetBreakdownGroups")){
             Log.e("SignalR", "GetBreakdownGroups");
             Toast.makeText(context,"SignalR BreakdownGroups request received", Toast.LENGTH_SHORT).show();
+            String breakdownId = data.get(1);
             GetBreakdownGroups(context,breakdownId);
+        }else if(method.equals("PostFeedback")){
+            Log.e("SignalR", "PostFeedback");
+            Toast.makeText(context,"SignalR PostFeedback received", Toast.LENGTH_SHORT).show();
+            String fbType = data.get(1);
+            if(fbType.equals("GpsPoint")){
+                String timestamp = data.get(2);
+                Globals.dbHandler.UpdateTrackingDataByTimeStamp(timestamp);//Successfully done
+            }
+
+           // GetBreakdownGroups(context,breakdownId);
         }
     }
 
@@ -350,7 +367,8 @@ public class SignalRService extends Service {
                     Intent myIntent = new Intent(SignalRService.this, MainActivity.class);
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     myIntent.putExtra("SignalR-msg.M",msg.M);
-                    myIntent.putExtra("SignalR-msg.A",msg.A.get(1));
+                   // myIntent.putExtra("SignalR-msg.A",msg.A.get(1));
+                    myIntent.putStringArrayListExtra("SignalR-msg.A",msg.A);
                     SignalRService.this.startActivity(myIntent);
                 }
             });
@@ -389,8 +407,8 @@ public class SignalRService extends Service {
         try{
             final SyncRESTService syncRESTService = new SyncRESTService(10);
             Call<List<Breakdown>> call = syncRESTService.getService()
-                    .GetBreakdowns( "Bearer "+ MainActivity.mToken.access_token,
-                            MainActivity.mToken.user_id,breakdownId);
+                    .GetBreakdowns( "Bearer "+ Globals.mToken.access_token,
+                            Globals.mToken.user_id,breakdownId);
 
             call.enqueue(new Callback<List<Breakdown>>(){
                 @Override
@@ -403,10 +421,20 @@ public class SignalRService extends Service {
 
                         if(breakdowns.size()>0){
                             String ring = "0";
-                            List<String> breakdownIds = new ArrayList<String>();
+                            List<FeedbackObject> feedbacks = new ArrayList<FeedbackObject>();
                             long result = 0;
                             for (Breakdown breakdown :breakdowns) {
-                                breakdownIds.add(breakdown.get_Job_No());
+
+                                FeedbackObject feedback = new FeedbackObject();
+                                feedback.FeedbackType="NB";
+                                feedback.BreakdownId = breakdown.get_Job_No();
+                                feedback.StatusId = String.valueOf(breakdown.get_Status());
+                                feedback.StatusTime = breakdown.get_Received_Time();
+                                feedback.UserId=Globals.mToken.user_id;
+                                feedback.AreaId= Globals.mToken.area_id;
+                                feedback.EcscId=Globals.mToken.team_id;
+                                feedbacks.add(feedback);
+
                                 breakdown.set_BA_SERVER_SYNCED("1");
                                 breakdown.set_JOB_SOURCE("BA");
                                 result=Globals.dbHandler.addBreakdown2(breakdown);
@@ -415,7 +443,7 @@ public class SignalRService extends Service {
                                 if(breakdown.get_Priority() == 4) ring = "1";
                             }
 
-                            PostFeedback("NB",breakdownIds);
+                            PostFeedbackNew(feedbacks);
 
                             if(result >0){
                                 if(mediaPlayer==null){
@@ -485,7 +513,7 @@ public class SignalRService extends Service {
         try{
             final SyncRESTService syncRESTService = new SyncRESTService(10);
             Call<List<BreakdownGroup>> call = syncRESTService.getService()
-                    .GetBreakdownGroups( "Bearer "+ MainActivity.mToken.access_token,
+                    .GetBreakdownGroups( "Bearer "+ Globals.mToken.access_token,
                             ParentBreakdownId);
 
             call.enqueue(new Callback<List<BreakdownGroup>>(){
@@ -499,9 +527,34 @@ public class SignalRService extends Service {
                         Log.e("GetBreakdownGroups","Number-"+response.body());
                         if(breakdownGroups.size()>0){
                             Globals.dbHandler.AddBreakdownGroups(breakdownGroups);
-                            List<String> breakdownIds = new ArrayList<String>();
-                            breakdownIds.add(breakdownGroups.get(0).GetParentBreakdownId());
-                            PostFeedback("BG",breakdownIds);
+                            List<FeedbackObject> feedbacks = new ArrayList<FeedbackObject>();
+                            FeedbackObject feedback = new FeedbackObject();
+                            feedback.FeedbackType="BG";
+                            feedback.BreakdownId = breakdownGroups.get(0).GetParentBreakdownId();
+                            //feedback.StatusId = String.valueOf(breakdown.get_Status());
+                            //feedback.StatusTime = breakdown.get_Received_Time();
+                            feedback.UserId=Globals.mToken.user_id;
+                            feedback.AreaId= Globals.mToken.area_id;
+                            feedback.EcscId=Globals.mToken.team_id;
+                            feedbacks.add(feedback);
+
+                            PostFeedbackNew(feedbacks);
+                            if(mediaPlayer==null){
+                                mediaPlayer = MediaPlayer.create(context, R.raw.iphone);
+                                mediaPlayer.setVolume(1.0f , 1.0f);
+                                mediaPlayer.start();
+                            }else if(!mediaPlayer.isPlaying()){
+                                mediaPlayer = MediaPlayer.create(context, R.raw.iphone);
+                                mediaPlayer.setVolume(1.0f , 1.0f);
+                                mediaPlayer.start();
+                            }
+                            //Informing the Map view about the new bd, then it can add it
+                            Intent intent=new Intent();
+                            intent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
+                            intent.putExtra("group_breakdowns","group_breakdowns");
+                            context.sendBroadcast(intent);
+
+                            CreateNotification(context,"Breakdown group created.");
                         }
                     } else if (response.errorBody() != null) {
                         Globals.serverConnected = false;
@@ -534,7 +587,7 @@ public class SignalRService extends Service {
         try{
             final SyncRESTService syncRESTService = new SyncRESTService(10);
             Call<List<JobChangeStatus>> call = syncRESTService.getService()
-                    .GetBreakdownsStatus( "Bearer "+ MainActivity.mToken.access_token,breakdownId);
+                    .GetBreakdownsStatus( "Bearer "+ Globals.mToken.access_token,breakdownId);
 
             call.enqueue(new Callback<List<JobChangeStatus>>(){
                 @Override
@@ -545,10 +598,18 @@ public class SignalRService extends Service {
                         List<JobChangeStatus> jobChangeStatus = response.body();
                         Log.e("GetBreakdownsStatus","Number-"+jobChangeStatus.size());
                         if(jobChangeStatus.size()>0){
-                            List<String> breakdownIds = new ArrayList<String>();
+                            List<FeedbackObject> feedbacks = new ArrayList<FeedbackObject>();
                             long result = 0;
                             for (JobChangeStatus jobStatus :jobChangeStatus) {
-                                breakdownIds.add(jobStatus.job_no);
+                                FeedbackObject feedback = new FeedbackObject();
+                                feedback.FeedbackType="BS";
+                                feedback.BreakdownId = jobStatus.job_no;
+                                feedback.StatusId = jobStatus.status;
+                                feedback.StatusTime = jobStatus.change_datetime;
+                                feedback.UserId=Globals.mToken.user_id;
+                                feedback.AreaId= Globals.mToken.area_id;
+                                feedback.EcscId=Globals.mToken.team_id;
+                                feedbacks.add(feedback);
                                 /*Log.e("GetBreakdownsStatus","JOB_NO-"+jobStatus.job_no);
                                 Log.e("GetBreakdownsStatus","change_datetime-"+jobStatus.change_datetime);
                                 Log.e("GetBreakdownsStatus","STATUS-"+jobStatus.STATUS);
@@ -598,7 +659,7 @@ public class SignalRService extends Service {
                                 Log.e("GetBreakdownsStatus","jobStatus.STATUS:"+jobStatus.status);
                             }
 
-                            PostFeedback("BS",breakdownIds);
+                            PostFeedbackNew(feedbacks);
 
                             if(result > 0){
                                 if(mediaPlayer==null){
@@ -612,11 +673,11 @@ public class SignalRService extends Service {
                                 }
 
                                 //Informing the Map view about the new bd, then it can add it
-                                Intent myintent=new Intent();
-                                myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
-                                myintent.putExtra("job_status_changed","refresh_list");
-                                myintent.putExtra("updated_breakdowns",new Gson().toJson(jobChangeStatus));
-                                context.sendBroadcast(myintent);
+                                Intent intent=new Intent();
+                                intent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
+                                intent.putExtra("job_status_changed","refresh_list");
+                                intent.putExtra("updated_breakdowns",new Gson().toJson(jobChangeStatus));
+                                context.sendBroadcast(intent);
 
                                 if(jobChangeStatus.size() == 1){
                                     CreateNotification(context,"One breakdown has updated.");
@@ -653,16 +714,17 @@ public class SignalRService extends Service {
         }
     }
 
-
+    /*
     private static void PostFeedback(String type, List<String> data){
 
         data.add(0,type);
-        data.add(1,MainActivity.mToken.user_id);
-
+        data.add(1,Globals.mToken.user_id);
+        data.add(2,Globals.mToken.area_id);
+        data.add(3,Globals.mToken.team_id);
 
         final SyncRESTService syncRESTService = new SyncRESTService(10);
         Call<String> call = syncRESTService.getService()
-                .PostFeedback( "Bearer "+ MainActivity.mToken.access_token, data);
+                .PostFeedback( "Bearer "+ Globals.mToken.access_token, data);
 
         call.enqueue(new Callback<String>(){
 
@@ -686,8 +748,35 @@ public class SignalRService extends Service {
         });
 
     }
+*/
+    private static void PostFeedbackNew(List<FeedbackObject> data){
 
+        final SyncRESTService syncRESTService = new SyncRESTService(10);
+        Call<FeedbackObject> call = syncRESTService.getService()
+                .PostFeedback( "Bearer "+ Globals.mToken.access_token, data);
 
+        call.enqueue(new Callback<FeedbackObject>(){
+
+            @Override
+            public void onResponse(Call<FeedbackObject> call, Response<FeedbackObject> response) {
+                if (response.isSuccessful()) {
+                    Globals.serverConnected = true;
+
+                } else if (response.errorBody() != null) {
+                    Globals.serverConnected = false;
+
+                }
+                syncRESTService.CloseAllConnections();
+            }
+
+            @Override
+            public void onFailure(Call<FeedbackObject> call, Throwable t) {
+                Globals.serverConnected = false;
+                syncRESTService.CloseAllConnections();
+            }
+        });
+
+    }
     private class MyTimerTask extends TimerTask {
         @Override
         public void run() {

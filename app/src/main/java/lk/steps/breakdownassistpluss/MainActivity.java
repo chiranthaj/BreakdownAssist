@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity
    // public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
     private NavigationView navigationView;
     private static Context context;
-    public static Token mToken;
+
     public static boolean ReLoginRequired = false;
     boolean doubleBackToExitPressedOnce = false;
     private String UserName;
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         MainActivity.context = getApplicationContext();
-
+        Log.e("GPS TRACKER", "0000");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -123,8 +123,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_dashboard);
 
-        Globals.dbHandler = new DBHandler(this, null, null, 1);
-
+        StartUpTasks.InitVariables(this);
         ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(), this);
 
 
@@ -140,8 +139,7 @@ public class MainActivity extends AppCompatActivity
 
         startService(new Intent(getBaseContext(), SyncService.class));
         startService(new Intent(getBaseContext(), SignalRService.class));
-
-        Globals.initAreaCodes(getApplicationContext());
+        trackLocation();
 
         fm = getFragmentManager();
         fm.beginTransaction().replace(R.id.content_frame, new DashboardFragment()).commit();
@@ -156,8 +154,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
-       // CalculateAttainedTime();
-        mToken = ReadToken();
 
         View v = navigationView.getHeaderView(0);
         UserName=ReadStringPreferences("last_username", "[username]");
@@ -167,21 +163,16 @@ public class MainActivity extends AppCompatActivity
         username = (TextView ) v.findViewById(R.id.txtArea);
         username.setText(ReadStringPreferences("area_name", "[Area name]"));//
 
-        trackLocation();
-
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String M = extras.getString("SignalR-msg.M");
-            String A = extras.getString("SignalR-msg.A");
+            ArrayList<String> A = getIntent().getStringArrayListExtra("SignalR-msg.A");
+
             if(M != null & A != null){
                 SignalRService.HandleMsg(getApplicationContext(),M,A);
-
             }
         }
-        SetVersion();
-        //android.support.v7.app.ActionBar ab = getSupportActionBar();
-        //ab.setSubtitle("Offline");
 
         // Show the "What's New" screen once for each new release of the application
         new WhatsNewScreen(this).show();
@@ -192,17 +183,7 @@ public class MainActivity extends AppCompatActivity
         return prfs.getString(key, defaultValue);
     }
 
-    private void SetVersion(){
-        try{
-            PackageManager manager = context.getPackageManager();
-            PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
-            Globals.VERSION_CODE = info.versionCode;
-            Log.e("VERSION_CODE","="+info.versionCode);
-        }catch(Exception e){
-            Log.e("VERSION_CODE","="+e.getMessage());
-        }
 
-    }
 
     @Override
     protected void onPause() {
@@ -259,6 +240,7 @@ public class MainActivity extends AppCompatActivity
             String statusUpdate = intent.getStringExtra("job_status_changed");
             String newBreakdowns = intent.getStringExtra("new_breakdowns");
             String finish_app_req = intent.getStringExtra("finish_app_req");
+            String group_breakdowns = intent.getStringExtra("group_breakdowns");
 
             Log.d("TEST","BroadcastReceiver0");
             //Log.e("TEST","555");
@@ -276,6 +258,9 @@ public class MainActivity extends AppCompatActivity
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
                 NewStatusDialog(jobChangeStatus);
                 if(JobListFragment.mAdapter!=null)JobListFragment.mAdapter.notifyDataSetChanged();
+            }else if(group_breakdowns!=null){
+                onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
+                if(JobListFragment.mAdapter!=null)JobListFragment.mAdapter.notifyDataSetChanged();
             }
             else if(finish_app_req!=null){
                 //Log.d("TEST","BroadcastReceiver"+finish_app_req);
@@ -291,7 +276,7 @@ public class MainActivity extends AppCompatActivity
         //stopService(new Intent(getBaseContext(), SignalRService.class));
         Globals.dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
-        StopTrackLocation();
+       // StopTrackLocation();
         super.onDestroy();
     }
 
@@ -521,16 +506,7 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences.Editor editor = prfs.edit();
         editor.putBoolean(key,value).apply();
     }
-    private Token ReadToken(){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        Token token = new Token(){};
-        token.user_id=prfs.getString("user_id", "");
-        token.area_id=prfs.getString("area_id", "");
-        token.area_name=prfs.getString("area_name", "");
-        token.access_token=prfs.getString("access_token", "");
-        token.expires_in= prfs.getLong("expires_in", 0);
-        return token;
-    }
+
     /*private void CalculateAttainedTime() {
         final Handler handler = new Handler();
         final Runnable r = new Runnable() {
@@ -647,24 +623,22 @@ public class MainActivity extends AppCompatActivity
     private AlarmManager alarmManager;
     private Intent gpsTrackerIntent;
     private PendingIntent pendingIntent;
-    private int intervalInMinutes = 1;
+   // private int intervalInMinutes = 1;
 
 
     protected void trackLocation() {
+        Log.e("GPS TRACKER", "0004");
         SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putInt("intervalInMinutes", 1);
         editor.putString("userName", UserName);
-       // editor.putString("defaultUploadWebsite", "123");
-
-            startAlarmManager();
-
-            editor.putBoolean("currentlyTracking", true);
-            editor.putFloat("totalDistanceInMeters", 0f);
-            editor.putBoolean("firstTimeGettingPosition", true);
-            editor.putString("sessionID",  UUID.randomUUID().toString());
+        editor.putBoolean("currentlyTracking", true);
+        editor.putFloat("totalDistanceInMeters", 0f);
+        editor.putBoolean("firstTimeGettingPosition", true);
+        editor.putString("sessionID",  UUID.randomUUID().toString());
         editor.apply();
+        startAlarmManager();
     }
 
     protected void StopTrackLocation() {
@@ -682,20 +656,36 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void startAlarmManager() {
-        Log.d("GPS TRACKER", "startAlarmManager");
+        Log.e("GPS TRACKER", "startAlarmManager");
 
         Context context = getBaseContext();
         alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         gpsTrackerIntent = new Intent(context, GpsTrackerAlarmReceiver.class);
         pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
 
-        SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
-        intervalInMinutes = sharedPreferences.getInt("intervalInMinutes", 1);
+       // SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
+       // intervalInMinutes = sharedPreferences.getInt("intervalInMinutes", 1);
+
+        /*boolean alarmUp = (PendingIntent.getBroadcast(context, 0,
+                gpsTrackerIntent,
+                PendingIntent.FLAG_NO_CREATE) != null);*/
 
         alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime(),
-                intervalInMinutes * 60000, // 60000 = 1 minute
+                Globals.GpsIntervalInMinutes, // 60000 = 1 minute
                 pendingIntent);
+
+        /*if (!alarmUp)
+        {
+            Log.d("GPS TRACKER", "alarmManager started");
+            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime(),
+                    60000, // 60000 = 1 minute
+                    pendingIntent);
+        }else{
+            Log.d("GPS TRACKER", "alarmManager already started");
+        }*/
+
     }
 
     private void cancelAlarmManager() {

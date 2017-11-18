@@ -818,6 +818,7 @@ public class JobView {
         return text;
     }
 
+
     private static String[] GetColumn(String[][] array) {
         String out[] = new String[array.length];
         for (int row = 0; row < array.length; row++) {

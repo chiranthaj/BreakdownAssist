@@ -31,7 +31,7 @@ import lk.steps.breakdownassistpluss.Sync.SyncMaterialObject;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version = 99;
+    private static final int Database_Version = 100;
     private static final String DatabaseNAME = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -247,7 +247,7 @@ public class DBHandler extends SQLiteOpenHelper
                 obj.BreakdownId=c.getString(c.getColumnIndex("BREAKDOWN_ID"));
                 obj.MaterialId=c.getString(c.getColumnIndex("MATERIAL_CODE"));
                 obj.Quantity=c.getString(c.getColumnIndex("QUANTITY"));
-                obj.UserId=MainActivity.mToken.user_id;
+                obj.UserId=Globals.mToken.user_id;
 
                 list.add(obj);
             }
@@ -293,7 +293,7 @@ public class DBHandler extends SQLiteOpenHelper
             {
                 obj= new TrackerObject();
                 obj.id=c.getString(c.getColumnIndex("id"));
-                obj.UserId=MainActivity.mToken.user_id;
+                obj.UserId=Globals.mToken.user_id;
                 obj.timestamp=c.getString(c.getColumnIndex("timestamp"));
                 obj.lat=c.getString(c.getColumnIndex("lat"));
                 obj.lon=c.getString(c.getColumnIndex("lon"));
@@ -336,6 +336,13 @@ public class DBHandler extends SQLiteOpenHelper
         return list;
     }
 
+    public void UpdateTrackingDataByTimeStamp(String TimeStamp)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "UPDATE GpsTracking SET sync_done='1' WHERE timestamp='" +TimeStamp + "';";
+        db.execSQL(query);
+        //db.close();
+    }
 
     public void UpdateTrackingData(TrackerObject obj)
     {
@@ -1109,7 +1116,7 @@ public class DBHandler extends SQLiteOpenHelper
                 " ORDER BY DateTime DESC, ACCT_NUM ASC;";
 
 
-        Log.e("query",query);
+       // Log.e("query",query);
         Cursor c = db.rawQuery(query, null);
 
         if (c != null) {

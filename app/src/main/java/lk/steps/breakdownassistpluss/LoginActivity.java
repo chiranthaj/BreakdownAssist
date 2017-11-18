@@ -285,8 +285,10 @@ public class LoginActivity extends AppCompatActivity  {
                 public void onResponse(Call<Token> call, Response<Token> response) {
                     if (response.isSuccessful()) {
                         Log.e("GetAuthToken","Authorized");
+
                         showProgress(false);
                         Token token = response.body();
+                        Log.e("area_name",token.area_name);
                         //SaveToken(token);
                         WriteStringPreferences("user_id",token.user_id);
                         WriteStringPreferences("area_id",token.area_id);
@@ -321,15 +323,6 @@ public class LoginActivity extends AppCompatActivity  {
                         Globals.serverConnected = false;
                         performLogin(username,password);
 
-                        /*if(error.getResponse()==null){
-                            Toast.makeText(getApplicationContext(),"Network failure.. "+error, Toast.LENGTH_LONG).show();
-                        }else if (error.getResponse().getStatus()==401){
-                            Log.e("GetAuthToken","Unauthorized:"+error);
-                            mUsernameView.setError("Login fail..");
-                            mUsernameView.requestFocus();
-                        }else {
-                            Toast.makeText(getApplicationContext(),"Network failure.. "+error, Toast.LENGTH_LONG).show();
-                        }*/
                     }
                 }
 

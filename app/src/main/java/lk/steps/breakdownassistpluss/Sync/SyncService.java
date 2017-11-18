@@ -2,6 +2,7 @@ package lk.steps.breakdownassistpluss.Sync;
 
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -37,6 +39,7 @@ import lk.steps.breakdownassistpluss.JobChangeStatus;
 import lk.steps.breakdownassistpluss.JobCompletion;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
+import lk.steps.breakdownassistpluss.StartUpTasks;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -82,6 +85,23 @@ public class SyncService extends Service {
         Toast.makeText(this, "Sync Service Destroyed", Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+        public void onTaskRemoved(Intent rootIntent) {
+            // TODO Auto-generated method stub
+            Intent restartService = new Intent(getApplicationContext(),
+                    this.getClass());
+            restartService.setPackage(getPackageName());
+            PendingIntent restartServicePI = PendingIntent.getService(
+                    getApplicationContext(), 1, restartService,
+                    PendingIntent.FLAG_ONE_SHOT);
+
+            //Restart the service once it has been killed android
+
+                AlarmManager alarmService = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+                alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() +100, restartServicePI);
+
+    }
+
     public static void PostBreakdownStatusChange(final Context context){
         List<JobChangeStatus> JobChangeStatusList = Globals.dbHandler.getBreakdownStatusChange();
         if(JobChangeStatusList.size()<1)return;
@@ -93,9 +113,11 @@ public class SyncService extends Service {
             Breakdown breakdown= Globals.dbHandler.ReadBreakdown_by_JonNo(obj.job_no);
 
             syncObject.StatusId=obj.status;
+            syncObject.AreaId=Globals.mToken.area_id;
+            syncObject.EcscId=Globals.mToken.team_id;
             syncObject.BreakdownId = Globals.dbHandler.GetNewJobNumber(obj.job_no);
             syncObject.StatusTime = obj.change_datetime;
-            syncObject.UserId = MainActivity.mToken.user_id;
+            syncObject.UserId = Globals.mToken.user_id;
             syncObject.Sin=breakdown.get_SUB();
             //TODO : if program crashes then this particular record may not be updated, hence use another task or change the
             //query to update state==0 OR (update_state==-1 AND currentTimestamp-update_timestamp>2min
@@ -103,7 +125,7 @@ public class SyncService extends Service {
 
             final SyncRESTService syncRESTService = new SyncRESTService(10);
             Call<SyncObject> call = syncRESTService.getService()
-                    .UpdateBreakdownStatus( "Bearer "+ MainActivity.mToken.access_token, syncObject);
+                    .UpdateBreakdownStatus( "Bearer "+ Globals.mToken.access_token, syncObject);
 
             call.enqueue(new Callback<SyncObject>(){
                 @Override
@@ -177,7 +199,7 @@ public class SyncService extends Service {
             Globals.dbHandler.UpdateSyncState_NewBreakdown(breakdown, -1);//Uploading Started
             final SyncRESTService syncRESTService = new SyncRESTService(10);
             Call<String> call = syncRESTService.getService()
-                    .CreateBreakdown( "Bearer "+ MainActivity.mToken.access_token, breakdown);
+                    .CreateBreakdown( "Bearer "+ Globals.mToken.access_token, breakdown);
 
             call.enqueue(new Callback<String>(){
 
@@ -235,6 +257,8 @@ public class SyncService extends Service {
 
     public static void PostBreakdownCompletion(final Context context){
         List<JobCompletion> JobCompletionList = Globals.dbHandler.getBreakdownCompletion();
+        final String area_id = ReadStringPreferences(context, "area_id","");
+        final String team_id = ReadStringPreferences(context, "team_id","");
         if(JobCompletionList.size()<1)return;
         for (final JobCompletion obj: JobCompletionList)
         {
@@ -247,8 +271,9 @@ public class SyncService extends Service {
             syncObject.FailureTypeId=obj.type_failure;
             syncObject.FailureNatureId=obj.detail_reason_code;
             syncObject.FailureCauseId=obj.cause;
-            syncObject.UserId= MainActivity.mToken.user_id;
-
+            syncObject.UserId= Globals.mToken.user_id;
+            syncObject.AreaId=area_id;
+            syncObject.EcscId=team_id;
             if(breakdown!=null){
                 syncObject.Sin=breakdown.get_SUB();
             }
@@ -257,7 +282,7 @@ public class SyncService extends Service {
             Globals.dbHandler.UpdateSyncState_JobCompletionObj(obj, -1);//Uploading Started
             final SyncRESTService syncRESTService = new SyncRESTService(10);
             Call<SyncObject> call = syncRESTService.getService()
-                    .UpdateBreakdownStatus( "Bearer "+ MainActivity.mToken.access_token, syncObject);
+                    .UpdateBreakdownStatus( "Bearer "+ Globals.mToken.access_token, syncObject);
 
             call.enqueue(new Callback<SyncObject>(){
 
@@ -310,7 +335,7 @@ public class SyncService extends Service {
 
         final SyncRESTService syncRESTService = new SyncRESTService(10);
         Call<SyncMaterialObject> call = syncRESTService.getService()
-                .PushMaterials( "Bearer "+ MainActivity.mToken.access_token, list);
+                .PushMaterials( "Bearer "+ Globals.mToken.access_token, list);
 
         call.enqueue(new Callback<SyncMaterialObject>(){
 
@@ -355,7 +380,7 @@ public class SyncService extends Service {
 
         final SyncRESTService syncRESTService = new SyncRESTService(10);
         Call<TrackerObject> call = syncRESTService.getService()
-                .PushTrackingData( "Bearer "+ MainActivity.mToken.access_token, list);
+                .PushTrackingData( "Bearer "+ Globals.mToken.access_token, list);
 
         call.enqueue(new Callback<TrackerObject>(){
 
@@ -400,7 +425,7 @@ public class SyncService extends Service {
 
         final SyncRESTService syncRESTService = new SyncRESTService(10);
         Call<BreakdownGroup> call = syncRESTService.getService()
-                .PostGroups( "Bearer "+ MainActivity.mToken.access_token, list);
+                .PostGroups( "Bearer "+ Globals.mToken.access_token, list);
 
         call.enqueue(new Callback<BreakdownGroup>(){
 
@@ -440,9 +465,10 @@ public class SyncService extends Service {
 
 
     public void DownloadApk() {
+
         final SyncRESTService syncRESTService = new SyncRESTService(10);
         Call<ResponseBody> call = syncRESTService.getService()
-                .GetApk( "Bearer "+ MainActivity.mToken.access_token,Globals.VERSION_CODE);
+                .GetApk( "Bearer "+ Globals.mToken.access_token, Globals.VERSION_CODE);
 
         call.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -569,18 +595,25 @@ public class SyncService extends Service {
     private class MyTimerTask extends TimerTask {
         @Override
         public void run() {
+
+            if(Globals.mToken == null | !Globals.serverConnected){
+                RemoteLoginWithLastCredentials();
+                StartUpTasks.InitVariables(getApplicationContext());
+                return;
+            }
+
             if(i==0){
                 i=1;
-                Log.e("Sync","DownloadApk");
-                DownloadApk();
+                Log.e("Sync","PostBreakdowns");
+                PostBreakdowns(getApplicationContext());
             }else if(i==1){
                 i=2;
                 Log.e("Sync","PostBreakdownCompletion");
                 PostBreakdownCompletion(getApplicationContext());
             }else if(i==2){
                 i=3;
-                Log.e("Sync","PostTrackingData");
-                PostTrackingData(getApplicationContext());
+                Log.e("Sync","PostGroups");
+                PostGroups(getApplicationContext());
             }else if(i==3){
                 i=4;
                 Log.e("Sync","PostBreakdownStatusChange");
@@ -590,16 +623,69 @@ public class SyncService extends Service {
                 Log.e("Sync","PostMaterials");
                 PostMaterials(getApplicationContext());
             }else if(i==5){
-                i=6;
-                Log.e("Sync","PostGroups");
-                PostGroups(getApplicationContext());
-            }else if(i==6){
                 i=0;
-                Log.e("Sync","PostBreakdowns");
-                PostBreakdowns(getApplicationContext());
-            }
+                Log.e("Sync","PostTrackingData");
+                PostTrackingData(getApplicationContext());
+            }/*else if(i==6){
+                i=0;
+                Log.e("Sync","DownloadApk");
+                DownloadApk();
+            }*/
 
         }
 
+    }
+
+    public void RemoteLoginWithLastCredentials(){
+        final String lastUsername = ReadStringPreferences("last_username", "");
+        final String lastPassword = ReadStringPreferences("last_password", "");
+        SyncRESTService syncAuthService = new SyncRESTService(2);
+        Call<Token> call = syncAuthService.getService().GetJwt(lastUsername,lastPassword);
+        call.enqueue(new Callback<Token>() {
+            @Override
+            public void onResponse(Call<Token> call, Response<Token> response) {
+                if (response.isSuccessful()) {
+                    Log.e("GetAuthToken","Authorized");
+
+                    Token token = response.body();
+                    Log.e("area_name",token.area_name);
+                    //SaveToken(token);
+                    WriteStringPreferences("user_id",token.user_id);
+                    WriteStringPreferences("area_id",token.area_id);
+                    WriteStringPreferences("area_name",token.area_name);
+                    WriteStringPreferences("team_id",token.team_id);
+                    WriteLongPreferences("expires_in",token.expires_in);
+                    WriteStringPreferences("access_token",token.access_token);
+                    WriteStringPreferences("group_token",token.group_token);
+                    WriteStringPreferences("last_username",lastUsername);
+                    WriteStringPreferences("last_password",lastPassword);
+                    Globals.mToken = token;
+                    Globals.serverConnected = true;
+
+                } else if (response.errorBody() != null) {
+                    Globals.serverConnected = false;
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Token> call, Throwable t) {
+                Log.e("Login","Remote login onFailure"+t.getMessage());//Remote login
+            }
+
+        });
+    }
+    private void WriteLongPreferences(String key, long value){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prfs.edit();
+        editor.putLong(key,value).apply();
+    }
+    private void WriteStringPreferences(String key, String value){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prfs.edit();
+        editor.putString(key,value).apply();
+    }
+    private String ReadStringPreferences(String key, String defaultValue){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        return prfs.getString(key, defaultValue);
     }
 }

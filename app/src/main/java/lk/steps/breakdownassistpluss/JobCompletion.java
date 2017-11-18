@@ -15,6 +15,8 @@ public class JobCompletion {
     public int synchro_mobile_db;
     public String detail_reason_code;
     public String cause;
+    public String AreaId;
+    public String EcscId;
     public String type_failure;
     public String job_completed_by;
     public String action_code;

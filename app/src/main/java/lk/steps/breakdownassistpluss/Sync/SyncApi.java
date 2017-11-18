@@ -54,9 +54,9 @@ public interface SyncApi {
     Call<BreakdownGroup> PostGroups(@Header("Authorization") String auth,
                                     @Body List<BreakdownGroup> list);
 
-    @POST("/Mobile/PostFeedback/")
-    Call<String> PostFeedback(@Header("Authorization") String auth,
-                                         @Body List<String> data);
+    @POST("/Mobile/PostFeedbackNew/")
+    Call<FeedbackObject> PostFeedback(@Header("Authorization") String auth,
+                                         @Body List<FeedbackObject> data);
 
 
 

@@ -13,7 +13,9 @@ import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.util.Log;
 
+import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.Sync.SignalRService;
+import lk.steps.breakdownassistpluss.Sync.SyncService;
 
 public class GpsTrackerBootReceiver extends BroadcastReceiver {
     private static final String TAG = "GpsTrackerBootReceiver";
@@ -24,25 +26,35 @@ public class GpsTrackerBootReceiver extends BroadcastReceiver {
         Intent gpsTrackerIntent = new Intent(context, GpsTrackerAlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
-        int intervalInMinutes = sharedPreferences.getInt("intervalInMinutes", 1);
-        Boolean currentlyTracking = sharedPreferences.getBoolean("currentlyTracking", false);
+       // SharedPreferences sharedPreferences = context.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
+      //  int intervalInMinutes = sharedPreferences.getInt("intervalInMinutes", 1);
+        /*Boolean currentlyTracking = sharedPreferences.getBoolean("currentlyTracking", false);
 
         if (currentlyTracking) {
             alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime(),
-                    intervalInMinutes * 60000, // 60000 = 1 minute,
+                    intervalInMinutes * 10000, // 60000 = 1 minute,
                     pendingIntent);
         } else {
             alarmManager.cancel(pendingIntent);
-        }
+        }*/
+       /* alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime(),
+                60000, // 60000 = 1 minute,
+                pendingIntent);*/
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+
             Intent signalRService = new Intent(context, SignalRService.class);
             context.startService(signalRService);
 
-            Intent locationService = new Intent(context, LocationService.class);
-            context.startService(locationService);
+            Intent syncService = new Intent(context, SyncService.class);
+            context.startService(syncService);
+
+            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime(),
+                    Globals.GpsIntervalInMinutes, // 60000 = 1 minute,
+                    pendingIntent);
         }
     }
 }

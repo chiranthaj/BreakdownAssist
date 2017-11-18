@@ -29,6 +29,7 @@ import java.util.Date;
 
 import lk.steps.breakdownassistpluss.DBHandler;
 import lk.steps.breakdownassistpluss.Globals;
+import lk.steps.breakdownassistpluss.Sync.SignalRService;
 
 
 /**
@@ -40,11 +41,7 @@ public class LocationService extends Service implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-    private static final String TAG = "LocationService";
-
-    // use the websmithing defaultUploadWebsite for testing and then check your
-    // location with your browser here: https://www.websmithing.com/gpstracker/displaymap.php
-    private String defaultUploadWebsite= "1.1.1.1/fgcfg";
+    private static final String TAG = "GpsTracker";
 
     private boolean currentlyProcessingLocation = false;
     private LocationRequest locationRequest;
@@ -53,41 +50,26 @@ public class LocationService extends Service implements
     @Override
     public void onCreate() {
         super.onCreate();
-        //Log.e(TAG, "onCreate");
+        Log.e(TAG, "LocationService onCreate");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // if we are currently trying to get a location and the alarm manager has called this again,
         // no need to start processing a new location.
-        currentlyProcessingLocation= false;
+        //currentlyProcessingLocation= false;
         if (!currentlyProcessingLocation) {
             currentlyProcessingLocation = true;
             startTracking();
         }
-        //Log.e(TAG, "onStartCommand");
+        Log.e(TAG, "LocationService onStartCommand");
         return START_NOT_STICKY;
     }
 
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        // TODO Auto-generated method stub
-        Intent restartService = new Intent(getApplicationContext(),
-                this.getClass());
-        restartService.setPackage(getPackageName());
-        PendingIntent restartServicePI = PendingIntent.getService(
-                getApplicationContext(), 1, restartService,
-                PendingIntent.FLAG_ONE_SHOT);
-
-        //Restart the service once it has been killed android
-
-        AlarmManager alarmService = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
-        alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() +100, restartServicePI);
-    }
 
     private void startTracking() {
-        //Log.d(TAG, "startTracking");
-
+        Log.d(TAG, "LocationService startTracking");
+        currentlyProcessingLocation = true;
         if (GooglePlayServicesUtil.isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS) {
 
             googleApiClient = new GoogleApiClient.Builder(this)
@@ -137,7 +119,6 @@ public class LocationService extends Service implements
         }
 
 
-
         editor.putFloat("previousLatitude", (float)location.getLatitude());
         editor.putFloat("previousLongitude", (float)location.getLongitude());
         editor.apply();
@@ -174,10 +155,17 @@ public class LocationService extends Service implements
         if(Globals.dbHandler==null){
             Globals.dbHandler = new DBHandler(this, null, null, 1);
         }
-        if(location.getAccuracy() < 20.0f & distance > 1){
+        if(location.getAccuracy() < 20.0f){
+            Log.d(TAG, "GPS Tracker Location saved");
+            //Toast.makeText(this, "GPS Tracker Location saved", Toast.LENGTH_SHORT).show();
            // Toast.makeText(this, "GPS Tracker accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_LONG).show();
+            SignalRService.PostGpsLocation(timestamp,latTxt,lonTxt,accuracyTxt);
             Globals.dbHandler.addTrackPoint(timestamp,latTxt,lonTxt,speedTxt,accuracyTxt,altitudeTxt,directionTxt,distanceTxt);
+
+        }else{
+            Toast.makeText(this, "GPS Tracker accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_SHORT).show();
         }
+        currentlyProcessingLocation = false;
     }
 
     @Override

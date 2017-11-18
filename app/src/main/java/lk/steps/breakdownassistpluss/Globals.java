@@ -13,6 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import lk.steps.breakdownassistpluss.Sync.Token;
+
 /**
  * Created by Chirantha on 4/9/2017.
  */
@@ -32,6 +34,8 @@ public class Globals
     public static long AverageTime = 0;
     public static DBHandler dbHandler;
     public static int VERSION_CODE;
+    public static Token mToken;
+    public static int GpsIntervalInMinutes = 60000*2;// 60000 = 1 minute
 
     public static void initAreaCodes(Context context)
     {
