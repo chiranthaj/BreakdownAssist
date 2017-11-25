@@ -50,6 +50,7 @@ public class Breakdown {
     private String PREMISES_ID;
     private String inbox_ref;
     private String PARENT_BREAKDOWN_ID;
+    private String NOTE;
 
     public String get_PremisesID() {
         return PREMISES_ID;
@@ -125,7 +126,9 @@ public class Breakdown {
     public String get_ECSC() {
         return ECSC;
     }
-
+    public String get_AREA() {
+        return AREA;
+    }
     public void set_ECSC(String ECSC) {
         this.ECSC = ECSC;
     }
@@ -248,7 +251,12 @@ public class Breakdown {
     public String get_Job_No() {
         return JOB_NO;
     }
-
+    public String get_Note() {
+        return NOTE;
+    }
+    public void set_Note(String note) {
+        this.NOTE=note;
+    }
     public void set_Job_No(String JOB_NO) {
         this.JOB_NO = JOB_NO;
     }

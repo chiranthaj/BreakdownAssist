@@ -31,7 +31,7 @@ import lk.steps.breakdownassistpluss.Sync.SyncMaterialObject;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version = 100;
+    private static final int Database_Version = 103;
     private static final String DatabaseNAME = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -62,7 +62,10 @@ public class DBHandler extends SQLiteOpenHelper
                 "GPS_ACCURACY  	        TEXT,"+
                 "TARIFF_COD  	        TEXT,"+
                 "DESCRIPTION	        TEXT,"+
+                "ECSC	                TEXT,"+
+                "AREA	                TEXT,"+
                 "Reason                 TEXT,"+
+                "NOTE                   TEXT,"+
                 "inbox_ref	            TEXT UNIQUE,"+
                 "last_timestamp         TEXT,"+
                 "BA_SERVER_SYNCED       TEXT,"+
@@ -634,8 +637,9 @@ public class DBHandler extends SQLiteOpenHelper
                 " join BreakdownRecords on JobStatusChange.JOB_NO = BreakdownRecords.JOB_NO " +
                 "WHERE ( JobStatusChange.synchro_mobile_db = 0 or JobStatusChange.synchro_mobile_db = -1) and " +
                 "length(JobStatusChange.JOB_NO)=10;";*/
-        String query = "SELECT JobStatusChange.JOB_NO, JobStatusChange.STATUS,JobStatusChange.change_datetime " +
-                "FROM JobStatusChange " +
+        String query = "SELECT JobStatusChange.JOB_NO, JobStatusChange.STATUS,JobStatusChange.change_datetime" +
+                ", BreakdownRecords.AREA , BreakdownRecords.ECSC " +
+                " FROM JobStatusChange " +
                 " join BreakdownRecords on JobStatusChange.JOB_NO = BreakdownRecords.JOB_NO " +
                 "WHERE ( JobStatusChange.synchro_mobile_db = 0 or JobStatusChange.synchro_mobile_db = -1) and " +
                 "length(JobStatusChange.JOB_NO)=10;";//
@@ -653,7 +657,8 @@ public class DBHandler extends SQLiteOpenHelper
                 _jobchangestatus_obj.job_no=c.getString(c.getColumnIndex("JOB_NO"));
                 _jobchangestatus_obj.status=c.getString(c.getColumnIndex("STATUS"));
                 _jobchangestatus_obj.change_datetime=c.getString(c.getColumnIndex("change_datetime"));
-              //  _jobchangestatus_obj.comment=c.getString(c.getColumnIndex("comment"));
+                _jobchangestatus_obj.EcscId=c.getString(c.getColumnIndex("ECSC"));
+                _jobchangestatus_obj.AreaId=c.getString(c.getColumnIndex("AREA"));
               //  _jobchangestatus_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
               //  _jobchangestatus_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
                 newJobChangeStatus.add(_jobchangestatus_obj);
@@ -793,7 +798,10 @@ public class DBHandler extends SQLiteOpenHelper
             values.put("PARENT_BREAKDOWN_ID",breakdown.get_ParentBreakdownId());
             values.put("DESCRIPTION",breakdown.get_Full_Description());
             values.put("JOB_NO",breakdown.get_Job_No());
+            values.put("NOTE",breakdown.get_Note());
             values.put("SUB",breakdown.get_SUB());
+            values.put("ECSC",breakdown.get_ECSC());
+            values.put("AREA",breakdown.get_AREA());
             values.put("CONTACT_NO",breakdown.get_Contact_No());
             values.put("PRIORITY",breakdown.get_Priority());
             values.put("JOB_SOURCE",breakdown.get_JOB_SOURCE());
@@ -1108,7 +1116,7 @@ public class DBHandler extends SQLiteOpenHelper
                 " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS, B.SUB,  " +
                 " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO, B.PARENT_BREAKDOWN_ID,  " +
                 " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
-                " B.PRIORITY as PRIORITY " +
+                " B.PRIORITY as PRIORITY, B.NOTE " +
                 " FROM BreakdownRecords B " +
         //            " LEFT JOIN Customers C ON C.ACCT_NUM = B.ACCT_NUM " +
                     " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.ACCT_NUM " +
@@ -1144,6 +1152,7 @@ public class DBHandler extends SQLiteOpenHelper
                 newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                 newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
                 newBreakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
+                newBreakdown.set_Note(c.getString(c.getColumnIndex("NOTE")));
                 newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
                 newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));

@@ -7,6 +7,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -155,18 +156,15 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
             holder.childrenList.setVisibility(View.GONE);
         }
 
+        if(TextUtils.isEmpty(breakdownList.get(position).get_Note())){
+            holder.note.setVisibility(View.GONE);
+        }else{
+            holder.note.setVisibility(View.VISIBLE);
+            holder.note.setText(breakdownList.get(position).get_Note());
+        }
 
-        /*if(STATUS == Breakdown.JOB_COMPLETED){
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#d8d8d8"));
-        }else if(STATUS == Breakdown.JOB_TEMPORARY_COMPLETED){
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#f9ffce"));
-        }else if(STATUS == Breakdown.JOB_ATTENDING){
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#c9ffcb"));
-        }else if(STATUS == Breakdown.JOB_VISITED){
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#dbfffb"));
-        }else {
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#fbddff"));
-        }*/
+
+
         holder.setBreakdown(breakdownList.get(position));
     }
 

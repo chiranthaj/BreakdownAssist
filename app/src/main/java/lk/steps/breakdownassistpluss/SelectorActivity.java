@@ -67,7 +67,7 @@ public class SelectorActivity extends Activity {
     private void performAutoLogin(){
         String lastUsername = ReadStringPreferences("last_username", "");
         String lastPassword = ReadStringPreferences("last_password", "");
-        SyncRESTService syncAuthService = new SyncRESTService(2);
+        final SyncRESTService syncAuthService = new SyncRESTService(2);
         Call<Token> call = syncAuthService.getService().GetJwt(lastUsername,lastPassword);
         call.enqueue(new Callback<Token>() {
             @Override
@@ -108,6 +108,7 @@ public class SelectorActivity extends Activity {
                         }
                     });
                 }
+                syncAuthService.CloseAllConnections();
             }
 
             @Override
@@ -120,6 +121,7 @@ public class SelectorActivity extends Activity {
                         SelectorActivity.this.startActivity(myIntent);
                     }
                 });
+                syncAuthService.CloseAllConnections();
             }
 
         });

@@ -42,7 +42,6 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.facebook.stetho.Stetho;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.Marker;
@@ -55,25 +54,14 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-
-
 import lk.steps.breakdownassistpluss.Fragments.DashboardFragment;
-
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
-
-
 import lk.steps.breakdownassistpluss.Fragments.GmapFragment;
-
 import lk.steps.breakdownassistpluss.Fragments.SearchViewFragment;
 import lk.steps.breakdownassistpluss.GpsTracker.GpsTrackerAlarmReceiver;
-import lk.steps.breakdownassistpluss.Sync.BreakdownGroup;
-import lk.steps.breakdownassistpluss.Sync.SyncRESTService;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
 import lk.steps.breakdownassistpluss.Sync.SignalRService;
-import lk.steps.breakdownassistpluss.Sync.Token;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
 
 
 public class MainActivity extends AppCompatActivity

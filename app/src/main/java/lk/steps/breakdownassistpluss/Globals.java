@@ -35,7 +35,7 @@ public class Globals
     public static DBHandler dbHandler;
     public static int VERSION_CODE;
     public static Token mToken;
-    public static int GpsIntervalInMinutes = 60000*2;// 60000 = 1 minute
+    public static int GpsIntervalInMinutes = 60000;// 60000 = 1 minute
 
     public static void initAreaCodes(Context context)
     {

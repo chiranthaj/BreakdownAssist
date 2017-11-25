@@ -59,8 +59,6 @@ public interface SyncApi {
                                          @Body List<FeedbackObject> data);
 
 
-
-
     @GET("/Mobile/GetNewBreakdown/{userId}/{breakdownId}")
     Call<List<Breakdown>> GetBreakdowns(@Header("Authorization") String auth,
                                         @Path("userId") String UserId,

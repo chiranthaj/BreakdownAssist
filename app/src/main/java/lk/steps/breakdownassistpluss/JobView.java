@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -18,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -77,6 +79,7 @@ public class JobView {
         if (breakdown.get_Name() != null)
             txtName.setText(breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
 
+        TableRow contacts = (TableRow)dialog.findViewById(R.id.contacts);
         ImageButton btnCall = (ImageButton) dialog.findViewById(R.id.btnMakeCall);
         btnCall.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,10 +92,19 @@ public class JobView {
         TextView txtPhoneNo = (TextView) dialog.findViewById(R.id.phoneno);
         if (breakdown.get_Contact_No() != null) {
             txtPhoneNo.setText(breakdown.get_Contact_No().trim());
+            contacts.setVisibility(View.VISIBLE);
         } else {
-            txtPhoneNo.setVisibility(View.GONE);
-            btnCall.setVisibility(View.GONE);
+            contacts.setVisibility(View.GONE);
+            //btnCall.setVisibility(View.GONE);
         }
+        TextView txtNote = (TextView) dialog.findViewById(R.id.txtNote);
+        if(TextUtils.isEmpty(breakdown.get_Note())){
+            txtNote.setVisibility(View.GONE);
+        }else{
+            txtNote.setVisibility(View.VISIBLE);
+            txtNote.setText(breakdown.get_Note());
+        }
+
 
         TextView txtFullDescription = (TextView) dialog.findViewById(R.id.fulldescription);
         txtFullDescription.setText(breakdown.get_Full_Description());

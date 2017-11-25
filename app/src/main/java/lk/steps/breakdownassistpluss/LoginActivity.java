@@ -108,14 +108,7 @@ public class LoginActivity extends AppCompatActivity  {
             }catch(Exception e){
                 txtAppName.setText("Ceylon Electricity Board  ©  2017");
             }
-        /*boolean server = ReadBooleanPreferences("server",false);
-        if(!server)GetIpAddress();
-        Log.e("SERVER",Globals.serverUrl);
-        if(ReadBooleanPreferences2("keep_sign_in",false)){
-            Log.e("SERVER","012");
-            performAutoLogin();
-            Log.e("SERVER","456");
-        }*/
+
     }
 
     private void GetIpAddress(){
@@ -149,7 +142,6 @@ public class LoginActivity extends AppCompatActivity  {
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-
         // Reset errors.
         mUsernameView.setError(null);
         mPasswordView.setError(null);
@@ -278,7 +270,7 @@ public class LoginActivity extends AppCompatActivity  {
             finish();
         }else if(!ForceLocalLogin){
             Log.e("Login","**Remote**");//Remote login
-            SyncRESTService syncAuthService = new SyncRESTService(2);
+            final SyncRESTService syncAuthService = new SyncRESTService(2);
             Call<Token> call = syncAuthService.getService().GetJwt(username,password);
             call.enqueue(new Callback<Token>() {
                 @Override
@@ -324,6 +316,7 @@ public class LoginActivity extends AppCompatActivity  {
                         performLogin(username,password);
 
                     }
+                    syncAuthService.CloseAllConnections();
                 }
 
                 @Override
@@ -332,6 +325,7 @@ public class LoginActivity extends AppCompatActivity  {
                     ForceLocalLogin = true;
                     Globals.serverConnected = false;
                     performLogin(username,password);
+                    syncAuthService.CloseAllConnections();
                 }
 
             });

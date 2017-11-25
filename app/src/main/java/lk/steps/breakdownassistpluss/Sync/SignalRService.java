@@ -168,23 +168,20 @@ public class SignalRService extends Service {
     /**
      * method for clients (activities)
      */
-    public void sendMessage(String message) {
+   /* public void sendMessage(String message) {
         String SERVER_METHOD_SEND = "send";
         mHubProxy.invoke(SERVER_METHOD_SEND, message);
-    }
+    }*/
 
     /**
      * method for clients (activities)
      */
-    public void sendMessage_To(String receiverName, String message) {
+    /*public void sendMessage_To(String receiverName, String message) {
         String SERVER_METHOD_SEND_TO = "send";
         mHubProxy.invoke(SERVER_METHOD_SEND_TO, receiverName, message);
 
-    }
-    private String ReadStringPreferences(String key, String defaultValue){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getString(key, defaultValue);
-    }
+    }*/
+
 
     public static void PostGpsLocation(String Timestamp, String lat, String lon, String accu) {
         String SERVER_METHOD_SEND_TO = "PostGpsLocation";
@@ -196,32 +193,26 @@ public class SignalRService extends Service {
                     mHubConnection.getConnectionId(),
                     Globals.mToken.user_id,
                     groupId,Timestamp, lat, lon, accu );
-
         }catch(Exception e){
         }
     }
 
 
-
     private void startSignalR() {
+        Log.e("SignalR","startSignalR()");
         Platform.loadPlatformComponent(new AndroidPlatformComponent());
 
-        /*mHubConnection = new HubConnection(Globals.serverUrl,"CONNECTION_QUERYSTRING", true, new Logger() {
+       String user_id = ReadStringPreferences(getApplicationContext(), "user_id","non");
+        String CONNECTION_QUERYSTRING = "userId="+user_id;
+        mHubConnection = new HubConnection(Globals.serverUrl,CONNECTION_QUERYSTRING, true, new Logger() {
             @Override
             public void log(String message, LogLevel level) {
                 System.out.println(message);
             }
-        });*/
-        /*mHubConnection = new HubConnection(Globals.serverUrl+"/BreakdownAssistAndroidHub",null, false, new Logger() {
-            @Override
-            public void log(String message, LogLevel level) {
-                System.out.println(message);
-            }
-        });*/
+        });
 
-        mHubConnection = new HubConnection(Globals.serverUrl);
-        String SERVER_HUB = "BreakdownAssistAndroidHub";
-        mHubProxy = mHubConnection.createHubProxy(SERVER_HUB);
+      //  mHubConnection = new HubConnection(Globals.serverUrl);
+        mHubProxy = mHubConnection.createHubProxy("BreakdownAssistAndroidHub");
 
 
         ClientTransport clientTransport = new ServerSentEventsTransport(mHubConnection.getLogger());
@@ -251,13 +242,13 @@ public class SignalRService extends Service {
        // sendMessage("Hello from BNK!");
 
 
-        String CLIENT_METHOD_BROADAST_MESSAGE = "broadcastMessage";
+       /* String CLIENT_METHOD_BROADAST_MESSAGE = "broadcastMessage";
         mHubProxy.on(CLIENT_METHOD_BROADAST_MESSAGE,
                 new SubscriptionHandler2<String, String>() {
                     @Override
                     public void run(final String name, final String msg) {
                         //Log.e("SimpleSignalR", "4569"+msg+name);
-                        final String finalMsg =  msg.toString();
+                        final String finalMsg =  msg;
                         // display Toast message
                         mHandler.post(new Runnable() {
                             @Override
@@ -267,7 +258,7 @@ public class SignalRService extends Service {
                         });
                     }
                 }
-                , String.class,String.class);
+                , String.class,String.class);*/
 
         // Subscribe to the received event
         mHubConnection.received(new MessageReceivedHandler() {
@@ -351,8 +342,6 @@ public class SignalRService extends Service {
                 String timestamp = data.get(2);
                 Globals.dbHandler.UpdateTrackingDataByTimeStamp(timestamp);//Successfully done
             }
-
-           // GetBreakdownGroups(context,breakdownId);
         }
     }
 
@@ -416,6 +405,7 @@ public class SignalRService extends Service {
                     if (response.isSuccessful()) {
                         Globals.serverConnected = true;
                         //Log.e("GetNewBreakdowns","Successful");
+                        Log.e("GetNewBreakdowns","Successful"+response.body());
                         List<Breakdown> breakdowns = response.body();
                         Log.e("GetNewBreakdowns","Number-"+breakdowns.size());
 
@@ -431,8 +421,9 @@ public class SignalRService extends Service {
                                 feedback.StatusId = String.valueOf(breakdown.get_Status());
                                 feedback.StatusTime = breakdown.get_Received_Time();
                                 feedback.UserId=Globals.mToken.user_id;
-                                feedback.AreaId= Globals.mToken.area_id;
-                                feedback.EcscId=Globals.mToken.team_id;
+                                feedback.AreaId= breakdown.get_AREA();//Globals.mToken.area_id;
+                                feedback.EcscId= breakdown.get_ECSC();//Globals.mToken.team_id;
+                                feedback.TeamId=Globals.mToken.team_id;
                                 feedbacks.add(feedback);
 
                                 breakdown.set_BA_SERVER_SYNCED("1");
@@ -834,6 +825,14 @@ public class SignalRService extends Service {
         SharedPreferences prfs = PreferenceManager.getDefaultSharedPreferences(this);
         //SharedPreferences prfs = getPreferences(Context.MODE_PRIVATE);
         return prfs.getBoolean(key, defaultValue);
+    }
+    private static String ReadStringPreferences(Context context, String key, String defaultValue){
+        SharedPreferences prfs = context.getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        return prfs.getString(key, defaultValue);
+    }
+    private String ReadStringPreferences(String key, String defaultValue){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        return prfs.getString(key, defaultValue);
     }
 }
 

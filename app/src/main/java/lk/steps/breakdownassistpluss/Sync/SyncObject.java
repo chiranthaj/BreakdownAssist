@@ -11,6 +11,7 @@ public class SyncObject {
     public String UserId;
     public String AreaId;
     public String EcscId;
+    public String TeamId;
     public String Sin;
     public String FailureTypeId;
     public String FailureCauseId;

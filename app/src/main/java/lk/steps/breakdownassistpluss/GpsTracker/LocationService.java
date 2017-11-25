@@ -155,15 +155,15 @@ public class LocationService extends Service implements
         if(Globals.dbHandler==null){
             Globals.dbHandler = new DBHandler(this, null, null, 1);
         }
-        if(location.getAccuracy() < 20.0f){
+        if(location.getAccuracy() < 50.0f){
             Log.d(TAG, "GPS Tracker Location saved");
             //Toast.makeText(this, "GPS Tracker Location saved", Toast.LENGTH_SHORT).show();
-           // Toast.makeText(this, "GPS Tracker accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "GPS Tracker1 accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_LONG).show();
             SignalRService.PostGpsLocation(timestamp,latTxt,lonTxt,accuracyTxt);
             Globals.dbHandler.addTrackPoint(timestamp,latTxt,lonTxt,speedTxt,accuracyTxt,altitudeTxt,directionTxt,distanceTxt);
 
         }else{
-            Toast.makeText(this, "GPS Tracker accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "GPS Tracker2 accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_SHORT).show();
         }
         currentlyProcessingLocation = false;
     }
@@ -181,12 +181,11 @@ public class LocationService extends Service implements
 
     @Override
     public void onLocationChanged(Location location) {
-
         if (location != null) {
-            //Log.e(TAG, "position: " + location.getLatitude() + ", " + location.getLongitude() + " accuracy: " + location.getAccuracy());
-
+            Log.e(TAG, "onLocationChanged "+location.getAccuracy());
+            // Log.e(TAG, "position: " + location.getLatitude() + ", " + location.getLongitude() + " accuracy: " + location.getAccuracy());
             // we have our desired accuracy of 500 meters so lets quit this service,
-            // onDestroy will be called and stop our location uodates
+            // onDestroy will be called and stop our location updates
             if (location.getAccuracy() < 500.0f) {
                 Globals.LastLocation = new LatLng(location.getLatitude(),location.getLongitude());
                 stopLocationUpdates();

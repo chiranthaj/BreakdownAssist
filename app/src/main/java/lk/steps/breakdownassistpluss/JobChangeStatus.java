@@ -10,7 +10,9 @@ import java.util.Date;
 public class JobChangeStatus {
     public String job_no;
     public String status;
-   // public String STATUS;
+    public String AreaId;
+    public String EcscId;
+    public String TeamId;
     public String change_datetime;  //TODO :Change this to a suitable variable format
     public String comment;
     public String device_timestamp; //TODO :Change this to a suitable variable format
@@ -18,6 +20,7 @@ public class JobChangeStatus {
     public String cause;
     public String detail_reason_code;
     public String type_failure;
+
 
     public JobChangeStatus(String _job_no, int STATUS, String change_datetime, String comment) {
         this.job_no = _job_no;

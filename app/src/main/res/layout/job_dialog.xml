@@ -69,6 +69,7 @@
                 android:gravity="center">
 
                 <TableRow
+                    android:id="@+id/contacts"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center">
@@ -101,9 +102,20 @@
                 android:textSize="25sp"
                 android:textStyle="italic" />
 
+            <TextView
+                android:id="@+id/txtNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Note"
+                android:textAlignment="center"
+                android:textColor="@android:color/holo_red_dark"
+                android:textSize="25sp"
+                android:textStyle="bold" />
             <TableLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp">
 
                 <TableRow

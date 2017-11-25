@@ -56,7 +56,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
     protected GoogleMap mGoogleMap;
     protected Breakdown mBreakdown;
     public Context mContext;
-    public TextView acc_no,JOB_NO,received_date_time,completed_date_time,name,address,description, txtTripInfo;
+    public TextView acc_no,JOB_NO,received_date_time,completed_date_time,name,address,description, txtTripInfo, note;
     private Button button1,button2;
     public CheckBox checkBox1;
     public ImageView imgMap;
@@ -80,6 +80,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         imgMap = (ImageView) itemLayoutView.findViewById(R.id.imgMap);
         imgSource= (ImageView) itemLayoutView.findViewById(R.id.imgSource);
         imgPriority = (ImageView) itemLayoutView.findViewById(R.id.imgPriority);
+        note = (TextView)itemLayoutView.findViewById(R.id.txtNote);
         description = (TextView)itemLayoutView.findViewById(R.id.description);
         mapView = (MapView) itemView.findViewById(R.id.map_view);
         txtTripInfo = (TextView) itemLayoutView.findViewById(R.id.txtTripInfo);

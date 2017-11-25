@@ -113,8 +113,9 @@ public class SyncService extends Service {
             Breakdown breakdown= Globals.dbHandler.ReadBreakdown_by_JonNo(obj.job_no);
 
             syncObject.StatusId=obj.status;
-            syncObject.AreaId=Globals.mToken.area_id;
-            syncObject.EcscId=Globals.mToken.team_id;
+            syncObject.AreaId=obj.AreaId;
+            syncObject.EcscId=obj.EcscId;
+            syncObject.TeamId=Globals.mToken.team_id;
             syncObject.BreakdownId = Globals.dbHandler.GetNewJobNumber(obj.job_no);
             syncObject.StatusTime = obj.change_datetime;
             syncObject.UserId = Globals.mToken.user_id;
@@ -626,7 +627,8 @@ public class SyncService extends Service {
                 i=0;
                 Log.e("Sync","PostTrackingData");
                 PostTrackingData(getApplicationContext());
-            }/*else if(i==6){
+            }
+            /*else if(i==6){
                 i=0;
                 Log.e("Sync","DownloadApk");
                 DownloadApk();
@@ -639,7 +641,7 @@ public class SyncService extends Service {
     public void RemoteLoginWithLastCredentials(){
         final String lastUsername = ReadStringPreferences("last_username", "");
         final String lastPassword = ReadStringPreferences("last_password", "");
-        SyncRESTService syncAuthService = new SyncRESTService(2);
+        final SyncRESTService syncAuthService = new SyncRESTService(2);
         Call<Token> call = syncAuthService.getService().GetJwt(lastUsername,lastPassword);
         call.enqueue(new Callback<Token>() {
             @Override
@@ -665,11 +667,13 @@ public class SyncService extends Service {
                 } else if (response.errorBody() != null) {
                     Globals.serverConnected = false;
                 }
+                syncAuthService.CloseAllConnections();
             }
 
             @Override
             public void onFailure(Call<Token> call, Throwable t) {
                 Log.e("Login","Remote login onFailure"+t.getMessage());//Remote login
+                syncAuthService.CloseAllConnections();
             }
 
         });

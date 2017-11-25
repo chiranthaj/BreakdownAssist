@@ -12,4 +12,5 @@ public class FeedbackObject {
     public String UserId;
     public String AreaId;
     public String EcscId;
+    public String TeamId;
 }
