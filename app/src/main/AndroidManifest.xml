@@ -94,14 +94,14 @@
         </receiver>
 
         <receiver
-            android:name=".GpsTracker.GpsTrackerBootReceiver">
+            android:name=".ServiceManager.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
         <receiver
-            android:name=".GpsTracker.GpsTrackerAlarmReceiver">
+            android:name=".ServiceManager.AlarmReceiver">
         </receiver>
 
         <service

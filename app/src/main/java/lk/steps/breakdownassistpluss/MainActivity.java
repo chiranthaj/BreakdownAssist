@@ -4,8 +4,6 @@ import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
@@ -15,11 +13,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -27,7 +20,7 @@ import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
@@ -58,7 +51,7 @@ import lk.steps.breakdownassistpluss.Fragments.DashboardFragment;
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
 import lk.steps.breakdownassistpluss.Fragments.GmapFragment;
 import lk.steps.breakdownassistpluss.Fragments.SearchViewFragment;
-import lk.steps.breakdownassistpluss.GpsTracker.GpsTrackerAlarmReceiver;
+import lk.steps.breakdownassistpluss.ServiceManager.AlarmReceiver;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
 import lk.steps.breakdownassistpluss.Sync.SignalRService;
 
@@ -75,7 +68,7 @@ public class MainActivity extends AppCompatActivity
    // public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
     private NavigationView navigationView;
     private static Context context;
-
+    android.support.v7.app.ActionBar mActionBar;
     public static boolean ReLoginRequired = false;
     boolean doubleBackToExitPressedOnce = false;
     private String UserName;
@@ -116,7 +109,8 @@ public class MainActivity extends AppCompatActivity
 
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
-        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "My Tag");
+       // this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "BreakdownAssist");
+        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssist");
         this.mWakeLock.acquire();
 
         timer = new Timer();
@@ -161,7 +155,8 @@ public class MainActivity extends AppCompatActivity
                 SignalRService.HandleMsg(getApplicationContext(),M,A);
             }
         }
-
+        mActionBar = this.getSupportActionBar();
+        if(mActionBar!=null)mActionBar.setSubtitle("Offline");
         // Show the "What's New" screen once for each new release of the application
         new WhatsNewScreen(this).show();
     }
@@ -177,16 +172,16 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         unregisterReceiver(broadcastReceiver);
-        if (this.mWakeLock.isHeld())
-            this.mWakeLock.release();
+        //if (this.mWakeLock.isHeld())
+        //    this.mWakeLock.release();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.NewBreakdownBroadcast"));
-        if (!this.mWakeLock.isHeld())
-            this.mWakeLock.acquire();
+       // if (!this.mWakeLock.isHeld())
+        //    this.mWakeLock.acquire();
         //Log.d("onResume","555");
 
         List<Breakdown> notAckedBreakdowns = Globals.dbHandler.ReadNotAckedBreakdowns();
@@ -221,10 +216,6 @@ public class MainActivity extends AppCompatActivity
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //String sID = intent.getExtras().getString("_id"); //Breakdown ID, not ID in Customer Table or the SMS inbox ID
-            //TODO : If SMS has an ACCT_NUM and GPS data is available with us include it in the Map and SMS log,otherwise put to the SMS log only
-
-            //String ring = intent.getStringExtra("ring");
             String statusUpdate = intent.getStringExtra("job_status_changed");
             String newBreakdowns = intent.getStringExtra("new_breakdowns");
             String finish_app_req = intent.getStringExtra("finish_app_req");
@@ -254,6 +245,9 @@ public class MainActivity extends AppCompatActivity
                 //Log.d("TEST","BroadcastReceiver"+finish_app_req);
                 finish();
             }
+
+            if(Globals.serverConnected & mActionBar!=null)mActionBar.setSubtitle("Online");
+            else if(!Globals.serverConnected & mActionBar!=null)mActionBar.setSubtitle("Offline");
         }
     };
 
@@ -264,7 +258,7 @@ public class MainActivity extends AppCompatActivity
         //stopService(new Intent(getBaseContext(), SignalRService.class));
         Globals.dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
-       // StopTrackLocation();
+        StopTrackLocation();
         super.onDestroy();
     }
 
@@ -272,15 +266,11 @@ public class MainActivity extends AppCompatActivity
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
-            Log.e("TEST","006");
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            Log.e("TEST","007");
             if (doubleBackToExitPressedOnce) {
-                Log.e("TEST","008");
                 super.onBackPressed();
             } else if (navigationView.getMenu().findItem(R.id.nav_dashboard).isChecked()) {
-                Log.e("TEST","009");
                 this.doubleBackToExitPressedOnce = true;
                 Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
 
@@ -293,7 +283,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }, 2000);
             } else {
-                Log.e("TEST","010");
                 MenuItem target = navigationView.getMenu().findItem(R.id.nav_dashboard);
                 target.setChecked(true);
                 onNavigationItemSelected(target);
@@ -562,6 +551,8 @@ public class MainActivity extends AppCompatActivity
             statusWord=("Rejected");
         }else if(STATUS==Breakdown.JOB_WITHDRAWN){
             statusWord=("Withdrawn");
+        }else if(STATUS==Breakdown.JOB_RE_CALLED){
+            statusWord=("Re-called");
         }
 
 
@@ -648,7 +639,7 @@ public class MainActivity extends AppCompatActivity
 
         Context context = getBaseContext();
         alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        gpsTrackerIntent = new Intent(context, GpsTrackerAlarmReceiver.class);
+        gpsTrackerIntent = new Intent(context, AlarmReceiver.class);
         pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
 
        // SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
@@ -680,7 +671,7 @@ public class MainActivity extends AppCompatActivity
         Log.d("GPSTRACKER", "cancelAlarmManager");
 
         Context context = getBaseContext();
-        Intent gpsTrackerIntent = new Intent(context, GpsTrackerAlarmReceiver.class);
+        Intent gpsTrackerIntent = new Intent(context, AlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);

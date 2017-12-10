@@ -275,10 +275,9 @@ public class LoginActivity extends AppCompatActivity  {
             call.enqueue(new Callback<Token>() {
                 @Override
                 public void onResponse(Call<Token> call, Response<Token> response) {
+                    showProgress(false);
                     if (response.isSuccessful()) {
                         Log.e("GetAuthToken","Authorized");
-
-                        showProgress(false);
                         Token token = response.body();
                         Log.e("area_name",token.area_name);
                         //SaveToken(token);
@@ -307,14 +306,27 @@ public class LoginActivity extends AppCompatActivity  {
                         CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
                         WriteLongPreferences("keep_sign_in",chk.isChecked());
                         finish();
-                    } else if (response.errorBody() != null) {
-                        showProgress(false);
+                    } else  {
+                        if (response.code() == 403) {
+                            Log.d("Register", "Fail" + response.code());
+                            Toast.makeText(getApplicationContext(), "Login fail..\nUser not activated.", Toast.LENGTH_LONG).show();
+                        } else if (response.code() == 402) {
+                            Log.d("Register", "Fail" + response.code());
+                            Toast.makeText(getApplicationContext(), "Login fail..\nInvalid password. ", Toast.LENGTH_LONG).show();
+                        } else if (response.code() == 500) {
+                            Log.d("Register", "Fail" + response.code());
+                            Toast.makeText(getApplicationContext(), "Login fail..\nInvalid username. ", Toast.LENGTH_LONG).show();
+                        } else {
+                            Log.d("GetAuthToken", "Fail" + response.errorBody());
+                            Log.d("GetAuthToken", "Fail" + response.message());
+                            Log.d("GetAuthToken", "Fail" + response);
+                            Toast.makeText(getApplicationContext(), "Network failure..\n" + response.errorBody(), Toast.LENGTH_LONG).show();
+                            ForceLocalLogin = true;
+                            Globals.serverConnected = false;
+                            performLogin(username,password);
+                        }
                         Log.d("GetAuthToken","Fail"+response.errorBody());
-                        Toast.makeText(getApplicationContext(),"Network failure..\nSwitch to local login"+response.errorBody(), Toast.LENGTH_LONG).show();
-                        ForceLocalLogin = true;
-                        Globals.serverConnected = false;
-                        performLogin(username,password);
-
+                       // Toast.makeText(getApplicationContext(),"Network failure..\nSwitch to local login"+response.errorBody(), Toast.LENGTH_LONG).show();
                     }
                     syncAuthService.CloseAllConnections();
                 }
@@ -322,16 +334,15 @@ public class LoginActivity extends AppCompatActivity  {
                 @Override
                 public void onFailure(Call<Token> call, Throwable t) {
                     Log.e("Login","Remote login onFailure"+t.getMessage());//Remote login
+                    showProgress(false);
                     ForceLocalLogin = true;
                     Globals.serverConnected = false;
                     performLogin(username,password);
                     syncAuthService.CloseAllConnections();
                 }
-
             });
         }
     }
-
 
 
 

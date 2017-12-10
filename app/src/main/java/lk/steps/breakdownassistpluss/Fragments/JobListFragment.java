@@ -147,6 +147,18 @@ public class JobListFragment extends Fragment {
             iJobs_to_Display = Breakdown.JOB_REJECT;
             CreateListView(JobListFragment.this);
             return true;
+        }else if (id == R.id.menu_jobs_recalled) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            iJobs_to_Display = Breakdown.JOB_RE_CALLED;
+            CreateListView(JobListFragment.this);
+            return true;
+        }else if (id == R.id.menu_jobs_returned) {
+            if (item.isChecked()) item.setChecked(false);
+            else item.setChecked(true);
+            iJobs_to_Display = Breakdown.JOB_RETURNED;
+            CreateListView(JobListFragment.this);
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

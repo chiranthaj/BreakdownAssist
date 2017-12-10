@@ -105,11 +105,21 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
             holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
             holder.completed_date_time.setText("Withdrawn on "+Completed_Time);
             drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
+        }else if(STATUS==Breakdown.JOB_RE_CALLED){
+            holder.completed_date_time.setText("Re-Called");
+            holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
+            drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
+        }else if(STATUS==Breakdown.JOB_RETURNED){
+            holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
+            holder.completed_date_time.setText("Returned");
+            drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
         }else {
             holder.completed_date_time.setText("Unattained");
             holder.JOB_NO.setTextColor(Color.parseColor("#c9082b"));
             drawable.setColorFilter(Color.parseColor("#c9082b"), PorterDuff.Mode.SRC_IN);
         }
+
+
         String src =breakdownList.get(position).get_OldJob_No();
         if(src==null){
             holder.imgSource.setVisibility(View.INVISIBLE);

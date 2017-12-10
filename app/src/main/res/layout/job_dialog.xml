@@ -177,7 +177,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
                         android:layout_height="65dp"
-                        android:layout_weight="0.33"
+                        android:layout_weight="0.25"
                         android:src="@drawable/ic_cancel" />
 
                     <Button
@@ -185,16 +185,23 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
                         android:layout_height="65dp"
-                        android:layout_weight="0.33"
+                        android:layout_weight="0.25"
                         android:text="Reject"
                         android:textSize="18sp" />
-
+                    <Button
+                        android:id="@+id/btnReturn"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="65dp"
+                        android:layout_weight="0.25"
+                        android:text="Return"
+                        android:textSize="18sp" />
                     <ImageButton
                         android:id="@+id/btnNavigate"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
                         android:layout_height="65dp"
-                        android:layout_weight="0.33"
+                        android:layout_weight="0.25"
                         android:src="@drawable/ic_navigation" />
                 </TableRow>
 

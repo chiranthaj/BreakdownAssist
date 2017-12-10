@@ -184,11 +184,21 @@ public class JobView {
                 dialog.dismiss();
             }
         });
+
         Button btnReject = (Button) dialog.findViewById(R.id.btnReject);
         btnReject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 JobRejectDialog(fragment, breakdown, position);
+                dialog.dismiss();
+            }
+        });
+
+        Button btnReturn = (Button) dialog.findViewById(R.id.btnReturn);
+        btnReturn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JobReturnDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -541,7 +551,8 @@ public class JobView {
                 if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
                     JobMaterialDialog(fragment, breakdown, position);
                     dialog.dismiss();
-                }else if(sin.getText().toString().length()<4 & !sin.getText().toString().equals("")){
+                }else if(sin.getText().toString().length()<4 | sin.getText().toString().equals("")){
+               // }else if(sin.getText().toString().length()<4 & !sin.getText().toString().equals("")){
                     Toast.makeText(fragment.getActivity().getApplicationContext(),
                             "Erroneous SIN", Toast.LENGTH_LONG).show();
                 } else if (spinnerType.getSelectedItemPosition() > 0 &
@@ -655,6 +666,64 @@ public class JobView {
                 dialog.dismiss();
             }
         });
+        ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RestoreCard(fragment, breakdown, position);
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private static void JobReturnDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+        if (fragment == null) return;
+        final Dialog dialog = new Dialog(fragment.getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.job_return_dialog);
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        //dialog.setCancelable(false);
+        TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
+        if (breakdown.get_Name() != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        else
+            txtView.setText(breakdown.get_Job_No());
+
+        final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
+        //Spinner
+        final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
+        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, Failure.ReturnComments));
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
+                if (position == 0) {
+                    etComment.setText("", TextView.BufferType.EDITABLE);
+                } else {
+                    etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+        ImageButton btnReject = (ImageButton) dialog.findViewById(R.id.btnReject);
+        btnReject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                        Breakdown.JOB_RETURNED, GetSelectedDateTime(dialog), etComment.getText().toString());
+                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_RETURNED);
+                JobListFragment.CreateListView(fragment);
+                dialog.dismiss();
+            }
+        });
+
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override

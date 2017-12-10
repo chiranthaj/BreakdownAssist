@@ -98,7 +98,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         cardView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Log.e("YYY","8888 long");
+               // Log.e("YYY","8888 long");
                 onItemTouchListener.onCardViewLongTap(v, getLayoutPosition());
                 return true;
             }
@@ -178,7 +178,6 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
             setDirections(Globals.LastLocation,mBreakdown.get_location());
             mGoogleMap.addMarker(new MarkerOptions().position(mBreakdown.get_location()).icon(icon));
             mGoogleMap.addMarker(new MarkerOptions().position(Globals.LastLocation).icon(iconBk));
-
         }
     }
 

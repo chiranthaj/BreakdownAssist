@@ -135,6 +135,7 @@ public class Failure {
             "No fault",
             "Other",
     };
+
     public static String[] CompletedComments = {
             "Please select",
             "Comment1",
@@ -142,6 +143,13 @@ public class Failure {
             "Comment3",
             "Custom",
     };
+    public static String[] ReturnComments = {
+            "Please select",
+            "Not belongs to the Area",
+            "Not belongs to the ECSC",
+            "Not belongs to the Team",
+    };
+
     public static String[][] ComplainTypeList77 = {
             {"77", "1", "Supply failed at home"},
             {"77", "2", "Supply failed in area"},

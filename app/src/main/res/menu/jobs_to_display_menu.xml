@@ -43,6 +43,16 @@
                     android:orderInCategory="3"
                     app:showAsAction="never" />
 
+                <item android:id="@+id/menu_jobs_recalled"
+                    android:title="Re-called Jobs"
+                    android:orderInCategory="3"
+                    app:showAsAction="never" />
+
+                <item android:id="@+id/menu_jobs_returned"
+                    android:title="Returned Jobs"
+                    android:orderInCategory="3"
+                    app:showAsAction="never" />
+
                 <item android:id="@+id/menu_jobs_all"
                     android:title="All Jobs"
                     android:orderInCategory="3"

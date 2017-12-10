@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        android:weightSum="1">
+        <TextView
+            android:id="@+id/warning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="You are about to RETURN the job to Back-Office"
+            android:textAlignment="center"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/jobInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="Job info"
+            android:textAlignment="center"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="22sp"
+            android:textStyle="normal" />
+
+        <TextView
+            android:id="@+id/text23"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Done Date and Time"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="25sp"
+            android:textStyle="normal" />
+
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:gravity="center"
+            android:weightSum="1">
+
+            <DatePicker
+                android:id="@+id/datePicker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:calendarViewShown="false"
+                android:datePickerMode="spinner"
+                android:timePickerMode="spinner" />
+
+            <TimePicker
+                android:id="@+id/timePicker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:timePickerMode="spinner" />
+        </TableRow>
+
+
+        <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/text1"
+                android:layout_width="150dp"
+                android:layout_height="match_parent"
+                android:text="Reason :"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="25sp"
+                android:textStyle="normal" />
+
+            <Spinner
+                android:id="@+id/spinner1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="left"
+                android:title="Job DESCRIPTION" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
+            android:visibility="gone"
+            android:gravity="center">
+
+            <EditText
+                android:id="@+id/etComment"
+                android:inputType="text"
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="25sp"
+                android:textStyle="normal" />
+
+        </TableRow>
+
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:weightSum="1">
+
+            <ImageButton
+                android:id="@+id/btnCancel"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_weight="0.5"
+                android:src="@drawable/ic_cancel"
+                android:text="Visited" />
+
+
+            <ImageButton
+                android:id="@+id/btnReject"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_weight="0.5"
+                android:src="@drawable/ic_done" />
+        </TableRow>
+
+    </LinearLayout>
+</ScrollView>
+

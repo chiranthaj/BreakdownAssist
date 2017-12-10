@@ -98,7 +98,7 @@ public class DBHandler extends SQLiteOpenHelper
 
         query = "CREATE TABLE JobStatusChange (" +
                 "JOB_NO                 TEXT,"+
-                "STATUS                TEXT,"+
+                "STATUS                 TEXT,"+
                 "change_datetime        TEXT,"+
                 "comment                TEXT,"+
                 "device_timestamp       TEXT,"+
@@ -512,9 +512,9 @@ public class DBHandler extends SQLiteOpenHelper
 
     List<JobCompletion> newJobCompletion = new LinkedList<JobCompletion>();
 
-    String query = "SELECT * " +
-            " FROM JobCompletion " +
-            " WHERE synchro_mobile_db=0 and length(JOB_NO)=10;";//
+    String query = "SELECT JobCompletion.*, BreakdownRecords.AREA , BreakdownRecords.ECSC FROM JobCompletion " +
+            " join BreakdownRecords on JobCompletion.JOB_NO = BreakdownRecords.JOB_NO " +
+            " WHERE JobCompletion.synchro_mobile_db=0 and length(JobCompletion.JOB_NO)=10;";
 
     Cursor c = db.rawQuery(query, null);
     if(c==null)return newJobCompletion;
@@ -527,6 +527,8 @@ public class DBHandler extends SQLiteOpenHelper
             _jobcompletion_obj= new JobCompletion();
             _jobcompletion_obj.JOB_NO=c.getString(c.getColumnIndex("JOB_NO"));
             _jobcompletion_obj.STATUS=c.getString(c.getColumnIndex("STATUS"));
+            _jobcompletion_obj.AreaId=c.getString(c.getColumnIndex("AREA"));
+            _jobcompletion_obj.EcscId=c.getString(c.getColumnIndex("ECSC"));
             _jobcompletion_obj.job_completed_datetime=c.getString(c.getColumnIndex("job_completed_datetime"));
             _jobcompletion_obj.comment=c.getString(c.getColumnIndex("comment"));
             _jobcompletion_obj.detail_reason_code = c.getString(c.getColumnIndex("detail_reason_code"));
@@ -787,8 +789,7 @@ public class DBHandler extends SQLiteOpenHelper
     }
 
 
-    public long addBreakdown2(Breakdown breakdown)
-    {
+    public long addBreakdown2(Breakdown breakdown){
         SQLiteDatabase db = getWritableDatabase();
         //Using Try Catch to suppress duplicate entries warnings, when Synching Inbox
         try{
@@ -797,7 +798,7 @@ public class DBHandler extends SQLiteOpenHelper
             values.put("ACCT_NUM",breakdown.get_Acct_Num());
             values.put("PARENT_BREAKDOWN_ID",breakdown.get_ParentBreakdownId());
             values.put("DESCRIPTION",breakdown.get_Full_Description());
-            values.put("JOB_NO",breakdown.get_Job_No());
+
             values.put("NOTE",breakdown.get_Note());
             values.put("SUB",breakdown.get_SUB());
             values.put("ECSC",breakdown.get_ECSC());
@@ -814,8 +815,16 @@ public class DBHandler extends SQLiteOpenHelper
             values.put("BA_SERVER_SYNCED",breakdown.get_BA_SERVER_SYNCED());
             values.put("STATUS",1);
 
-            long result =  db.insert("BreakdownRecords",null,values); //TODO: Use insertOrthrow
-            Log.e("result","="+result);
+
+           // Log.e("result","="+result);
+
+            long result = db.update("BreakdownRecords", values, "JOB_NO="+breakdown.get_Job_No(), null);
+
+            if(result < 1){
+                values.put("JOB_NO",breakdown.get_Job_No());
+                result =  db.insert("BreakdownRecords",null,values); //TODO: Use insertOrthrow
+            }
+
             return result;
         }
         catch (Exception e)
@@ -824,6 +833,8 @@ public class DBHandler extends SQLiteOpenHelper
             return 0;
         }
     }
+
+
     public void AddBreakdownGroups(List<BreakdownGroup> groups) {
         Log.e("UPDATEQ","AddBreakdownGroups");
         SQLiteDatabase db = getWritableDatabase();
