@@ -108,7 +108,8 @@ public class LoginActivity extends AppCompatActivity  {
             }catch(Exception e){
                 txtAppName.setText("Ceylon Electricity Board  ©  2017");
             }
-
+        CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
+            chk.setChecked(ReadBooleanPreferences2("keep_sign_in",false));
     }
 
     private void GetIpAddress(){
@@ -266,7 +267,8 @@ public class LoginActivity extends AppCompatActivity  {
             });
             Toast.makeText(getApplicationContext(),"Local login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
             CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
-            WriteLongPreferences("keep_sign_in",chk.isChecked());
+            WriteBooleanPreferences("keep_sign_in",chk.isChecked());
+            WriteBooleanPreferences("login_status",true);
             finish();
         }else if(!ForceLocalLogin){
             Log.e("Login","**Remote**");//Remote login
@@ -300,11 +302,11 @@ public class LoginActivity extends AppCompatActivity  {
                             }
                         });
                         Globals.serverConnected = true;
-                        WriteLongPreferences("restart_due_to_authentication_fail",false);
+                        WriteBooleanPreferences("restart_due_to_authentication_fail",false);
                         Toast.makeText(getApplicationContext(),"Remote login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
-
                         CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
-                        WriteLongPreferences("keep_sign_in",chk.isChecked());
+                        WriteBooleanPreferences("login_status",true);
+                        WriteBooleanPreferences("keep_sign_in",chk.isChecked());
                         finish();
                     } else  {
                         if (response.code() == 403) {
@@ -356,7 +358,7 @@ public class LoginActivity extends AppCompatActivity  {
         SharedPreferences.Editor editor = prfs.edit();
         editor.putString(key,value).apply();
     }
-    private void WriteLongPreferences(String key, boolean value){
+    private void WriteBooleanPreferences(String key, boolean value){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prfs.edit();
         editor.putBoolean(key,value).apply();

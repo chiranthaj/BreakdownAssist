@@ -16,4 +16,5 @@ public class SyncObject {
     public String FailureTypeId;
     public String FailureCauseId;
     public String FailureNatureId;
+    public String Note;
 }

@@ -26,6 +26,7 @@ public class Globals
     public static String AreaCode3="";
     public static int NoOfAreaCodes=0;
     public static LatLng  LastLocation = new LatLng(7.2944796,80.5906218);
+   // public static boolean LoggedIn = false;
     //public static MediaPlayer mediaPlayer;
     public static String serverUrl = "http://192.168.137.1:31525";
     public static boolean serverConnected = false;

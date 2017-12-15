@@ -29,7 +29,6 @@ import com.google.android.gms.maps.model.Marker;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -40,6 +39,7 @@ import lk.steps.breakdownassistpluss.GpsModules.DirectionFinderListener;
 import lk.steps.breakdownassistpluss.MaterialList.MaterialObject;
 import lk.steps.breakdownassistpluss.MaterialList.MaterialViewsAdapter;
 import lk.steps.breakdownassistpluss.MaterialList.Store;
+import lk.steps.breakdownassistpluss.Models.FailureObject;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
 
 
@@ -51,6 +51,11 @@ public class JobView {
     private static String[][] FailureTypeList;
     private static String[][] FailureCauseList;
     private static String[][] FailureNatureList;
+
+    private static ArrayList<FailureObject> FailureTypeList2 = new  ArrayList<FailureObject>();
+    private static ArrayList<FailureObject> FailureCauseList2 = new  ArrayList<FailureObject>();
+    private static ArrayList<FailureObject> FailureNatureList2 = new  ArrayList<FailureObject>();
+
 
     public static Dialog DialogInfo(final Fragment fragment, final Breakdown breakdown, final Marker marker, final Location currentLocation, final int position) {
 
@@ -262,7 +267,7 @@ public class JobView {
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
         spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, Failure.VisitedComments));
+                R.layout.spinner_row, R.id.textView, Strings.VisitedComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
@@ -318,7 +323,7 @@ public class JobView {
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
         spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, Failure.AttendingComments));
+                R.layout.spinner_row, R.id.textView, Strings.AttendingComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
@@ -374,7 +379,7 @@ public class JobView {
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
         spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, Failure.DoneComments));
+                R.layout.spinner_row, R.id.textView, Strings.DoneComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
@@ -418,9 +423,12 @@ public class JobView {
 
     public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return null;
-        FailureTypeList = Failure.GetFailureTypeList(fragment.getActivity().getApplicationContext());
-        FailureCauseList = Failure.GetFailureCauseList(fragment.getActivity().getApplicationContext());
-        FailureNatureList = Failure.GetFailureNatureList(fragment.getActivity().getApplicationContext());
+
+
+        LoadFailureTypeList(fragment);
+        LoadFailureCauseList(fragment,"1");
+        LoadFailureNatureList(fragment,"1");
+
 
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -437,31 +445,32 @@ public class JobView {
         final EditText sin = (EditText) dialog.findViewById(R.id.etSin);
         sin.setText(breakdown.get_SUB());
 
-        //Failure Type Spinner
+        //Strings Type Spinner
         final Spinner spinnerType = (Spinner) dialog.findViewById(R.id.spinner_failure_type);
-        spinnerType.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, GetColumn(FailureTypeList)));
+        spinnerType.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, FailureTypeList2));
 
         final Spinner spinnerNature = (Spinner) dialog.findViewById(R.id.spinner_failure_nature);
-        spinnerNature.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, GetFilteredColumn(FailureNatureList, "1")));
+        spinnerNature.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, FailureNatureList2));
+
 
         final Spinner spinnerCause = (Spinner) dialog.findViewById(R.id.spinner_failure_cause);
-        spinnerCause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, GetFilteredColumn(FailureCauseList, "1")));
+        spinnerCause.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, FailureCauseList2));
 
         if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
             JobCompletion obj = Globals.dbHandler.getJobCompletionRec(breakdown.get_Job_No());
             int type = Integer.parseInt(obj.type_failure);//2
-            int cause = Integer.parseInt(obj.cause);//9
-            int nature = Integer.parseInt(obj.detail_reason_code);//21
+
             spinnerType.setSelection(type);
 
-            SetNatureSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
-            spinnerNature.setSelection(GetSubIndex(FailureNatureList, type, nature));
+            LoadFailureNatureList(fragment,obj.type_failure);
+            spinnerNature.setSelection(GetSubIndex(FailureNatureList2,obj.detail_reason_code));
 
-            SetCauseSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
-            spinnerCause.setSelection(GetSubIndex(FailureCauseList, nature, cause));
+
+            LoadFailureCauseList(fragment,obj.detail_reason_code);
+            spinnerCause.setSelection(GetSubIndex(FailureCauseList2, obj.cause));
 
             spinnerType.setEnabled(false);
             spinnerNature.setEnabled(false);
@@ -471,7 +480,9 @@ public class JobView {
             spinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
-                    SetNatureSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
+                        FailureObject obj = (FailureObject) parent.getItemAtPosition(position);
+                        SetNatureSpinners(fragment, spinnerType, spinnerNature, spinnerCause, obj);
+
                     if (view != null) {
                         TextView textView = (TextView) view.findViewById(R.id.textView);
                         if (position > 0)
@@ -488,7 +499,9 @@ public class JobView {
             spinnerNature.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
-                    SetCauseSpinners(fragment, spinnerType, spinnerNature, spinnerCause);
+                    FailureObject obj = (FailureObject) parent.getItemAtPosition(position);
+                        SetCauseSpinners(fragment, spinnerType, spinnerNature, spinnerCause,obj);
+
                     if (view != null) {
                         TextView textView = (TextView) view.findViewById(R.id.textView);
                         if (position > 0)
@@ -526,7 +539,7 @@ public class JobView {
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
         spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, Failure.CompletedComments));
+                R.layout.spinner_row, R.id.textView, Strings.CompletedComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
@@ -561,9 +574,12 @@ public class JobView {
                     JobCompletion jobCompletionRec = new JobCompletion();
                     jobCompletionRec.JOB_NO = breakdown.get_Job_No();
                     jobCompletionRec.job_completed_datetime = GetSelectedDateTime(dialog);
-                    jobCompletionRec.type_failure = GetId(FailureTypeList, spinnerType.getSelectedItem().toString());
-                    jobCompletionRec.detail_reason_code = GetId(FailureNatureList, spinnerNature.getSelectedItem().toString());
-                    jobCompletionRec.cause = GetId(FailureCauseList, spinnerCause.getSelectedItem().toString());
+                    FailureObject typeObj = (FailureObject) spinnerType.getSelectedItem();
+                    FailureObject natureObj = (FailureObject) spinnerNature.getSelectedItem();
+                    FailureObject causeObj = (FailureObject) spinnerCause.getSelectedItem();
+                    jobCompletionRec.type_failure = typeObj.Id;
+                    jobCompletionRec.detail_reason_code = natureObj.Id;
+                    jobCompletionRec.cause = causeObj.Id;
                     breakdown.set_SUB(sin.getText().toString());
                     UpdateCompletedJob(fragment, jobCompletionRec, breakdown);
                     JobListFragment.CreateListView(fragment);
@@ -577,31 +593,6 @@ public class JobView {
             }
         });
 
-        /*Button btnMaterial = (Button) dialog.findViewById(R.id.btnMaterial);
-        btnMaterial.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (spinnerType.getSelectedItemPosition() > 0 &
-                        spinnerNature.getSelectedItemPosition() > 0 &
-                        spinnerCause.getSelectedItemPosition() > 0) {
-                    JobCompletion jobCompletionRec = new JobCompletion();
-                    jobCompletionRec.JOB_NO = breakdown.get_Job_No();
-                    jobCompletionRec.job_completed_datetime = GetSelectedDateTime(dialog);
-                    jobCompletionRec.type_failure = GetId(FailureTypeList, spinnerType.getSelectedItem().toString());
-                    jobCompletionRec.detail_reason_code = GetId(FailureNatureList, spinnerNature.getSelectedItem().toString());
-                    jobCompletionRec.cause = GetId(FailureCauseList, spinnerCause.getSelectedItem().toString());
-
-                    UpdateCompletedJob(fragment, jobCompletionRec, breakdown);
-                    JobListFragment.CreateListView(fragment);
-                    Globals.AverageTime = Globals.dbHandler.getAttendedTime();
-                    JobMaterialDialog(fragment,breakdown,position);
-                    dialog.dismiss();
-                } else {
-                    Toast.makeText(fragment.getActivity().getApplicationContext(),
-                            "Please provide feedback information..", Toast.LENGTH_LONG).show();
-                }
-            }
-        });*/
 
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
         // if button is clicked, close the job_dialog dialog
@@ -634,10 +625,26 @@ public class JobView {
             txtView.setText(breakdown.get_Job_No());
 
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
+
+        ArrayList<FailureObject> list = new ArrayList<FailureObject>();
+        for (String[] array : Strings.RejectComments) {
+            FailureObject obj = new FailureObject();
+            obj.AreaCode=array[0];
+            obj.Id=array[1];
+            obj.ParentId=array[2];
+            obj.English=array[3];
+            obj.Sinhala=array[4];
+            list.add(obj);
+        }
+
+
+
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, Failure.RejectComments));
+
+        spinner.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, list));
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
@@ -659,8 +666,11 @@ public class JobView {
         btnReject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                FailureObject obj = (FailureObject) spinner.getSelectedItem();
+                Log.d("TEST","reject reason"+obj.English);
                 JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        Breakdown.JOB_REJECT, GetSelectedDateTime(dialog), etComment.getText().toString());
+                        Breakdown.JOB_REJECT, GetSelectedDateTime(dialog), obj.English);
                 UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_REJECT);
                 JobListFragment.CreateListView(fragment);
                 dialog.dismiss();
@@ -694,7 +704,7 @@ public class JobView {
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
         spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, Failure.ReturnComments));
+                R.layout.spinner_row, R.id.textView, Strings.ReturnComments));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
@@ -855,34 +865,36 @@ public class JobView {
     }
 
 
-    private static void SetNatureSpinners(Fragment fragment, Spinner spinnerType, Spinner spinnerNature, Spinner spinnerCause) {
-        // int type = spinnerType.getSelectedItemPosition();
-        String type = GetId(FailureTypeList, spinnerType.getSelectedItem().toString());
+    private static void SetNatureSpinners(Fragment fragment, Spinner spinnerType, Spinner spinnerNature, Spinner spinnerCause, FailureObject obj) {
 
+        String type =obj.Id;
+        Log.e("TEST","Nature="+obj.Id+","+obj.Sinhala);
         if (type.equals("0")) {
             spinnerNature.setEnabled(false);
             spinnerCause.setEnabled(false);
         } else {
+            LoadFailureNatureList(fragment, type);
             spinnerNature.setEnabled(true);
             spinnerCause.setEnabled(true);
-            spinnerNature.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, R.id.textView, GetFilteredColumn(FailureNatureList, type)));
+            spinnerNature.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+                    R.layout.spinner_row, R.id.textView, FailureNatureList2));
+            Log.e("TEST","FailureNatureList2 size="+FailureNatureList2.size());
         }
         spinnerNature.setSelection(0);
         spinnerCause.setSelection(0);
     }
 
-    private static void SetCauseSpinners(Fragment fragment, Spinner spinnerType, Spinner spinnerNature, Spinner spinnerCause) {
-        // int type = spinnerType.getSelectedItemPosition();
-        //int nature = spinnerNature.getSelectedItemPosition();
-        String nature = GetId(FailureNatureList, spinnerNature.getSelectedItem().toString());
-
+    private static void SetCauseSpinners(Fragment fragment, Spinner spinnerType, Spinner spinnerNature, Spinner spinnerCause, FailureObject obj) {
+        String nature =obj.Id;
+        Log.e("TEST","Cause="+obj.Sinhala);
         if (nature.equals("0")) {
             spinnerCause.setEnabled(false);
         } else {
             spinnerCause.setEnabled(true);
-            spinnerCause.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                    R.layout.spinner_row, R.id.textView, GetFilteredColumn(FailureCauseList, nature)));
+            LoadFailureCauseList(fragment, nature);
+            spinnerCause.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+                    R.layout.spinner_row, R.id.textView, FailureCauseList2));
+
         }
         spinnerCause.setSelection(0);
     }
@@ -899,62 +911,66 @@ public class JobView {
         return text;
     }
 
-
-    private static String[] GetColumn(String[][] array) {
-        String out[] = new String[array.length];
-        for (int row = 0; row < array.length; row++) {
-            out[row] = array[row][4];//Sinhala items
-        }
-        return out;
-    }
-
-    private static String[] GetFilteredColumn(String[][] Array, String ParentId) {
-        String out[] = new String[Array.length];
+    private static int GetSubIndex(ArrayList<FailureObject> list, String Id) {
         int i = 0;
-        for (String[] array : Array) {
-            if (array[2].equals(ParentId)) {
-                out[i] = array[4];
-                i++;
-            }
-        }
-        return Arrays.copyOfRange(out, 0, i);
-    }
-
-    private static String GetId(String[][] Array, String name) {
-        for (String[] array : Array) {
-            if (array[4].equals(name)) {
-                Log.e("FOUND", name + "" + array[1]);
-                return array[1];
-            }
-        }
-        Log.e("NOT FOUND", "" + name + " in " + Array.toString());
-        return "0";
-    }
-
-    private static int GetSubIndex(String[][] Array, int parentId, int id) {
-        int i = 0;
-        for (String[] array : Array) {
-            if (array[2].equals(String.valueOf(parentId))) {
-                if (array[1].equals(String.valueOf(id))) {
-                    Log.e("GetSubIndex", "GetSubIndex=" + i);
-                    return i;
-                }
-                i++;
-            }
+        for (FailureObject obj : list) {
+           if(obj.Id.equals(Id)){
+               Log.e("TEST FOUND", " -> "+i);
+               return i;
+           }
+           i++;
         }
         // Log.e("NOT FOUND", " in "+Array.toString());
         return 0;
     }
 
-    private static String GetName(String[][] Array, String id) {
-        for (String[] array : Array) {
-            if (array[1].equals(id)) {
-                Log.e("FOUND", id + "" + array[2]);
-                return array[4];
+    private static void LoadFailureTypeList(Fragment fragment){
+        FailureTypeList = Strings.GetFailureTypeList(fragment.getActivity().getApplicationContext());
+
+        FailureTypeList2.clear();
+        for (String[] array : FailureTypeList) {
+            FailureObject obj = new FailureObject();
+            obj.AreaCode=array[0];
+            obj.Id=array[1];
+            obj.ParentId=array[2];
+            obj.English=array[3];
+            obj.Sinhala=array[4];
+            FailureTypeList2.add(obj);
+        }
+    }
+    private static void LoadFailureCauseList(Fragment fragment,String parentId){
+        FailureCauseList = Strings.GetFailureCauseList(fragment.getActivity().getApplicationContext());
+
+        FailureCauseList2.clear();
+        for (String[] array : FailureCauseList) {
+
+            if(array[2].equals(parentId)) {
+                FailureObject obj = new FailureObject();
+                obj.AreaCode=array[0];
+                obj.Id=array[1];
+                obj.ParentId=array[2];
+                obj.English=array[3];
+                obj.Sinhala=array[4];
+                FailureCauseList2.add(obj);
             }
         }
-        return "0";
     }
+    private static void LoadFailureNatureList(Fragment fragment,String parentId){
+        FailureNatureList = Strings.GetFailureNatureList(fragment.getActivity().getApplicationContext());
+        FailureNatureList2.clear();
+        for (String[] array : FailureNatureList) {
+
+            if(array[2].equals(parentId)){
+                FailureObject obj = new FailureObject();
+                obj.AreaCode=array[0];
+                obj.Id=array[1];
+                obj.ParentId=array[2];
+                obj.English=array[3];
+                obj.Sinhala=array[4];
+                FailureNatureList2.add(obj);
+            }
 
 
+        }
+    }
 }

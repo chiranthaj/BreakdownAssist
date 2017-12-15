@@ -639,7 +639,7 @@ public class DBHandler extends SQLiteOpenHelper
                 " join BreakdownRecords on JobStatusChange.JOB_NO = BreakdownRecords.JOB_NO " +
                 "WHERE ( JobStatusChange.synchro_mobile_db = 0 or JobStatusChange.synchro_mobile_db = -1) and " +
                 "length(JobStatusChange.JOB_NO)=10;";*/
-        String query = "SELECT JobStatusChange.JOB_NO, JobStatusChange.STATUS,JobStatusChange.change_datetime" +
+        String query = "SELECT JobStatusChange.JOB_NO, JobStatusChange.STATUS,JobStatusChange.comment,JobStatusChange.change_datetime" +
                 ", BreakdownRecords.AREA , BreakdownRecords.ECSC " +
                 " FROM JobStatusChange " +
                 " join BreakdownRecords on JobStatusChange.JOB_NO = BreakdownRecords.JOB_NO " +
@@ -661,7 +661,7 @@ public class DBHandler extends SQLiteOpenHelper
                 _jobchangestatus_obj.change_datetime=c.getString(c.getColumnIndex("change_datetime"));
                 _jobchangestatus_obj.EcscId=c.getString(c.getColumnIndex("ECSC"));
                 _jobchangestatus_obj.AreaId=c.getString(c.getColumnIndex("AREA"));
-              //  _jobchangestatus_obj.device_timestamp=c.getString(c.getColumnIndex("device_timestamp"));
+                _jobchangestatus_obj.comment=c.getString(c.getColumnIndex("comment"));
               //  _jobchangestatus_obj.synchro_mobile_db=c.getInt(c.getColumnIndex("synchro_mobile_db"));
                 newJobChangeStatus.add(_jobchangestatus_obj);
             }

@@ -1,4 +1,4 @@
-package lk.steps.breakdownassistpluss;
+package lk.steps.breakdownassistpluss.Models;
 
 import com.google.android.gms.maps.model.LatLng;
 

@@ -92,9 +92,10 @@ public class SelectorActivity extends Activity {
                         }
                     });
                     Globals.serverConnected = true;
-                    WriteLongPreferences("restart_due_to_authentication_fail",false);
+                    WriteBooleanPreferences("restart_due_to_authentication_fail",false);
                     Toast.makeText(getApplicationContext(),"Remote login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
-                    WriteLongPreferences("keep_sign_in",true);
+                    //WriteBooleanPreferences("keep_sign_in",true);
+                    //WriteBooleanPreferences("login_status",true);
                     finish();
                 } else if (response.errorBody() != null) {
                     Log.d("GetAuthToken","Fail"+response.errorBody());
@@ -137,7 +138,7 @@ public class SelectorActivity extends Activity {
         SharedPreferences.Editor editor = prfs.edit();
         editor.putString(key,value).apply();
     }
-    private void WriteLongPreferences(String key, boolean value){
+    private void WriteBooleanPreferences(String key, boolean value){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prfs.edit();
         editor.putBoolean(key,value).apply();

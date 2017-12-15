@@ -7,105 +7,7 @@ import android.content.SharedPreferences;
  * Created by JagathPrasanga on 2017-06-23.
  */
 
-public class Failure {
-    /*public static String[] Type = {
-            "Please select",
-            "Medium voltage",
-            "Low voltage",
-            "Service main"
-    };
-
-    public static String[] Cause1 = {
-            "Please select",
-            "Fuse blown",
-            "Low voltage issue",
-            "Neutral leakage",
-            "Low voltage",
-            "Service main"
-    };
-
-    public static String[] Cause2 = {
-            "Please select",
-            "DDLO fuse blown",
-            "Overhead line"
-    };
-
-    public static String[] Cause3 = {
-            "Please select",
-            "House",
-            "Service pole"
-    };
-    
-    public static String[] Description1 = {
-            "Please select",
-            "Accident due to vehicle",
-            "Bad weather condition",
-            "Broken conductor",
-            "Broken Pole",
-            "Burnt tail wire",
-            "Due to bird and animal",
-            "Loose span and entanglement",
-            "Vegetation",
-    };
-
-    public static String[] Description2 = {
-            "Please select",
-            "HT fuse blown",
-            "Loose span and entanglement",
-            "Vegetation",
-    };
-
-    public static String[] Description3 = {
-            "Please select",
-            "cracked insulation",
-            "Due to service Wire shorting",
-            "Loose span and entanglement",
-    };
-
-
-    public static String[] Description4 = {
-            "Please select",
-            "Accident due to vehicle",
-            "Bad Weather",
-            "Branches coming from distance",
-            "Cracked insulator",
-            "DDLO carrier damage",
-            "Due to lines over loading",
-            "Other fault",
-            "Vegetation",
-    };
-
-    public static String[] Description5 = {
-            "Please select",
-            "Accident due to vehicle",
-            "Bad weather",
-            "Broken/damage HT conductor",
-            "Burnt HT conductor",
-            "Insulator damaged",
-            "Jumper ",
-            "Loose connection at jumper point",
-            "Other fault",
-            "Spark at the conductor due to entanglement",
-            "Tree branches coming from distance",
-            "Vegetation",
-    };
-
-    public static String[] Description6 = {
-            "Please select",
-            "AConsumer fault",
-            "MCB tripped",
-            "Meter fault",
-            "Other Fault"
-    };
-
-    public static String[] Description7 = {
-            "Please select",
-            "Connection point at pole",
-            "Other fault",
-            "Pole damage",
-            "Wire broken",
-    };*/
-
+public class Strings {
 
     public static String[] VisitedComments = {
             "Please select",
@@ -129,11 +31,11 @@ public class Failure {
             "Comment3",
             "Custom",
     };
-    public static String[] RejectComments = {
-            "Please select",
-            "Internal fault",
-            "No fault",
-            "Other",
+    public static String[][] RejectComments = {
+            {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
+            {"-", "1", "-","Internal fault","ගෘහ අභ්‍යන්තර දෝෂ"},
+            {"-", "2", "-","No fault","දෝෂයක් නැත"},
+            {"-", "3", "-","Other","වෙනත්"}
     };
 
     public static String[] CompletedComments = {
@@ -143,6 +45,7 @@ public class Failure {
             "Comment3",
             "Custom",
     };
+
     public static String[] ReturnComments = {
             "Please select",
             "Not belongs to the Area",
@@ -150,7 +53,7 @@ public class Failure {
             "Not belongs to the Team",
     };
 
-    public static String[][] ComplainTypeList77 = {
+    /*public static String[][] ComplainTypeList77 = {
             {"77", "1", "Supply failed at home"},
             {"77", "2", "Supply failed in area"},
             {"77", "3", "Broken service wire"},
@@ -164,16 +67,16 @@ public class Failure {
             {"77", "11", "Road accident cause Cable / Conductor damage"},
             {"77", "12", "Tree has fallen on to the line"},
             {"77", "13", "Other"}
-    };
+    };*/
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     //[AreaId], [FailureTypeId], [FailureTypeName]
     public static String[][] FailureTypeList77 = {
             {"77", "0", "-", "Please select", "කරුණාකර තෝරන්න"},
-            {"77", "1", "-", "Service Connection Failure", "සේවා සැපයුම් ආශ්\u200Dරිත බිඳවැටුම්"},
-            {"77", "2", "-", "LV Failure", "LV බිඳවැටුම්"},
-            {"77", "3", "-", "MV Failure", "MV බිඳවැටුම්"}};
+            {"77", "1", "-", "Service Connection Strings", "සේවා සැපයුම් ආශ්\u200Dරිත බිඳවැටුම්"},
+            {"77", "2", "-", "LV Strings", "LV බිඳවැටුම්"},
+            {"77", "3", "-", "MV Strings", "MV බිඳවැටුම්"}};
 
 
     //[AreaId], [FailureNatureId], [FailureNatureName], [ParentFailureTypeId]
@@ -267,7 +170,7 @@ public class Failure {
             {"77", "33", "14", "Fuse Base Damage / Burnt due to tree branch fallen down", "ගස් අතු වැටීම නිසා Fuse බේස් / ටර්මිනල් පිලිස්සීම්"},
 
             {"77", "0", "15", "Please select", "කරුණාකර තෝරන්න"},
-            {"77", "34", "15", "Cable Burnt/Joint Failures (LT)", "LT කේබල් ජොඉන්ට් ආශ්\u200Dරිත බිඳවැටුම්"},
+            {"77", "34", "15", "Cable Burnt/Joint Failures (LV)", "LV කේබල් ජොඉන්ට් ආශ්\u200Dරිත බිඳවැටුම්"},
 
             {"77", "0", "16", "Please select", "කරුණාකර තෝරන්න"},
             {"77", "35", "16", "Malpractice", "වැරදි ක්\u200Dරම"},
@@ -290,148 +193,151 @@ public class Failure {
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     public static String[][] FailureTypeList00 = {
             {"00", "0", "-", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "1", "-", "Service Connection Failure", "සේවා සැපයුම් ආශ්\u200Dරිත බිඳවැටුම්"},
-            {"00", "2", "-", "LV Failure", "LV බිඳවැටුම්"},
-            {"00", "3", "-", "MV Failure", "MV බිඳවැටුම්"}
+            {"00", "1", "-", "Service Connection Strings", "සේවා සැපයුම් ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "2", "-", "LV Strings", "LV බිඳවැටුම්"},
+            {"00", "3", "-", "MV Strings", "MV බිඳවැටුම්"}
     };
 
 
     public static String[][] FailureNatureList00 = {
             {"00", "0", "1", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "1", "1", "Service Wire Fault",  "සේවා සැපයුම් ආශ්\u200Dරිත බිඳවැටුම්"},
-            {"00", "2", "1", "Cutout Failure", "1"},
-            {"00", "3", "1", "Meter Fault", "1"},
-            {"00", "4", "1", "MCB triped", "1"},
+            {"00", "1", "1", "Service Wire Fault",  "සේවා සැපයුම් ආශ්‍රිත බිඳවැටුම් "},
+            {"00", "2", "1", "Cut-Out Strings", "Cut-Out ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "3", "1", "Meter Fault", " මනුව ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "4", "1", "MCB tripped", "MCB ආශ්‍රිත බිඳවැටුම්"},
 
             {"00", "0", "2", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "5", "2", "LT Fuse blown", "2"},
-            {"00", "6", "2", "LT Feeder open cct", "2"},
-            {"00", "7", "2", "LT high Voltage", "2"},
-            {"00", "8", "2", "Transformer Failure ", "2"},
-            {"00", "9", "2", "T/F- HT Fuse blown", "2"},
+            {"00", "5", "2", "LV Fuse blown", " LV Fuse ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "6", "2", "LV Feeder open cct", "LV ෆීඩර් විසන්ධි වීම් "},
+            {"00", "7", "2", "LV high Voltage", "LV හයි වෝල්ටේජ් ෆීඩර් විසන්ධි වීම්"},
+            {"00", "8", "2", "Transformer Strings", "ට්‍රාන්ස්ෆෝමර් ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "9", "2", "T/F- MV Fuse blown", "T/F- MV Fuse ආශ්‍රිත බිඳවැටුම්"},
 
             {"00", "0", "3", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "10", "3", "HT Fuse blown", "3"},
-            {"00", "11", "3", "HT Feeder open cct", "3"},
-            {"00", "12", "3", "CB/AR Tripping", "3"},
-            {"00", "13", "3", "HV feeder Failure", "3"}};
+            {"00", "10", "3", "MV Fuse blown", "MV Fuse ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "11", "3", "MV Feeder open circuit", "MV ෆීඩර් විසන්ධි වීම්"},
+            {"00", "12", "3", "CB/AR Tripping", "CB/AR ට්‍රිපින් "},
+            {"00", "13", "3", "MV feeder Strings", "MV ෆීඩර් ආශ්‍රිත බිඳවැටුම්"}};
 
 
     public static String[][] FailureCauseList00 = {
 
-            {"00", "0", "1", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "1", "1", "Lightning", "1"},
-            {"00", "2", "1", "Broken Cable / Conductor - Due to Wayleaves", "1"},
-            {"00", "3", "1", "Broken Cable / Conductor - Due to Vehicle", "1"},
-            {"00", "4", "1", "Illegal tapping", "1"},
-            {"00", "5", "1", "Tapping Point failure", "1"},
-            {"00", "6", "1", "Other", "1"},
+            {"00", "0", "1", "Please select",               "කරුණාකර තෝරන්න"},
+            {"00", "1", "1", "Lightning",                   "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "2", "1", "Broken Cable / Conductor - Due to Wayleaves", "ගස්අතු කැපීම නිසා සේවා රැහැන් කැඩීම"},
+            {"00", "3", "1", "Broken Cable / Conductor - Due to Vehicle", "වාහන වැදීම නිසා සේවා රැහැන් කැඩීම"},
+            {"00", "4", "1", "Illegal tapping", "නීති විරෝධී ටැප් කිරීම්"},
+            {"00", "5", "1", "Tapping Point failure", "ටැපින් පොයින්ට් ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "6", "1", "Other", "වෙනත් බිඳවැටුම්"},
 
             {"00", "0", "2", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "7", "2", "Lightning", "2"},
-            {"00", "8", "2", "Loose end termination", "2"},
-            {"00", "9", "2", "Over load", "2"},
-            {"00", "10", "2", "Consumer side fault", "2"},
-            {"00", "11", "2", "Oxide in the termination", "2"},
+            {"00", "7", "2", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "8", "2", "Loose end-termination", "ලුහු end-termination "},
+            {"00", "9", "2", "Over load", "අධිබැර වීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "10", "2", "Internal fault", "ගෘහ අභ්‍යන්තර දෝෂ"},
+            {"00", "11", "2", "Oxide in the termination", "Termination ඹක්සයිඩ බැඳී තිබීම"},
 
             {"00", "0", "3", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "12", "3", "Lightning", "3"},
-            {"00", "13", "3", "Meter Failure", "3"},
-            {"00", "14", "3", "Meter tampering", "3"},
-            {"00", "15", "3", "Loose end termination", "3"},
-            {"00", "16", "3", "Other", "3"},
-            {"00", "17", "3", "Oxide in the termination", "3"},
+            {"00", "12", "3", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "13", "3", "Meter Strings", "මනුව ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "14", "3", "Meter tampering", "මනුව මඟින් නීති විරෝධී ලෙස විදුලිය ලබා ගැනීම"},
+            {"00", "15", "3", "Loose end-termination", "ලුහු end-termination"},
+            {"00", "16", "3", "Other", "වෙනත් බිඳවැටුම්"},
+            {"00", "17", "3", "Oxide in the termination", "Termination ඹක්සයිඩ බැඳී තිබීම"},
 
             {"00", "0", "4", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "18", "4", "Lightning", "4"},
-            {"00", "19", "4", "Loose end termination", "4"},
-            {"00", "20", "4", "Over load", "4"},
-            {"00", "21", "4", "Consumer side fault", "4"},
-            {"00", "22", "4", "Oxide in the termination", "4"},
+            {"00", "18", "4", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "19", "4", "Loose end termination", "ලුහු end-termination"},
+            {"00", "20", "4", "Over load", "අධිබැර වීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "21", "4", "Internal fault", "ගෘහ අභ්‍යන්තර දෝෂ"},
+            {"00", "22", "4", "Oxide in the termination", "Termination ඹක්සයිඩ බැඳී තිබීම"},
 
             {"00", "0", "5", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "23", "5", "Accidents due to vehicle", "5"},
-            {"00", "24", "5", "Lightning", "5"},
-            {"00", "25", "5", "Branches coming from distance", "5"},
-            {"00", "26", "5", "Burnt tail wires and cables", "5"},
-            {"00", "27", "5", "Cracked insulators", "5"},
-            {"00", "28", "5", "Due to animals and birds", "5"},
-            {"00", "29", "5", "Due to broken poles", "5"},
-            {"00", "30", "5", "Loose span and entanglement", "5"},
-            {"00", "31", "5", "LT side Over load", "5"},
-            {"00", "32", "5", "Other", "5"},
-            {"00", "33", "5", "Vegetations", "5"},
+            {"00", "23", "5", "Accidents due to vehicle", "වාහන අනතුරු නිසා සිදුවන බිඳවැටුම්"},
+            {"00", "24", "5", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "25", "5", "Branches coming from distance", "රැහැන් මතට ගස් අතු වැටීම"},
+            {"00", "26", "5", "Burnt tail wires and cables", "පිළිස්සුණු tail  wires සහ cables"},
+            {"00", "27", "5", "Cracked insulators", "පළුදු වූ insulators "},
+            {"00", "28", "5", "Due to animals and birds", "සතුන් සහ කුරුල්ලන් වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "29", "5", "Due to broken poles", "කණු කැඩීම නිසා ඇතිවන බිඳවැටුම්"},
+            {"00", "30", "5", "Loose span and entanglement", "ලුහු span and entanglement"},
+            {"00", "31", "5", "LV side Over load", "LV අධීබැර වීම්"},
+            {"00", "32", "5", "Other", "වෙනත් බිඳවැටුම්"},
+            {"00", "33", "5", "Vegetations", "ගස් අතු වැදීම නිසා"},
 
             {"00", "0", "6", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "34", "6", "Branches coming from distance", "6"},
-            {"00", "35", "6", "Burnt tail wires and cables", "6"},
-            {"00", "36", "6", "Cable / Conductor brakeage", "6"},
-            {"00", "37", "6", "Midspan joint failure", "6"},
-            {"00", "38", "6", "Jumper point failure", "6"},
-            {"00", "39", "6", "Other", "6"},
+            {"00", "34", "6", "Branches coming from distance", "රැහැන් මතට ගස් අතු වැටීම"},
+            {"00", "35", "6", "Burnt tail wires and cables", "පිළිස්සුණු tail  wires සහ cables"},
+            {"00", "36", "6", "Cable / Conductor broken", "කැඩුණු Cable / Conductor "},
+            {"00", "37", "6", "Midspan joint failure", "Midspan joint ආශ්‍රිත බිඳවැටුම් "},
+            {"00", "38", "6", "Jumper point failure", "ජම්පර් ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "39", "6", "Other", "වෙනත් බිඳවැටුම්"},
 
             {"00", "0", "7", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "40", "7", "Lightning", "7"},
-            {"00", "41", "7", "Floating Neutral", "7"},
-            {"00", "42", "7", "Neutral leakage", "7"},
-            {"00", "43", "7", "Other", "7"},
+            {"00", "40", "7", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "41", "7", "Floating Neutral", "නියුට්‍රල් බිඳවැටුම්"},
+            {"00", "42", "7", "Neutral leakage", "නියුට්‍රල් කාන්දුවීම්"},
+            {"00", "43", "7", "Other", "වෙනත් බිඳවැටුම්"},
 
             {"00", "0", "8", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "44", "8", "Lightning", "8"},
-            {"00", "45", "8", "Oil leakage", "8"},
-            {"00", "46", "8", "Transformer bushings failure", "8"},
-            {"00", "47", "8", "Due to animals and birds", "8"},
-            {"00", "48", "8", "Other", "8"},
-            {"00", "49", "8", "LT side Over load", "8"},
-            {"00", "50", "8", "Transformer internal fault", "8"},
+            {"00", "44", "8", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "45", "8", "Oil leakage", "තෙල් කාන්දුවීම්"},
+            {"00", "46", "8", "Transformer bushings failure", "ට්‍රාන්ස්ෆෝමර් බුෂ් ආශ්‍රිත බිඳවැටුම් "},
+            {"00", "47", "8", "Due to animals and birds", "සතුන් සහ කුරුල්ලන් වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "48", "8", "Other", "වෙනත් බිඳවැටුම්"},
+            {"00", "49", "8", "LV side Over load", "LV අධීබැර වීම් "},
+            {"00", "50", "8", "Transformer internal fault", "ට්‍රාන්ස්ෆෝමර් අභ්‍යන්තර දෝෂ"},
 
             {"00", "0", "9", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "51", "9", "Lightning", "9"},
-            {"00", "52", "9", "Incorrect fusing", "9"},
-            {"00", "53", "9", "Other", "9"},
-            {"00", "54", "9", "LT side Over load", "9"},
-            {"00", "55", "9", "Due to animals and birds", "9"},
-            {"00", "56", "9", "Transformer internal fault", "9"},
+            {"00", "51", "9", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "52", "9", "Incorrect fusing", "වැරදි පුළුසු යෙදීම නිසා"},
+            {"00", "53", "9", "Other", "වෙනත් බිඳවැටුම්"},
+            {"00", "54", "9", "LV side Over load", "LV අධීබැර වීම් "},
+            {"00", "55", "9", "Due to animals and birds", "සතුන් සහ කුරුල්ලන් වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "56", "9", "Transformer internal fault", "ට්‍රාන්ස්ෆෝමර් අභ්‍යන්තර දෝෂ"},
 
             {"00", "0", "10", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "57", "10", "Accidents due to vehicle", "10"},
-            {"00", "58", "10", "Lightning", "10"},
-            {"00", "59", "10", "Branches coming from distance", "10"},
-            {"00", "60", "10", "Midspan joint failure", "10"},
-            {"00", "61", "10", "Jumper point failure", "10"},
-            {"00", "62", "10", "Cracked insulators", "10"},
-            {"00", "63", "10", "Cable / Conductor brakeage", "10"},
-            {"00", "64", "10", "Due to broken poles", "10"},
-            {"00", "65", "10", "Other", "10"},
-            {"00", "66", "10", "Incorrect fusing", "10"},
-            {"00", "67", "10", "Due to animals and birds", "10"},
-            {"00", "68", "10", "Vegetations", "10"},
+            {"00", "57", "10", "Accidents due to vehicle", "වාහන අනතුරු නිසා සිදුවන බිඳවැටුම්"},
+            {"00", "58", "10", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "59", "10", "Branches coming from distance", "රැහැන් මතට ගස් අතු වැටීම"},
+            {"00", "60", "10", "Midspan joint failure", "Midspan joint ආශ්‍රිත බිඳවැටුම් "},
+            {"00", "61", "10", "Jumper point failure", "ජම්පර් ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "62", "10", "Cracked insulators", "පළුදු වූ insulators"},
+            {"00", "63", "10", "Cable / Conductor broken", "කැඩුණු Cable / Conductor "},
+            {"00", "64", "10", "Due to broken poles", "කණු කැඩීම නිසා ඇතිවන බිඳවැටුම්"},
+            {"00", "65", "10", "Other", "වෙනත් බිඳවැටුම්"},
+            {"00", "66", "10", "Incorrect fusing", "වැරදි පුළුසු යෙදීම නිසා"},
+            {"00", "67", "10", "Due to animals and birds", "සතුන් සහ කුරුල්ලන් වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "68", "10", "Vegetations", "ගස් අතු වැදීම නිසා"},
 
             {"00", "0", "11", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "69", "11", "Midspan joint failure", "11"},
-            {"00", "70", "11", "Jumper point failure", "11"},
-            {"00", "71", "11", "Cable / Conductor brakeage", "11"},
-            {"00", "72", "11", "Burnt tail wires and cables", "11"},
-            {"00", "73", "11", "Branches coming from distance", "11"},
-            {"00", "74", "11", "Other", "11"},
+            {"00", "69", "11", "Midspan joint failure", " Midspan joint ආශ්‍රිත බිඳවැටුම් "},
+            {"00", "70", "11", "Jumper point failure", "ජම්පර් ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "71", "11", "Cable / Conductor broken", "කැඩුණු Cable / Conductor"},
+            {"00", "72", "11", "Burnt tail wires and cables", "පිළීස්සුණු tail wires and cables "},
+            {"00", "73", "11", "Branches coming from distance", "රැහැන් මතට ගස් අතු වැටීම"},
+            {"00", "74", "11", "Other", "වෙනත් බිඳවැටුම්"},
 
-            {"00", "0", "11", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "75", "11", "Accidents due to vehicle", "12"},
-            {"00", "76", "11", "Lightning", "12"},
-            {"00", "77", "11", "Branches coming from distance", "12"},
-            {"00", "78", "11", "Burnt jumpers and conductors", "12"},
-            {"00", "79", "11", "Cracked insulators", "12"},
-            {"00", "80", "11", "Due to broken poles", "12"},
-            {"00", "81", "11", "Other", "12"},
-            {"00", "82", "11", "Over load", "12"},
-            {"00", "83", "11", "Vegetations", "12"},
+            {"00", "0", "12", "Please select", "කරුණාකර තෝරන්න"},
+            {"00", "75", "12", "Accidents due to vehicle", "වාහන අනතුරු නිසා සිදුවන බිඳවැටුම්"},
+            {"00", "76", "12", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
+            {"00", "77", "12", "Branches coming from distance", "රැහැන් මතට ගස් අතු වැටීම"},
+            {"00", "78", "12", "Burnt jumpers and conductors", "පිළීස්සුණු jumpers and conductors"},
+            {"00", "79", "12", "Cracked insulators", "පළුදු වූ insulators"},
+            {"00", "80", "12", "Due to broken poles", "කණු කැඩීම නිසා සිදුවන බිඳවැටුම්"},
+            {"00", "81", "12", "Other", "වෙනත් බිඳවැටුම්"},
+            {"00", "82", "12", "Over load", "අධීබැර වීම නිසා සිදුවන බිඳවැටුම්"},
+            {"00", "83", "12", "Vegetations", "ගස් අතු වැදීම නිසා"},
 
             {"00", "0", "13", "Please select", "කරුණාකර තෝරන්න"},
-            {"00", "84", "13", "Total System Power failure", "13"},
-            {"00", "85", "13", "Field Installed Switchgear failure", "13"},
-            {"00", "86", "13", "Grid installed switchgear failure", "13"}};
+            {"00", "84", "13", "Total System Power failure", "සමස්ථ පද්ධතිය බිඳවැටීම "},
+            {"00", "85", "13", "Field Installed Switchgear failure", "Field Installed Switchgear failure"},
+            {"00", "86", "13", "Grid installed switchgear failure", "Grid installed switchgear failure "}};
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     public static String[][] GetFailureTypeList(Context context) {

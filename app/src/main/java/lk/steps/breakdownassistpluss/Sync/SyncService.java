@@ -95,6 +95,7 @@ public class SyncService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.e("Sync","*onDestroy*");
         Toast.makeText(this, "Sync Service Destroyed", Toast.LENGTH_SHORT).show();
     }
 
@@ -130,6 +131,7 @@ public class SyncService extends Service {
             syncObject.TeamId= Globals.mToken.team_id;
             syncObject.BreakdownId = Globals.dbHandler.GetNewJobNumber(obj.job_no);
             syncObject.StatusTime = obj.change_datetime;
+            syncObject.Note=obj.comment;
             syncObject.UserId = Globals.mToken.user_id;
             syncObject.Sin=breakdown.get_SUB();
             //TODO : if program crashes then this particular record may not be updated, hence use another task or change the
@@ -178,7 +180,7 @@ public class SyncService extends Service {
                 @Override
                 public void onFailure(Call<SyncObject> call, Throwable t) {
                     Globals.serverConnected = false;
-                    Toast.makeText(context,"SyncBreakdownStatus-Failure\n"+t, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context,"SyncBreakdownStatus-Strings\n"+t, Toast.LENGTH_SHORT).show();
                     Log.e("SyncStatusChange","onFailure "+t);
                     Globals.dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0);//Not Uploaded due to no network
                     syncRESTService.CloseAllConnections();
@@ -263,7 +265,7 @@ public class SyncService extends Service {
                 public void onFailure(Call<String> call, Throwable t) {
                     Globals.serverConnected = false;
                     Globals.dbHandler.UpdateSyncState_NewBreakdown(breakdown, 0);//Not Uploaded due to no network
-                    Toast.makeText(context,"PostBreakdowns-Failure\n"+t, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context,"PostBreakdowns-Strings\n"+t, Toast.LENGTH_SHORT).show();
                     Log.e("PostBreakdowns","onResponse" + t);
                     syncRESTService.CloseAllConnections();
                 }
@@ -340,7 +342,7 @@ public class SyncService extends Service {
                 public void onFailure(Call<SyncObject> call, Throwable t) {
                     Globals.serverConnected = false;
                     Globals.dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
-                    Toast.makeText(context,"PostBreakdownCompletion-Failure\n"+t, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context,"PostBreakdownCompletion-Strings\n"+t, Toast.LENGTH_SHORT).show();
                     syncRESTService.CloseAllConnections();
                 }
             });
@@ -390,7 +392,7 @@ public class SyncService extends Service {
             public void onFailure(Call<SyncMaterialObject> call, Throwable t) {
                 Globals.serverConnected = false;
                 // dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
-                Toast.makeText(context,"PostTrackingData-Failure\n"+t, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,"PostTrackingData-Strings\n"+t, Toast.LENGTH_SHORT).show();
                 syncRESTService.CloseAllConnections();
             }
         });
@@ -439,7 +441,7 @@ public class SyncService extends Service {
             public void onFailure(Call<TrackerObject> call, Throwable t) {
                 Globals.serverConnected = false;
                // dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
-                Toast.makeText(context,"PostTrackingData-Failure\n"+t, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,"PostTrackingData-Strings\n"+t, Toast.LENGTH_SHORT).show();
                 syncRESTService.CloseAllConnections();
             }
         });
@@ -487,7 +489,7 @@ public class SyncService extends Service {
             public void onFailure(Call<BreakdownGroup> call, Throwable t) {
                 Globals.serverConnected = false;
                 // dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
-                Toast.makeText(context,"PostGroups-Failure\n"+t, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,"PostGroups-Strings\n"+t, Toast.LENGTH_SHORT).show();
                 syncRESTService.CloseAllConnections();
             }
         });

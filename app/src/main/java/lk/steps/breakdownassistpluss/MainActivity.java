@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
        // this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "BreakdownAssist");
-        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssist");
+        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK , "BreakdownAssist");
         this.mWakeLock.acquire();
 
         timer = new Timer();
@@ -259,6 +259,9 @@ public class MainActivity extends AppCompatActivity
         Globals.dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
         StopTrackLocation();
+        if(!Common.ReadBooleanPreferences(this, "keep_sign_in",false)){
+            WriteBooleanPreferences("login_status",false);
+        }
         super.onDestroy();
     }
 
@@ -417,7 +420,10 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_logout) {
-            WriteLongPreferences("keep_sign_in",false);
+            WriteBooleanPreferences("keep_sign_in",false);
+            WriteBooleanPreferences("login_status",false);
+            stopService(new Intent(MainActivity.this, SignalRService.class));
+            Common.WriteBooleanPreferences(this, "keep_sign_in",false);
             Intent i = getBaseContext().getPackageManager()
                     .getLaunchIntentForPackage( getBaseContext().getPackageName() );
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -460,7 +466,7 @@ public class MainActivity extends AppCompatActivity
                     }
                     if(ReLoginRequired){
                         ReLoginRequired=false;
-                        WriteLongPreferences("restart_due_to_authentication_fail",true);
+                        WriteBooleanPreferences("restart_due_to_authentication_fail",true);
                         Intent i = getBaseContext().getPackageManager()
                                 .getLaunchIntentForPackage( getBaseContext().getPackageName() );
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -478,7 +484,7 @@ public class MainActivity extends AppCompatActivity
             });
         }
     }
-    private void WriteLongPreferences(String key, boolean value){
+    private void WriteBooleanPreferences(String key, boolean value){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prfs.edit();
         editor.putBoolean(key,value).apply();

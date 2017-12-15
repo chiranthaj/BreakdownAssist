@@ -195,12 +195,17 @@ public class SignalRService extends Service {
 
 
     private void startSignalR() {
+        if(!ReadBooleanPreferences2("login_status",false)){
+            StopRetryTimer();
+            Log.e("SignalR","User not logged-in");
+            return;
+        }
         if(SignalRHubConnected) return;
 
         Log.e("SignalR","startSignalR()");
         Platform.loadPlatformComponent(new AndroidPlatformComponent());
 
-       String user_id = ReadStringPreferences(getApplicationContext(), "user_id","non");
+        String user_id = ReadStringPreferences(getApplicationContext(), "user_id","non");
         String CONNECTION_QUERYSTRING = "userId="+user_id;
         mHubConnection = new HubConnection(Globals.serverUrl,CONNECTION_QUERYSTRING, true, new Logger() {
             @Override
@@ -270,7 +275,7 @@ public class SignalRService extends Service {
                         SignalRObject msg = new Gson().fromJson(json, SignalRObject.class);
                        // Log.e("onMessageReceived ", msg.toString());
                         if(msg.M!=null) {
-                            if(!msg.M.equals("PostFeedback")){//Post feedback not required running activity
+                            if(!msg.M.equals("PostFeedback") & !msg.M.equals("PostHeartBeat") ){//Post feedback and Heartbeat not required running activity
                                 StartMainActivityIfRequired(getApplicationContext(), msg);
                             }
                             HandleMsg(getApplicationContext(), msg.M, msg.A);
@@ -315,6 +320,9 @@ public class SignalRService extends Service {
     }
 
     public static void HandleMsg(Context context,String method, List<String> data){
+
+
+
         if(method.equals("GetNewBreakdowns")){
             Log.e("SignalR", "GetNewBreakdowns");
             Toast.makeText(context,"SignalR NewBreakdowns request received", Toast.LENGTH_SHORT).show();
@@ -340,6 +348,12 @@ public class SignalRService extends Service {
                 String timestamp = data.get(2);
                 Globals.dbHandler.UpdateTrackingDataByTimeStamp(timestamp);//Successfully done
             }
+        }else if(method.equals("PostHeartBeat")){
+            Log.e("SignalR", "HeartBeatReceived");
+            Toast.makeText(context,"SignalR HeartBeatReceived", Toast.LENGTH_SHORT).show();
+            MediaPlayer mp= MediaPlayer.create(context, R.raw.heartbeat2);
+            mp.setVolume(100,100);
+            mp.start();
         }
     }
 
@@ -442,7 +456,7 @@ public class SignalRService extends Service {
                                         mediaPlayer.setLooping(true);
                                     }else{
                                         Log.e("mediaPlayer","2");
-                                        mediaPlayer= MediaPlayer.create(context, R.raw.fb_sound);
+                                        mediaPlayer= MediaPlayer.create(context, R.raw.ding_ling);
                                     }
                                     mediaPlayer.setVolume(100,100);
                                     mediaPlayer.start();
@@ -453,7 +467,7 @@ public class SignalRService extends Service {
                                         mediaPlayer.setLooping(true);
                                     }else{
                                         Log.e("mediaPlayer","4");
-                                        mediaPlayer= MediaPlayer.create(context, R.raw.fb_sound);
+                                        mediaPlayer= MediaPlayer.create(context, R.raw.ding_ling);
                                     }
                                     mediaPlayer.setVolume(100,100);
                                     mediaPlayer.start();
@@ -534,12 +548,12 @@ public class SignalRService extends Service {
                             PostFeedbackNew(feedbacks);
                             if(mediaPlayer==null){
                                 Log.e("mediaPlayer","5");
-                                mediaPlayer = MediaPlayer.create(context, R.raw.iphone);
+                                mediaPlayer = MediaPlayer.create(context, R.raw.ching);
                                 mediaPlayer.setVolume(1.0f , 1.0f);
                                 mediaPlayer.start();
                             }else if(!mediaPlayer.isPlaying()){
                                 Log.e("mediaPlayer","6");
-                                mediaPlayer = MediaPlayer.create(context, R.raw.iphone);
+                                mediaPlayer = MediaPlayer.create(context, R.raw.ching);
                                 mediaPlayer.setVolume(1.0f , 1.0f);
                                 mediaPlayer.start();
                             }
@@ -665,12 +679,12 @@ public class SignalRService extends Service {
                             if(result > 0){
                                 if(mediaPlayer==null){
                                     Log.e("mediaPlayer","9");
-                                    mediaPlayer = MediaPlayer.create(context, R.raw.iphone);
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.ching);
                                     mediaPlayer.setVolume(1.0f , 1.0f);
                                     mediaPlayer.start();
                                 }else if(!mediaPlayer.isPlaying()){
                                     Log.e("mediaPlayer","10");
-                                    mediaPlayer = MediaPlayer.create(context, R.raw.iphone);
+                                    mediaPlayer = MediaPlayer.create(context, R.raw.ching);
                                     mediaPlayer.setVolume(1.0f , 1.0f);
                                     mediaPlayer.start();
                                 }
@@ -844,6 +858,11 @@ public class SignalRService extends Service {
     private String ReadStringPreferences(String key, String defaultValue){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getString(key, defaultValue);
+    }
+
+    private boolean ReadBooleanPreferences2(String key, boolean defaultValue){
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        return prfs.getBoolean(key, defaultValue);
     }
 }
 
