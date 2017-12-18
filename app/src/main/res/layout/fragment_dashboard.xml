@@ -1,83 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white">
+    android:background="#73747a">
 
     <TableLayout
         android:id="@+id/layout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:weightSum="1">
 
-            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+            <android.support.v7.widget.CardView
+                xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:card_view="http://schemas.android.com/apk/res-auto"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
                 android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_weight="0.5"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:onClick="openCompletedJobFragment"
-                android:orientation="horizontal"
-                card_view:cardBackgroundColor="#e0f7f7"
-                card_view:cardCornerRadius="5dp"
-                card_view:cardUseCompatPadding="true">
-
-                <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:orientation="vertical"
-                    android:padding="5dp">
-
-
-                    <TextView
-                        android:id="@+id/test1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentStart="true"
-                        android:layout_alignParentTop="true"
-                        android:gravity="center_horizontal"
-                        android:text="Completed Breakdowns"
-                        android:textColor="@android:color/darker_gray"
-                        android:textSize="22sp" />
-
-                    <TextView
-                        android:id="@+id/txtCompletedCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentStart="true"
-                        android:layout_below="@+id/test1"
-                        android:gravity="center_horizontal"
-                        android:text="119"
-                        android:textColor="@android:color/holo_green_dark"
-                        android:textSize="50sp"
-                        android:textStyle="normal|bold" />
-
-                </RelativeLayout>
-            </android.support.v7.widget.CardView>
-
-            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
                 android:layout_marginRight="5dp"
                 android:layout_weight="0.5"
                 android:foreground="?android:attr/selectableItemBackground"
                 android:onClick="openUnattainedJobFragment"
                 android:orientation="horizontal"
-                card_view:cardBackgroundColor="#e0f7f7"
+                card_view:cardBackgroundColor="#1b1b1b"
                 card_view:cardCornerRadius="5dp"
                 card_view:cardUseCompatPadding="true">
 
@@ -97,7 +46,7 @@
                         android:layout_alignParentStart="true"
                         android:layout_alignParentTop="true"
                         android:gravity="center_horizontal"
-                        android:text="New Breakdowns"
+                        android:text="NEW BREAKDOWNS"
                         android:textColor="@android:color/darker_gray"
                         android:textSize="22sp" />
 
@@ -110,36 +59,24 @@
                         android:layout_below="@+id/test3"
                         android:gravity="center_horizontal"
                         android:text="24"
-                        android:textColor="@android:color/holo_red_light"
+                        android:textColor="@android:color/white"
                         android:textSize="50sp"
                         android:textStyle="normal|bold" />
 
                 </RelativeLayout>
             </android.support.v7.widget.CardView>
-        </TableRow>
-    </TableLayout>
 
-    <TableLayout
-        android:id="@+id/layout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/layout1">
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:weightSum="1">
-
-            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+            <android.support.v7.widget.CardView
+                xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="5dp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
                 android:layout_marginRight="5dp"
-                android:layout_weight="1"
+                android:layout_weight="0.5"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:orientation="horizontal"
-                card_view:cardBackgroundColor="#e8e8e8"
+                card_view:cardBackgroundColor="#1b1b1b"
                 card_view:cardCornerRadius="5dp"
                 card_view:cardUseCompatPadding="true">
 
@@ -152,14 +89,14 @@
 
 
                     <TextView
-                        android:id="@+id/test5"
+                        android:id="@+id/test1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentStart="true"
                         android:layout_alignParentTop="true"
                         android:gravity="center_horizontal"
-                        android:text="Average Attend Time"
+                        android:text="AVG. ATTAINEDING TIME"
                         android:textColor="@android:color/darker_gray"
                         android:textSize="22sp" />
 
@@ -169,118 +106,177 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentStart="true"
-                        android:layout_below="@+id/test5"
+                        android:layout_below="@+id/test1"
                         android:gravity="center_horizontal"
-                        android:text="0 min"
-                        android:textColor="@android:color/holo_orange_dark"
+                        android:text="119"
+                        android:textColor="@android:color/white"
                         android:textSize="50sp"
                         android:textStyle="normal|bold" />
 
                 </RelativeLayout>
             </android.support.v7.widget.CardView>
-        </TableRow>
-    </TableLayout>
-    <TableLayout
-        android:id="@+id/layout3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/layout2">
 
+        </TableRow>
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:weightSum="1">
+            android:layout_height="wrap_content">
 
-            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+            <android.support.v7.widget.CardView
+                xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:card_view="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:orientation="horizontal"
-                card_view:cardBackgroundColor="#e8e8e8"
+                card_view:cardBackgroundColor="#1b1b1b"
                 card_view:cardCornerRadius="5dp"
                 card_view:cardUseCompatPadding="true">
 
-                <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                <TableLayout
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:shrinkColumns="*"
+                    android:stretchColumns="*"
                     android:layout_margin="5dp"
-                    android:orientation="horizontal"
-                    android:padding="5dp">
+                    android:weightSum="1">
 
-
-                    <TextView
-                        android:id="@+id/test8"
-                        android:layout_width="wrap_content"
+                    <TableRow
+                        android:id="@+id/tableRow2"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentStart="true"
-                        android:layout_alignParentTop="true"
-                        android:gravity="center_horizontal"
-                        android:text="Breakdown STATUS"
-                        android:textColor="@android:color/darker_gray"
-                        android:textSize="22sp" />
+                        android:gravity="center_horizontal">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            android:gravity="center"
+                            android:text="COMPLETED"
+                            android:textColor="@android:color/darker_gray" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            android:gravity="center"
+                            android:text="TEMP. COMPLETED"
+                            android:textColor="@android:color/darker_gray" />
 
-                    <org.eazegraph.lib.charts.BarChart xmlns:app="http://schemas.android.com/apk/res-auto"
-                        android:id="@+id/chart1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:padding="10dp"
-                        app:egCurveSmoothness="0.4"
-                        app:egLegendHeight="40dp"
-                        app:egUseCubic="true"
-                        app:egUseOverlapFill="true" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            android:gravity="center"
+                            android:text="WITHDRAWN"
+                            android:textColor="@android:color/darker_gray" />
 
-                </RelativeLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            android:gravity="center"
+                            android:text="REJECT"
+                            android:textColor="@android:color/darker_gray" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            
+                            android:gravity="center"
+                            android:text="RETURNED"
+                            android:textColor="@android:color/darker_gray" />
+                    </TableRow>
+
+                    <TableRow
+                        android:id="@+id/tableRow3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal">
+
+                        <TextView
+                            android:id="@+id/c0"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            android:gravity="center"
+                            android:text="E"
+                            android:textSize="30sp"
+                            android:textColor="@android:color/white" />
+
+                        <TextView
+                            android:id="@+id/c1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            android:gravity="center"
+                            android:text="E"
+                            android:textSize="30sp"
+                            android:textColor="@android:color/white" />
+
+                        <TextView
+                            android:id="@+id/c2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            android:gravity="center"
+                            android:text="F"
+                            android:textSize="30sp"
+                            android:textColor="@android:color/white" />
+
+                        <TextView
+                            android:id="@+id/c3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            android:gravity="center"
+                            android:text="G"
+                            android:textSize="30sp"
+                            android:textColor="@android:color/white" />
+
+                        <TextView
+                            android:id="@+id/c4"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="1dp"
+                            android:gravity="center"
+                            android:text="H"
+                            android:textSize="30sp"
+                            android:textColor="@android:color/white" />
+                    </TableRow>
+                </TableLayout>
+
+
+
+
             </android.support.v7.widget.CardView>
+
         </TableRow>
     </TableLayout>
+
+
     <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/layout3"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/layout1"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:orientation="horizontal"
-        card_view:cardBackgroundColor="#e8e8e8"
+        card_view:cardBackgroundColor="#262930"
         card_view:cardCornerRadius="5dp"
         card_view:cardUseCompatPadding="true">
 
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <com.google.android.gms.maps.MapView xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/map_view"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:orientation="vertical"
-            android:padding="5dp">
+            android:layout_height="match_parent"
+            map:liteMode="true"
+            map:mapType="normal" />
 
-            <TextView
-                android:id="@+id/test55"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:gravity="center_horizontal"
-                android:text="Number of Breakdowns"
-                android:textColor="@android:color/darker_gray"
-                android:textSize="22sp" />
-
-            <org.eazegraph.lib.charts.ValueLineChart xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/chart2"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignParentBottom="true"
-                android:layout_below="@+id/test55"
-                android:padding="10dp"
-                app:egCurveSmoothness="0.4"
-                app:egLegendHeight="40dp"
-                app:egUseCubic="true"
-                app:egUseOverlapFill="true" />
-        </RelativeLayout>
     </android.support.v7.widget.CardView>
 </RelativeLayout>

@@ -109,7 +109,7 @@ public class LoginActivity extends AppCompatActivity  {
                 txtAppName.setText("Ceylon Electricity Board  ©  2017");
             }
         CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
-            chk.setChecked(ReadBooleanPreferences2("keep_sign_in",false));
+            chk.setChecked(Common.ReadBooleanPreferences(this,"keep_sign_in",false));
     }
 
     private void GetIpAddress(){
@@ -239,12 +239,12 @@ public class LoginActivity extends AppCompatActivity  {
 
 
     private void performLogin(final String username, final String password){
-
-        long lastLoginTime = ReadLongPreferences("last_login_time", 0);
+        final Context context = getApplicationContext();
+        long lastLoginTime = Common.ReadLongPreferences(context,"last_login_time", 0);
         final long currentTime = System.currentTimeMillis()/1000;
-        long expiresIn = ReadLongPreferences("expires_in", 0);
-        String lastUsername = ReadStringPreferences("last_username", "");
-        String lastPassword = ReadStringPreferences("last_password", "");
+        long expiresIn = Common.ReadLongPreferences(context,"expires_in", 0);
+        String lastUsername = Common.ReadStringPreferences(context,"last_username", "");
+        String lastPassword = Common.ReadStringPreferences(context,"last_password", "");
 
         //Log.e("lastLoginTime","="+lastLoginTime);
         //Log.e("currentTime","="+currentTime);
@@ -253,22 +253,22 @@ public class LoginActivity extends AppCompatActivity  {
         //Log.e("lastPassword","="+lastPassword);
         long safeTimeMargin = 60*60;
         if(((lastLoginTime + expiresIn + safeTimeMargin > currentTime) | ForceLocalLogin ) & // token expired or will not expire in next hour and user/pass are correct
-                (lastUsername.equals(username) & lastPassword.equals(password)) & !ReadStringPreferences("restart_due_to_authentication_fail",true)){
+                (lastUsername.equals(username) & lastPassword.equals(password)) & !Common.ReadBooleanPreferences(context,"restart_due_to_authentication_fail",true)){
             Log.e("Login","**Local**");//Local login
             showProgress(false);
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 public void run() {
                     //Log.d("TEST","3");
-                    WriteLongPreferences("last_login_time",currentTime);
+                    Common.WriteLongPreferences(context,"last_login_time",currentTime);
                     Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
                     LoginActivity.this.startActivity(myIntent);
                 }
             });
             Toast.makeText(getApplicationContext(),"Local login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
             CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
-            WriteBooleanPreferences("keep_sign_in",chk.isChecked());
-            WriteBooleanPreferences("login_status",true);
+            Common.WriteBooleanPreferences(context,"keep_sign_in",chk.isChecked());
+            Common.WriteBooleanPreferences(context,"login_status",true);
             finish();
         }else if(!ForceLocalLogin){
             Log.e("Login","**Remote**");//Remote login
@@ -283,15 +283,15 @@ public class LoginActivity extends AppCompatActivity  {
                         Token token = response.body();
                         Log.e("area_name",token.area_name);
                         //SaveToken(token);
-                        WriteStringPreferences("user_id",token.user_id);
-                        WriteStringPreferences("area_id",token.area_id);
-                        WriteStringPreferences("area_name",token.area_name);
-                        WriteStringPreferences("team_id",token.team_id);
-                        WriteLongPreferences("expires_in",token.expires_in);
-                        WriteStringPreferences("access_token",token.access_token);
-                        WriteStringPreferences("group_token",token.group_token);
-                        WriteStringPreferences("last_username",username);
-                        WriteStringPreferences("last_password",password);
+                        Common.WriteStringPreferences(context,"user_id",token.user_id);
+                        Common.WriteStringPreferences(context,"area_id",token.area_id);
+                        Common.WriteStringPreferences(context,"area_name",token.area_name);
+                        Common.WriteStringPreferences(context,"team_id",token.team_id);
+                        Common.WriteLongPreferences(context,"expires_in",token.expires_in);
+                        Common.WriteStringPreferences(context,"access_token",token.access_token);
+                        Common.WriteStringPreferences(context,"group_token",token.group_token);
+                        Common.WriteStringPreferences(context,"last_username",username);
+                        Common.WriteStringPreferences(context,"last_password",password);
 
                         Handler handler = new Handler(Looper.getMainLooper());
                         handler.post(new Runnable() {
@@ -301,12 +301,11 @@ public class LoginActivity extends AppCompatActivity  {
                                 LoginActivity.this.startActivity(myIntent);
                             }
                         });
-                        Globals.serverConnected = true;
-                        WriteBooleanPreferences("restart_due_to_authentication_fail",false);
+                        Common.WriteBooleanPreferences(context,"restart_due_to_authentication_fail",false);
                         Toast.makeText(getApplicationContext(),"Remote login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
                         CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
-                        WriteBooleanPreferences("login_status",true);
-                        WriteBooleanPreferences("keep_sign_in",chk.isChecked());
+                        Common.WriteBooleanPreferences(context,"login_status",true);
+                        Common.WriteBooleanPreferences(context,"keep_sign_in",chk.isChecked());
                         finish();
                     } else  {
                         if (response.code() == 403) {
@@ -324,7 +323,6 @@ public class LoginActivity extends AppCompatActivity  {
                             Log.d("GetAuthToken", "Fail" + response);
                             Toast.makeText(getApplicationContext(), "Network failure..\n" + response.errorBody(), Toast.LENGTH_LONG).show();
                             ForceLocalLogin = true;
-                            Globals.serverConnected = false;
                             performLogin(username,password);
                         }
                         Log.d("GetAuthToken","Fail"+response.errorBody());
@@ -338,7 +336,6 @@ public class LoginActivity extends AppCompatActivity  {
                     Log.e("Login","Remote login onFailure"+t.getMessage());//Remote login
                     showProgress(false);
                     ForceLocalLogin = true;
-                    Globals.serverConnected = false;
                     performLogin(username,password);
                     syncAuthService.CloseAllConnections();
                 }
@@ -348,7 +345,7 @@ public class LoginActivity extends AppCompatActivity  {
 
 
 
-    private void WriteLongPreferences(String key, long value){
+    /*private void WriteLongPreferences(String key, long value){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prfs.edit();
         editor.putLong(key,value).apply();
@@ -385,10 +382,10 @@ public class LoginActivity extends AppCompatActivity  {
     private boolean ReadStringPreferences(String key, boolean defaultValue){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getBoolean(key, defaultValue);
-    }
+    }*/
     private void ShowLastCredential(){
-        String lastUsername = ReadStringPreferences("last_username", "");
-        String lastPassword = ReadStringPreferences("last_password", "");
+        String lastUsername = Common.ReadStringPreferences(getApplication(),"last_username", "");
+        String lastPassword = Common.ReadStringPreferences(getApplication(),"last_password", "");
         mUsernameView.setText(lastUsername);
         mPasswordView.setText(lastPassword);
     }

@@ -5,7 +5,9 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.PowerManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -65,7 +67,7 @@ public class ReadSMS {
                     String sPhone_No = extractPhoneNo(sFullMessage);
                     int iPriority=extractPriority(sFullMessage);
 
-                    /*Log.d("sID","="+sID);// empty box, no SMS
+                    Log.d("sID","="+sID);// empty box, no SMS
                     Log.d("sAddress","="+sAddress);
                     Log.d("sFullMessage","="+sFullMessage);
                     Log.d("callDayTime","="+callDayTime);
@@ -73,15 +75,22 @@ public class ReadSMS {
                     Log.d("sJob_No","="+sJob_No);
                     Log.d("sAcct_num","="+sAcct_num);
                     Log.d("sPhone_No","="+sPhone_No);
-                    Log.d("iPriority","="+iPriority);*/
+                    Log.d("iPriority","="+iPriority);
 
                     if (IsValidJobNo(sJob_No)) {// Added on 2017/05/22 to prevent irrelevant sms to add as a breakdown
 
                         Breakdown breakdown = new Breakdown();
-                        if(sAcct_num.equals("")){
-                            breakdown.set_Full_Description(sFullMessage);
+
+                        if(!sAcct_num.equals("")){
+                            String filtered = sFullMessage
+                                    .replace(sAcct_num,"")
+                                    .replace(sPhone_No,"")
+                                    .replace(sJob_No,"")
+                                    .replace(sAcct_num,"");
+                            breakdown.set_Full_Description(filtered);
                         }else{
-                            breakdown = Globals.dbHandler.GetCustomerData(sAcct_num);
+                            breakdown.set_Full_Description(sFullMessage);
+                           // breakdown = Globals.dbHandler.GetCustomerData(sAcct_num); // Local consumer database not using
                         }
 
                         /*String description =sFullMessage.replace(sAcct_num,"")
@@ -104,7 +113,6 @@ public class ReadSMS {
                         //dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
                         Globals.dbHandler.addBreakdown2(breakdown);
                         breakdowns.add(breakdown);
-
                         Log.d("SmsReceiver",sJob_No);// empty box, no SMS
                     }
                 }
@@ -112,8 +120,9 @@ public class ReadSMS {
 
                 if(breakdowns.size()>0){
                     Intent myintent=new Intent();
-                    myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
-                    myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
+                    myintent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
+                    //myintent.putExtra("new_breakdowns",new Gson().toJson(breakdowns));
+                    myintent.putExtra("new_breakdowns", "new_breakdowns");
                     context.sendBroadcast(myintent);
                 }
             } else {
@@ -123,6 +132,7 @@ public class ReadSMS {
             cursor.close();
         }
     }
+
 
     public static boolean IsValidJobNo(String jobNo) {
         if (jobNo == null) return false;

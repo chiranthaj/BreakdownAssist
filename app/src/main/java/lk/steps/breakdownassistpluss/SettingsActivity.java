@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -137,6 +138,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     PreferenceManager
                             .getDefaultSharedPreferences(preference.getContext())
                             .getBoolean(preference.getKey(), false));
+
         }
     }
 
@@ -281,8 +283,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("sync_frequency"));
 
-            findPreference("Import_Customer_Data").setOnPreferenceClickListener(PreferenceClickListener);
-            findPreference("Import_PremisesID_Data").setOnPreferenceClickListener(PreferenceClickListener);
+            //findPreference("Import_Customer_Data").setOnPreferenceClickListener(PreferenceClickListener);
+            //findPreference("Import_PremisesID_Data").setOnPreferenceClickListener(PreferenceClickListener);
 
         }
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import lk.steps.breakdownassistpluss.Sync.Token;
@@ -34,7 +35,8 @@ public class StartUpTasks {
     }
 
     private static Token ReadToken(Context context){
-        SharedPreferences prfs = context.getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        //SharedPreferences prfs = context.getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
+        SharedPreferences prfs = PreferenceManager.getDefaultSharedPreferences(context);
         Token token = new Token(){};
         token.user_id=prfs.getString("user_id", "");
         token.area_id=prfs.getString("area_id", "");

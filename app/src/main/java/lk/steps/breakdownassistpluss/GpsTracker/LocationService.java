@@ -1,8 +1,6 @@
 package lk.steps.breakdownassistpluss.GpsTracker;
 
-import android.Manifest;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -11,12 +9,8 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -24,9 +18,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-
 import java.util.Date;
-
 import lk.steps.breakdownassistpluss.DBHandler;
 import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.Sync.SignalRService;
@@ -41,10 +33,9 @@ public class LocationService extends Service implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-    private static final String TAG = "GpsTracker";
+    private static final String TAG = "BG-Service";
 
     private boolean currentlyProcessingLocation = false;
-    private LocationRequest locationRequest;
     private GoogleApiClient googleApiClient;
 
     @Override
@@ -156,14 +147,14 @@ public class LocationService extends Service implements
             Globals.dbHandler = new DBHandler(this, null, null, 1);
         }
         if(location.getAccuracy() < 50.0f){
-            Log.d(TAG, "GPS Tracker Location saved");
+            Log.d(TAG, "LocationService Location saved");
             //Toast.makeText(this, "GPS Tracker Location saved", Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, "GPS Tracker1 accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_LONG).show();
+            //Toast.makeText(this, "LocationService1 accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_LONG).show();
             SignalRService.PostGpsLocation(timestamp,latTxt,lonTxt,accuracyTxt);
             Globals.dbHandler.addTrackPoint(timestamp,latTxt,lonTxt,speedTxt,accuracyTxt,altitudeTxt,directionTxt,distanceTxt);
 
         }else{
-            Toast.makeText(this, "GPS Tracker2 accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_SHORT).show();
+           // Toast.makeText(this, "LocationService2 accu="+accuracyTxt+" lat="+latTxt+", lon="+lonTxt+", speed="+speedTxt+",distance="+distance, Toast.LENGTH_SHORT).show();
         }
         currentlyProcessingLocation = false;
     }
@@ -182,7 +173,7 @@ public class LocationService extends Service implements
     @Override
     public void onLocationChanged(Location location) {
         if (location != null) {
-            Log.e(TAG, "onLocationChanged "+location.getAccuracy());
+            //Log.e(TAG, "LocationService onLocationChanged "+location.getAccuracy());
             // Log.e(TAG, "position: " + location.getLatitude() + ", " + location.getLongitude() + " accuracy: " + location.getAccuracy());
             // we have our desired accuracy of 500 meters so lets quit this service,
             // onDestroy will be called and stop our location updates
@@ -209,9 +200,9 @@ public class LocationService extends Service implements
      */
     @Override
     public void onConnected(Bundle bundle) {
-        Log.d(TAG, "onConnected");
+        Log.d(TAG, "LocationService onConnected");
 
-        locationRequest = LocationRequest.create();
+        LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setInterval(1000); // milliseconds
         locationRequest.setFastestInterval(1000); // the fastest rate in milliseconds at which your app can handle location updates
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -225,7 +216,7 @@ public class LocationService extends Service implements
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e(TAG, "onConnectionFailed");
+        Log.e(TAG, "LocationService onConnectionFailed");
 
         stopLocationUpdates();
         stopSelf();

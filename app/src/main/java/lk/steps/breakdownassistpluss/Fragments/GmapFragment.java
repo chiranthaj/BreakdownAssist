@@ -324,7 +324,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
     public void ApplyMapDayNightModeAccordingly() {
         //Change only if the AutoMode in ON and apply once if not already applied the Night/Day mode
-        if (Globals.getNightMode().equalsIgnoreCase("1")) {//Automatic
+        if (Globals.getNightMode(getActivity()).equalsIgnoreCase("1")) {//Automatic
             Calendar calendar = Calendar.getInstance();
             final SimpleDateFormat simpleDateFormat =
                     new SimpleDateFormat("HH:mm");
@@ -342,9 +342,9 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 }
 
             } catch (Exception e) {/* Invalid date was entered*/}
-        } else if (Globals.getNightMode().equalsIgnoreCase("0")) {//Always
+        } else if (Globals.getNightMode(getActivity()).equalsIgnoreCase("0")) {//Always
             ApplyNightMode();
-        } else if (Globals.getNightMode().equalsIgnoreCase("-1")) {//Never
+        } else if (Globals.getNightMode(getActivity()).equalsIgnoreCase("-1")) {//Never
             ApplyDayMode();
         }
     }
@@ -502,7 +502,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onResume() {
         super.onResume();
-        mContext.registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.NewBreakdownBroadcast"));
+        mContext.registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver"));
         // Resuming the periodic location updates
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             startLocationUpdates();
@@ -589,7 +589,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
                 }
             }
-
+            ApplyMapDayNightModeAccordingly();
         }
 
     }

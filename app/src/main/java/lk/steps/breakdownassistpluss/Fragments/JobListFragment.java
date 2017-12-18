@@ -173,7 +173,7 @@ public class JobListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         CreateListView(JobListFragment.this);
-        //getActivity().registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.NewBreakdownBroadcast"));
+        //getActivity().registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver"));
     }
 
    /* BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {

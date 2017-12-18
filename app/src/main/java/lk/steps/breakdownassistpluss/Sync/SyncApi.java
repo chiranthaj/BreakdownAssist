@@ -39,7 +39,7 @@ public interface SyncApi {
                                            @Body SyncObject syncObject);
 
     @POST("/Mobile/CreateBreakdown/")
-    Call<String> CreateBreakdown(@Header("Authorization") String auth,
+    Call<List<Breakdown>> CreateBreakdown(@Header("Authorization") String auth,
                                            @Body Breakdown breakdown);
 
     @POST("/Mobile/UpdateTrackingData/")

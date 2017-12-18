@@ -9,11 +9,11 @@ import android.content.SharedPreferences;
 
 public class Strings {
 
-    public static String[] VisitedComments = {
-            "Please select",
-            "No required material",
-            "No required resource",
-            "Time consuming",
+    public static String[][] VisitedComments = {
+            {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
+            {"-", "1", "-","No required materials","අවශ්\u200Dය ද්\u200Dරව්\u200Dය නොමැත"},
+            {"-", "2", "-","Time consuming","විශාල කාලයක් අවශ්\u200Dයයි"},
+            {"-", "3", "-","Other","වෙනත්"}
     };
 
     public static String[] AttendingComments = {
@@ -24,13 +24,13 @@ public class Strings {
             "Custom",
     };
 
-    public static String[] DoneComments = {
-            "Please select",
-            "Comment1",
-            "Comment2",
-            "Comment3",
-            "Custom",
+    public static String[][] DoneComments = {
+            {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
+            {"-", "1", "-","No required materials","අවශ්\u200Dය ද්\u200Dරව්\u200Dය නොමැත"},
+            {"-", "2", "-","Time consuming","විශාල කාලයක් අවශ්\u200Dයයි"},
+            {"-", "3", "-","Other","වෙනත්"}
     };
+
     public static String[][] RejectComments = {
             {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
             {"-", "1", "-","Internal fault","ගෘහ අභ්‍යන්තර දෝෂ"},
@@ -46,11 +46,11 @@ public class Strings {
             "Custom",
     };
 
-    public static String[] ReturnComments = {
-            "Please select",
-            "Not belongs to the Area",
-            "Not belongs to the ECSC",
-            "Not belongs to the Team",
+    public static String[][] ReturnComments = {
+            {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
+            {"-", "0", "-","Not belongs to the Area","වෙනත් ප්\u200Dරදේශයකට අයත්ය"},
+            {"-", "0", "-","Not belongs to the ECSC","වෙනත් ඩිපෝවකට අයත්ය"},
+            {"-", "0", "-","Not belongs to the Team","වෙනත් කණ්ඩායමකට අයත්ය"},
     };
 
     /*public static String[][] ComplainTypeList77 = {
@@ -191,9 +191,8 @@ public class Strings {
             {"77", "47", "18", "DDLO Fuse Failures", "DDLO Fuse පිළිස්සී තීබීම"},
             {"77", "48", "18", "Other", "වෙනත්"}};
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     public static String[][] FailureTypeList00 = {
             {"00", "0", "-", "Please select", "කරුණාකර තෝරන්න"},
             {"00", "1", "-", "Service Connection Strings", "සේවා සැපයුම් ආශ්‍රිත බිඳවැටුම්"},

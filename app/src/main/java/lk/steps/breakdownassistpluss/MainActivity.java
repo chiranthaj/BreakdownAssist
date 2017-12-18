@@ -8,19 +8,19 @@ import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-
 import android.content.Intent;
 import android.content.IntentFilter;
-
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
-
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.WakefulBroadcastReceiver;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
@@ -56,32 +56,23 @@ import lk.steps.breakdownassistpluss.Sync.SyncService;
 import lk.steps.breakdownassistpluss.Sync.SignalRService;
 
 
-
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    FragmentManager fm;
-
+    private FragmentManager fm;
     protected PowerManager.WakeLock mWakeLock;
-    //public static final String STATE_SCORE = "playerScore";
-    public static final String MAP_FRAGMENT_TAG = "TagMapFragment";
-   // public static final String MAP_ADDTestBREAKDOWN_FRAGMENT_TAG = "TagMapAddTestBreakdownFragment";
+    public static final String MAP_FRAGMENT_TAG = "MapFragment";
     private NavigationView navigationView;
-    private static Context context;
-    android.support.v7.app.ActionBar mActionBar;
-    public static boolean ReLoginRequired = false;
+    private android.support.v7.app.ActionBar mActionBar;
     boolean doubleBackToExitPressedOnce = false;
     private String UserName;
-    Timer timer;
-    MyTimerTask myTimerTask;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        MainActivity.context = getApplicationContext();
-        Log.e("GPS TRACKER", "0000");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -109,18 +100,16 @@ public class MainActivity extends AppCompatActivity
 
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
-       // this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "BreakdownAssist");
-        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK , "BreakdownAssist");
+        // this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "BreakdownAssist");
+        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssist");
         this.mWakeLock.acquire();
-
-        timer = new Timer();
-        myTimerTask = new MyTimerTask();
-
-        //delay 1000ms, repeat in 5000ms
-        timer.schedule(myTimerTask, 1000, 10000);
 
         startService(new Intent(getBaseContext(), SyncService.class));
         startService(new Intent(getBaseContext(), SignalRService.class));
+        Intent signalRIntent = new Intent(getBaseContext(), SignalRService.class);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) signalRIntent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+        startService(signalRIntent);
+
         trackLocation();
 
         fm = getFragmentManager();
@@ -138,11 +127,11 @@ public class MainActivity extends AppCompatActivity
         }
 
         View v = navigationView.getHeaderView(0);
-        UserName=ReadStringPreferences("last_username", "[username]");
-        TextView username = (TextView ) v.findViewById(R.id.txtUsername);
+        UserName = ReadStringPreferences("last_username", "[username]");
+        TextView username = (TextView) v.findViewById(R.id.txtUsername);
         username.setText(UserName);//
 
-        username = (TextView ) v.findViewById(R.id.txtArea);
+        username = (TextView) v.findViewById(R.id.txtArea);
         username.setText(ReadStringPreferences("area_name", "[Area name]"));//
 
 
@@ -151,21 +140,26 @@ public class MainActivity extends AppCompatActivity
             String M = extras.getString("SignalR-msg.M");
             ArrayList<String> A = getIntent().getStringArrayListExtra("SignalR-msg.A");
 
-            if(M != null & A != null){
-                SignalRService.HandleMsg(getApplicationContext(),M,A);
+            if (M != null & A != null) {
+                SignalRService.HandleMsg(getApplicationContext(), M, A);
             }
         }
-        mActionBar = this.getSupportActionBar();
-        if(mActionBar!=null)mActionBar.setSubtitle("Offline");
+
+        //UpdateOnlineStatus();
+
         // Show the "What's New" screen once for each new release of the application
         new WhatsNewScreen(this).show();
+
     }
 
-    private String ReadStringPreferences(String key, String defaultValue){
+
+
+
+
+    private String ReadStringPreferences(String key, String defaultValue) {
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getString(key, defaultValue);
     }
-
 
 
     @Override
@@ -179,14 +173,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.NewBreakdownBroadcast"));
-       // if (!this.mWakeLock.isHeld())
+        registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver"));
+        // if (!this.mWakeLock.isHeld())
         //    this.mWakeLock.acquire();
-        //Log.d("onResume","555");
 
         List<Breakdown> notAckedBreakdowns = Globals.dbHandler.ReadNotAckedBreakdowns();
-        Log.d("onResume","notAckedBreakdowns="+notAckedBreakdowns.size());
-        if(notAckedBreakdowns.size()>0){
+        if(notAckedBreakdowns==null) return;
+        Log.d("onResume", "notAckedBreakdowns=" + notAckedBreakdowns.size());
+        if (notAckedBreakdowns.size() > 0) {
             NewBreakdownsDialog(notAckedBreakdowns);
         }
     }
@@ -220,38 +214,81 @@ public class MainActivity extends AppCompatActivity
             String newBreakdowns = intent.getStringExtra("new_breakdowns");
             String finish_app_req = intent.getStringExtra("finish_app_req");
             String group_breakdowns = intent.getStringExtra("group_breakdowns");
+            String re_login_required = intent.getStringExtra("re_login_required");
+            String online_status_changed = intent.getStringExtra("online_status_changed");
+            String sms_received = intent.getStringExtra("sms_received");
 
-            Log.d("TEST","BroadcastReceiver0");
+            Log.d("TEST","MainActivityBroadcastReceiver");
             //Log.e("TEST","555");
-            if(newBreakdowns != null){
+            if (newBreakdowns != null) {
+                Log.d("TEST","MainActivityBroadcastReceiver1");
                 String json = intent.getStringExtra("new_breakdown_list");
-                Type type = new TypeToken<List<Breakdown>>(){}.getType();
-                Gson gson = new Gson();
-                List<Breakdown> breakdowns = gson.fromJson(json, type);
-                NewBreakdownsDialog(breakdowns);
-            }else if(statusUpdate!=null){
+                if(json!=null) {
+                    Type type = new TypeToken<List<Breakdown>>() {
+                    }.getType();
+                    List<Breakdown> breakdowns = new Gson().fromJson(json, type);
+                    NewBreakdownsDialog(breakdowns);
+                }
+                Intent i = new Intent();
+                i.setAction("lk.steps.breakdownassistpluss.DashboardBroadcastReceiver");
+                i.putExtra("refresh_counts", "refresh_counts");
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
+            } else if (statusUpdate != null) {
+                Log.d("TEST","MainActivityBroadcastReceiver2");
                 String json = intent.getStringExtra("updated_breakdowns");
-                Type type = new TypeToken<List<JobChangeStatus>>(){}.getType();
+                Type type = new TypeToken<List<JobChangeStatus>>() {
+                }.getType();
                 Gson gson = new Gson();
                 List<JobChangeStatus> jobChangeStatus = gson.fromJson(json, type);
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
                 NewStatusDialog(jobChangeStatus);
-                if(JobListFragment.mAdapter!=null)JobListFragment.mAdapter.notifyDataSetChanged();
-            }else if(group_breakdowns!=null){
+                Intent i = new Intent();
+                i.setAction("lk.steps.breakdownassistpluss.DashboardBroadcastReceiver");
+                i.putExtra("refresh_counts", "refresh_counts");
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
+                if (JobListFragment.mAdapter != null)
+                    JobListFragment.mAdapter.notifyDataSetChanged();
+            } else if (group_breakdowns != null) {
+                Log.d("TEST","MainActivityBroadcastReceiver3");
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
-                if(JobListFragment.mAdapter!=null)JobListFragment.mAdapter.notifyDataSetChanged();
-            }
-            else if(finish_app_req!=null){
+                if (JobListFragment.mAdapter != null)
+                    JobListFragment.mAdapter.notifyDataSetChanged();
+            } else if (re_login_required != null) {
+                Log.d("TEST","MainActivityBroadcastReceiver4");
+                Common.WriteBooleanPreferences(getApplicationContext(),"restart_due_to_authentication_fail", true);
+                /*Intent i = getBaseContext().getPackageManager()
+                        .getLaunchIntentForPackage(getBaseContext().getPackageName());
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(i);
+                MainActivity.this.finish();*/
+            } else if (finish_app_req != null) {
+                Log.d("TEST","MainActivityBroadcastReceiver5");
                 //Log.d("TEST","BroadcastReceiver"+finish_app_req);
                 finish();
+            }else if (online_status_changed != null) {
+                Log.d("TEST","MainActivityBroadcastReceiver6");
+                //Log.d("TEST","BroadcastReceiver"+online_status_changed);
+                UpdateOnlineStatus();
+                Intent i = new Intent();
+                i.setAction("lk.steps.breakdownassistpluss.DashboardBroadcastReceiver");
+                i.putExtra("online_status_changed", "online_status_changed");
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
+            }else if (sms_received != null) {
+                Log.d("TEST","MainActivityBroadcastReceiver7");
+                //Log.d("TEST","BroadcastReceiver"+online_status_changed);
+                onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
+                if (JobListFragment.mAdapter != null)
+                    JobListFragment.mAdapter.notifyDataSetChanged();
             }
-
-            if(Globals.serverConnected & mActionBar!=null)mActionBar.setSubtitle("Online");
-            else if(!Globals.serverConnected & mActionBar!=null)mActionBar.setSubtitle("Offline");
         }
     };
 
-
+    private void UpdateOnlineStatus(){
+        Log.d("Online status","1"+Globals.ServerConnected );
+        if (Globals.ServerConnected & mActionBar != null) mActionBar.setSubtitle("Online");
+        else if (!Globals.ServerConnected & mActionBar != null)
+            mActionBar.setSubtitle("Offline");
+    }
     @Override
     protected void onDestroy() {
         stopService(new Intent(getBaseContext(), SyncService.class));
@@ -259,8 +296,8 @@ public class MainActivity extends AppCompatActivity
         Globals.dbHandler.close();
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
         StopTrackLocation();
-        if(!Common.ReadBooleanPreferences(this, "keep_sign_in",false)){
-            WriteBooleanPreferences("login_status",false);
+        if (!Common.ReadBooleanPreferences(this, "keep_sign_in", false)) {
+            Common.WriteBooleanPreferences(this,"login_status", false);
         }
         super.onDestroy();
     }
@@ -299,7 +336,6 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.main, menu);
         getMenuInflater().inflate(R.menu.search_menu, menu);
 
-
         //if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
         SearchManager manager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView search = (SearchView) menu.findItem(R.id.search).getActionView();
@@ -314,7 +350,7 @@ public class MainActivity extends AppCompatActivity
                         BreakdownsList = dbHandler.SearchInCustomers(keyWord);
                     }*/
                 if (BreakdownsList.size() == 0) {
-                    Toast.makeText(MainActivity.getAppContext(), "No match found..!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "No match found..!", Toast.LENGTH_LONG).show();
                 } else if (BreakdownsList.size() == 1) {
                     Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
                     if (currentFragment instanceof GmapFragment) {
@@ -351,10 +387,7 @@ public class MainActivity extends AppCompatActivity
                     }*/
                 return false;
             }
-
         });
-
-        //}
         return true;
     }
 
@@ -420,12 +453,12 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_logout) {
-            WriteBooleanPreferences("keep_sign_in",false);
-            WriteBooleanPreferences("login_status",false);
+            Common.WriteBooleanPreferences(this,"keep_sign_in", false);
+            Common.WriteBooleanPreferences(this,"login_status", false);
             stopService(new Intent(MainActivity.this, SignalRService.class));
-            Common.WriteBooleanPreferences(this, "keep_sign_in",false);
+            Common.WriteBooleanPreferences(this, "keep_sign_in", false);
             Intent i = getBaseContext().getPackageManager()
-                    .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+                    .getLaunchIntentForPackage(getBaseContext().getPackageName());
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
             MainActivity.this.finish();
@@ -449,11 +482,11 @@ public class MainActivity extends AppCompatActivity
         onNavigationItemSelected(target);
     }
 
-    public static Context getAppContext() {
+    /*public static Context getAppContext() {
         return MainActivity.context;
-    }
+    }*/
 
-    class MyTimerTask extends TimerTask {
+    /*class MyTimerTask extends TimerTask {
         @Override
         public void run() {
             runOnUiThread(new Runnable() {
@@ -473,22 +506,16 @@ public class MainActivity extends AppCompatActivity
                         startActivity(i);
                         MainActivity.this.finish();
                     }
-                    /*if(NewBreakdownsReceived == 1){
-                        NewBreakdownsReceived = 0;
-                        NewBreakdownsDialog(false);
-                    }else if(NewBreakdownsReceived == 2){
-                        NewBreakdownsReceived = 0;
-                        NewBreakdownsDialog(true);
-                    }*/
                 }
             });
         }
-    }
-    private void WriteBooleanPreferences(String key, boolean value){
+    }*/
+
+   /* private void WriteBooleanPreferences(String key, boolean value) {
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prfs.edit();
-        editor.putBoolean(key,value).apply();
-    }
+        editor.putBoolean(key, value).apply();
+    }*/
 
     /*private void CalculateAttainedTime() {
         final Handler handler = new Handler();
@@ -507,19 +534,17 @@ public class MainActivity extends AppCompatActivity
 
 
     //private Dialog newBreakdownDialog;
-    private void NewBreakdownsDialog(final List<Breakdown> breakdowns){
-
-        final List<Breakdown> AllNotAckedBreakdowns=breakdowns;
-        //final List<Breakdown> AllNotAckedBreakdowns = Globals.dbHandler.ReadNotAckedBreakdowns();
+    private void NewBreakdownsDialog(final List<Breakdown> breakdowns) {
+        if(breakdowns==null) return;
+       // final List<Breakdown> AllNotAckedBreakdowns = breakdowns;
         final Dialog newBreakdownDialog;
-      //  if(newBreakdownDialog!=null)newBreakdownDialog.dismiss();;
         newBreakdownDialog = new Dialog(this);
         newBreakdownDialog.setContentView(R.layout.alert_dialog);
         TextView msg = (TextView) newBreakdownDialog.findViewById(R.id.textDialog);
-        if(AllNotAckedBreakdowns.size() == 1){
-            msg.setText("New breakdown received.\n( ID : "+AllNotAckedBreakdowns.get(0).get_Job_No()+" )");
-        }else{
-            msg.setText("New "+AllNotAckedBreakdowns.size()+" breakdowns received.");
+        if (breakdowns.size() == 1) {
+            msg.setText("New breakdown received.\n( ID : " + breakdowns.get(0).get_Job_No() + " )");
+        } else {
+            msg.setText("New " + breakdowns.size() + " breakdowns received.");
         }
         //dialog.setTitle("BreakdownAssist...");
         newBreakdownDialog.setCancelable(false);
@@ -527,12 +552,11 @@ public class MainActivity extends AppCompatActivity
         dialogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    UpdateJobStatusAcknowledged(AllNotAckedBreakdowns);
-                    Intent myintent=new Intent();
-                    myintent.setAction("lk.steps.breakdownassistpluss.stopmediaplayer");
-                    getApplicationContext().sendBroadcast(myintent);
+                UpdateJobStatusAcknowledged(breakdowns);
+                Intent myintent = new Intent();
+                myintent.setAction("lk.steps.breakdownassistpluss.stopmediaplayer");
+                getApplicationContext().sendBroadcast(myintent);
                 newBreakdownDialog.dismiss();
-                //newBreakdownDialog = null;
             }
         });
         newBreakdownDialog.show();
@@ -540,35 +564,36 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void NewStatusDialog(List<JobChangeStatus> jobChangeStatus){
+    private void NewStatusDialog(List<JobChangeStatus> jobChangeStatus) {
+        if(jobChangeStatus==null ) return;
         int STATUS = Integer.parseInt(jobChangeStatus.get(0).status);
         String statusWord = "-";
-        if(STATUS==Breakdown.JOB_DELIVERED){
-            statusWord="Not acknowledged";
-        }if(STATUS==Breakdown.JOB_ATTENDING){
-            statusWord=("Attending");
-        }else if(STATUS==Breakdown.JOB_VISITED){
-            statusWord=("Visited");
-        }else if(STATUS==Breakdown.JOB_TEMPORARY_COMPLETED){
-            statusWord=("Temporary completed" );
-        }else if(STATUS==Breakdown.JOB_COMPLETED){
-            statusWord=("Completed");
-        }else if(STATUS==Breakdown.JOB_REJECT){
-            statusWord=("Rejected");
-        }else if(STATUS==Breakdown.JOB_WITHDRAWN){
-            statusWord=("Withdrawn");
-        }else if(STATUS==Breakdown.JOB_RE_CALLED){
-            statusWord=("Re-called");
+        if (STATUS == Breakdown.JOB_DELIVERED) {
+            statusWord = "Not acknowledged";
+        }
+        if (STATUS == Breakdown.JOB_ATTENDING) {
+            statusWord = ("Attending");
+        } else if (STATUS == Breakdown.JOB_VISITED) {
+            statusWord = ("Visited");
+        } else if (STATUS == Breakdown.JOB_TEMPORARY_COMPLETED) {
+            statusWord = ("Temporary completed");
+        } else if (STATUS == Breakdown.JOB_COMPLETED) {
+            statusWord = ("Completed");
+        } else if (STATUS == Breakdown.JOB_REJECT) {
+            statusWord = ("Rejected");
+        } else if (STATUS == Breakdown.JOB_WITHDRAWN) {
+            statusWord = ("Withdrawn");
+        } else if (STATUS == Breakdown.JOB_RE_CALLED) {
+            statusWord = ("Re-called");
         }
 
 
-
         final Dialog newBreakdownDialog;
-       // if(newBreakdownDialog!=null)return;
+        // if(newBreakdownDialog!=null)return;
         newBreakdownDialog = new Dialog(this);
         newBreakdownDialog.setContentView(R.layout.alert_dialog);
         TextView msg = (TextView) newBreakdownDialog.findViewById(R.id.textDialog);
-        msg.setText("Breakdown \n( ID : "+jobChangeStatus.get(0).job_no+" ) status changed to "+statusWord+".");
+        msg.setText("Breakdown \n( ID : " + jobChangeStatus.get(0).job_no + " ) status changed to " + statusWord);
         //dialog.setTitle("BreakdownAssist...");
         newBreakdownDialog.setCancelable(false);
         Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
@@ -576,52 +601,49 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 newBreakdownDialog.dismiss();
-               // newBreakdownDialog = null;
+                // newBreakdownDialog = null;
             }
         });
         newBreakdownDialog.show();
         onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
     }
 
-    private static void UpdateJobStatusAcknowledged(List<Breakdown> breakdowns) {
-        try{
+    private void UpdateJobStatusAcknowledged(List<Breakdown> breakdowns) {
+        try {
             String time = "" + Globals.timeFormat.format(new Date());
-            for (Breakdown breakdown :breakdowns) {
+            for (Breakdown breakdown : breakdowns) {
                 //String jobNo = dbHandler.GetNewJobNumber(breakdown.get_Job_No());
                 JobChangeStatus STATUS = new JobChangeStatus();
-                STATUS.job_no=Globals.dbHandler.GetNewJobNumber(breakdown.get_Job_No());
-                STATUS.change_datetime=time;
-                STATUS.device_timestamp=time;
-                STATUS.synchro_mobile_db=0;
-                STATUS.status=String.valueOf(Breakdown.JOB_ACKNOWLEDGED);
+                STATUS.job_no = Globals.dbHandler.GetNewJobNumber(breakdown.get_Job_No());
+                STATUS.change_datetime = time;
+                STATUS.device_timestamp = time;
+                STATUS.synchro_mobile_db = 0;
+                STATUS.status = String.valueOf(Breakdown.JOB_ACKNOWLEDGED);
 
                 Globals.dbHandler.addJobStatusChangeRec(STATUS);
                 Globals.dbHandler.UpdateBreakdownStatusByJobNo(breakdown.get_Job_No(), "", String.valueOf(Breakdown.JOB_ACKNOWLEDGED));
             }
-            SyncService.PostBreakdownStatusChange(getAppContext());
-        }catch(Exception e){
-            Log.e("Error","UpdateJobStatusAcknowledged "+e.getMessage());
+            SyncService.PostBreakdownStatusChange(getApplicationContext());
+        } catch (Exception e) {
+            Log.e("Error", "UpdateJobStatusAcknowledged " + e.getMessage());
         }
 
     }
 
-    private AlarmManager alarmManager;
-    private Intent gpsTrackerIntent;
-    private PendingIntent pendingIntent;
-   // private int intervalInMinutes = 1;
+
 
 
     protected void trackLocation() {
-        Log.e("GPS TRACKER", "0004");
+        //Log.e("GPS TRACKER", "0004");
         SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putInt("intervalInMinutes", 1);
-        editor.putString("userName", UserName);
+        //editor.putString("userName", UserName);
         editor.putBoolean("currentlyTracking", true);
         editor.putFloat("totalDistanceInMeters", 0f);
         editor.putBoolean("firstTimeGettingPosition", true);
-        editor.putString("sessionID",  UUID.randomUUID().toString());
+        editor.putString("sessionID", UUID.randomUUID().toString());
         editor.apply();
         startAlarmManager();
     }
@@ -631,8 +653,8 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putInt("intervalInMinutes", 1);
-        editor.putString("userName", "123");
-      //  editor.putString("defaultUploadWebsite", "123");
+        //editor.putString("userName", "123");
+        //  editor.putString("defaultUploadWebsite", "123");
         cancelAlarmManager();
         editor.putBoolean("currentlyTracking", false);
         editor.putString("sessionID", "");
@@ -644,12 +666,12 @@ public class MainActivity extends AppCompatActivity
         Log.e("GPS TRACKER", "startAlarmManager");
 
         Context context = getBaseContext();
-        alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        gpsTrackerIntent = new Intent(context, AlarmReceiver.class);
-        pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent gpsTrackerIntent = new Intent(context, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
 
-       // SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
-       // intervalInMinutes = sharedPreferences.getInt("intervalInMinutes", 1);
+        // SharedPreferences sharedPreferences = this.getSharedPreferences("GPSTRACKER", Context.MODE_PRIVATE);
+        // intervalInMinutes = sharedPreferences.getInt("intervalInMinutes", 1);
 
         /*boolean alarmUp = (PendingIntent.getBroadcast(context, 0,
                 gpsTrackerIntent,
@@ -679,7 +701,7 @@ public class MainActivity extends AppCompatActivity
         Context context = getBaseContext();
         Intent gpsTrackerIntent = new Intent(context, AlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, gpsTrackerIntent, 0);
-        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
     }
 

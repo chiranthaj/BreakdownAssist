@@ -264,18 +264,31 @@ public class JobView {
         else
             txtView.setText(breakdown.get_Job_No());
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
+
+        ArrayList<FailureObject> list = new ArrayList<FailureObject>();
+        for (String[] array : Strings.DoneComments) {
+            FailureObject obj = new FailureObject();
+            obj.AreaCode=array[0];
+            obj.Id=array[1];
+            obj.ParentId=array[2];
+            obj.English=array[3];
+            obj.Sinhala=array[4];
+            list.add(obj);
+        }
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, Strings.VisitedComments));
+        spinner.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, list));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
                 if (position == 0) {
+                    textView.setTextColor(Color.RED);
                     etComment.setText("", TextView.BufferType.EDITABLE);
                 } else {
                     etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
+                    textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
                 }
             }
 
@@ -289,11 +302,16 @@ public class JobView {
         btnVisited.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        Breakdown.JOB_VISITED, GetSelectedDateTime(dialog), etComment.getText().toString());
-                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_VISITED);
-                JobListFragment.CreateListView(fragment);
-                dialog.dismiss();
+                if(spinner.getSelectedItemPosition()==0){
+                    Toast.makeText(fragment.getActivity(), "Please select a reason", Toast.LENGTH_SHORT).show();
+                }else {
+                    FailureObject obj = (FailureObject) spinner.getSelectedItem();
+                    JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                            Breakdown.JOB_VISITED, GetSelectedDateTime(dialog), obj.English);
+                    UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_VISITED);
+                    JobListFragment.CreateListView(fragment);
+                    dialog.dismiss();
+                }
             }
         });
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
@@ -375,19 +393,31 @@ public class JobView {
         else
             txtView.setText(breakdown.get_Job_No());
 
+        ArrayList<FailureObject> list = new ArrayList<FailureObject>();
+        for (String[] array : Strings.DoneComments) {
+            FailureObject obj = new FailureObject();
+            obj.AreaCode=array[0];
+            obj.Id=array[1];
+            obj.ParentId=array[2];
+            obj.English=array[3];
+            obj.Sinhala=array[4];
+            list.add(obj);
+        }
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, Strings.DoneComments));
+        spinner.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, list));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
                 if (position == 0) {
+                    textView.setTextColor(Color.RED);
                     etComment.setText("", TextView.BufferType.EDITABLE);
                 } else {
                     etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
+                    textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
                 }
             }
 
@@ -401,12 +431,17 @@ public class JobView {
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        Breakdown.JOB_TEMPORARY_COMPLETED, GetSelectedDateTime(dialog), etComment.getText().toString());
-                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_TEMPORARY_COMPLETED);
-                JobListFragment.CreateListView(fragment);
-                JobMaterialDialog(fragment, breakdown, position);
-                dialog.dismiss();
+                if(spinner.getSelectedItemPosition()==0){
+                    Toast.makeText(fragment.getActivity(), "Please select a reason", Toast.LENGTH_SHORT).show();
+                }else {
+                    FailureObject obj = (FailureObject) spinner.getSelectedItem();
+                    JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                            Breakdown.JOB_TEMPORARY_COMPLETED, GetSelectedDateTime(dialog), obj.English);
+                    UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_TEMPORARY_COMPLETED);
+                    JobListFragment.CreateListView(fragment);
+                    JobMaterialDialog(fragment, breakdown, position);
+                    dialog.dismiss();
+                }
             }
         });
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
@@ -637,8 +672,6 @@ public class JobView {
             list.add(obj);
         }
 
-
-
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
 
@@ -650,9 +683,11 @@ public class JobView {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
                 if (position == 0) {
+                    textView.setTextColor(Color.RED);
                     etComment.setText("", TextView.BufferType.EDITABLE);
                 } else {
                     etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
+                    textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
                 }
             }
 
@@ -666,14 +701,16 @@ public class JobView {
         btnReject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                FailureObject obj = (FailureObject) spinner.getSelectedItem();
-                Log.d("TEST","reject reason"+obj.English);
-                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        Breakdown.JOB_REJECT, GetSelectedDateTime(dialog), obj.English);
-                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_REJECT);
-                JobListFragment.CreateListView(fragment);
-                dialog.dismiss();
+                if(spinner.getSelectedItemPosition()==0){
+                    Toast.makeText(fragment.getActivity(), "Please select a reason", Toast.LENGTH_SHORT).show();
+                }else{
+                    FailureObject obj = (FailureObject) spinner.getSelectedItem();
+                    JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                            Breakdown.JOB_REJECT, GetSelectedDateTime(dialog), obj.English);
+                    UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_REJECT);
+                    JobListFragment.CreateListView(fragment);
+                    dialog.dismiss();
+                }
             }
         });
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
@@ -700,19 +737,32 @@ public class JobView {
         else
             txtView.setText(breakdown.get_Job_No());
 
+        ArrayList<FailureObject> list = new ArrayList<FailureObject>();
+        for (String[] array : Strings.ReturnComments) {
+            FailureObject obj = new FailureObject();
+            obj.AreaCode=array[0];
+            obj.Id=array[1];
+            obj.ParentId=array[2];
+            obj.English=array[3];
+            obj.Sinhala=array[4];
+            list.add(obj);
+        }
+
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
         //Spinner
         final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner.setAdapter(new ArrayAdapter<String>(fragment.getActivity(),
-                R.layout.spinner_row, R.id.textView, Strings.ReturnComments));
+        spinner.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, list));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
                 if (position == 0) {
+                    textView.setTextColor(Color.RED);
                     etComment.setText("", TextView.BufferType.EDITABLE);
                 } else {
                     etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
+                    textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
                 }
             }
 
@@ -726,11 +776,16 @@ public class JobView {
         btnReject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                        Breakdown.JOB_RETURNED, GetSelectedDateTime(dialog), etComment.getText().toString());
-                UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_RETURNED);
-                JobListFragment.CreateListView(fragment);
-                dialog.dismiss();
+                if(spinner.getSelectedItemPosition()==0){
+                    Toast.makeText(fragment.getActivity(), "Please select a reason", Toast.LENGTH_SHORT).show();
+                }else {
+                    FailureObject obj = (FailureObject) spinner.getSelectedItem();
+                    JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                            Breakdown.JOB_RETURNED, GetSelectedDateTime(dialog), obj.English);
+                    UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_RETURNED);
+                    JobListFragment.CreateListView(fragment);
+                    dialog.dismiss();
+                }
             }
         });
 

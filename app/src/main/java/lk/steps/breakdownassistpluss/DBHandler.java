@@ -25,13 +25,14 @@ import java.util.Locale;
 
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
 import lk.steps.breakdownassistpluss.MaterialList.MaterialObject;
+import lk.steps.breakdownassistpluss.Models.Statistics;
 import lk.steps.breakdownassistpluss.RecyclerViewCards.ChildInfo;
 import lk.steps.breakdownassistpluss.Sync.BreakdownGroup;
 import lk.steps.breakdownassistpluss.Sync.SyncMaterialObject;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version = 103;
+    private static final int Database_Version = 104;
     private static final String DatabaseNAME = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -74,7 +75,7 @@ public class DBHandler extends SQLiteOpenHelper
                 ");";
         db.execSQL(query);
 
-        query = "CREATE TABLE Customers (" +
+        /*query = "CREATE TABLE Customers (" +
                 "id          INTEGER PRIMARY KEY," +
                 "ACCT_NUM               TEXT,"+
                 "WALK_ORDER             TEXT,"+
@@ -88,7 +89,7 @@ public class DBHandler extends SQLiteOpenHelper
                 "LONGITUDE              TEXT,"+
                 "GPS_ACCURACY           TEXT "+
                 ");";
-        db.execSQL(query);
+        db.execSQL(query);*/
 
         query = "CREATE TABLE PremisesID (" +
                 "PremisesID TEXT PRIMARY KEY,"+
@@ -179,7 +180,7 @@ public class DBHandler extends SQLiteOpenHelper
                 breakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 breakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                 breakdown.set_GPS_ACCURACY(c.getString(c.getColumnIndex("GPS_ACCURACY")));
-                breakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
+                breakdown.set_SUB(c.getString(c.getColumnIndex("ECSC"))+ c.getString(c.getColumnIndex("SUB")));
                 //Log.e("Customers",AcctNum+"*"+c.getString(c.getColumnIndex("NAME")));
             }
             c.moveToNext();
@@ -422,27 +423,42 @@ public class DBHandler extends SQLiteOpenHelper
         return iResult;
     }
 
-    public int UpdateNewJobNumber(String oldJobNo, String newJobNo)
+    public int UpdateNewJobNumber(String oldJobNo, Breakdown breakdown)
     {
-        try{
+       // try{
+            Log.e("UpdateNewJobNumber","0");
             SQLiteDatabase db = getWritableDatabase();
             String query = "UPDATE BreakdownRecords SET " +
-                    "BA_SERVER_SYNCED='1', JOB_NO='"+newJobNo+"', OLD_JOB_NO='"+oldJobNo+"' " +
+                    "BA_SERVER_SYNCED='1', " +
+                    "JOB_NO='"+breakdown.get_Job_No()+"', " +
+                    "OLD_JOB_NO='"+oldJobNo+"', " +
+                    "NAME='"+breakdown.get_Name()+"', " +
+                    "ADDRESS='"+breakdown.get_ADDRESS()+"', " +
+                    "LATITUDE='"+breakdown.get_LATITUDE()+"', " +
+                    "LONGITUDE='"+breakdown.get_LONGITUDE()+"', " +
+                    "TARIFF_COD='"+breakdown.get_TARIFF_COD()+"', " +
+                    "AREA='"+breakdown.get_AREA()+"', " +
+                    "ECSC='"+breakdown.get_ECSC()+"', " +
+                    "SUB='"+breakdown.get_SUB()+"', " +
+                    "GPS_ACCURACY='"+breakdown.get_GPS_ACCURACY()+"'" +
                     " WHERE JOB_NO= '" + oldJobNo + "';";
             db.execSQL(query);
+
             Log.e("UpdateNewJobNumber","1");
             query = "UPDATE JobStatusChange SET " +
-                    "JOB_NO='"+newJobNo+"' WHERE JOB_NO= '" + oldJobNo + "';";
+                    "JOB_NO='"+breakdown.get_Job_No()+"' WHERE JOB_NO= '" + oldJobNo + "';";
             db.execSQL(query);
+
+
             Log.e("UpdateNewJobNumber","2");
             query = "UPDATE JobCompletion SET " +
-                    "JOB_NO='"+newJobNo+"' WHERE JOB_NO= '" + oldJobNo + "';";
+                    "JOB_NO='"+breakdown.get_Job_No()+"' WHERE JOB_NO= '" + oldJobNo + "';";
             db.execSQL(query);
             Log.e("UpdateNewJobNumber","3");
             //db.close();
-        }catch(Exception e){
+       // }catch(Exception e){
 
-        }
+       // }
 
         return 1;
     }
@@ -482,15 +498,15 @@ public class DBHandler extends SQLiteOpenHelper
             if (c.getString(0) != null)
             {
                 breakdown= new Breakdown();
-                breakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
-                breakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
-                breakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
+                //breakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                //breakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
+                //breakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 breakdown.set_Status(c.getShort(c.getColumnIndex("STATUS")));
                 breakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
-                breakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
+                //breakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                 breakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime")));
-                breakdown.set_Completed_Time(c.getString(c.getColumnIndex("COMPLETED_TIME")));
-                breakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                //breakdown.set_Completed_Time(c.getString(c.getColumnIndex("COMPLETED_TIME")));
+                //breakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                 breakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
                 breakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
                 breakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
@@ -813,12 +829,12 @@ public class DBHandler extends SQLiteOpenHelper
             values.put("LONGITUDE",breakdown.get_LONGITUDE());
             values.put("GPS_ACCURACY",breakdown.get_GPS_ACCURACY());
             values.put("BA_SERVER_SYNCED",breakdown.get_BA_SERVER_SYNCED());
-            values.put("STATUS",1);
+            values.put("STATUS", Breakdown.JOB_DELIVERED);
 
 
            // Log.e("result","="+result);
 
-            long result = db.update("BreakdownRecords", values, "JOB_NO="+breakdown.get_Job_No(), null);
+            long result = db.update("BreakdownRecords", values, "JOB_NO='"+breakdown.get_Job_No()+"'", null);
 
             if(result < 1){
                 values.put("JOB_NO",breakdown.get_Job_No());
@@ -836,7 +852,7 @@ public class DBHandler extends SQLiteOpenHelper
 
 
     public void AddBreakdownGroups(List<BreakdownGroup> groups) {
-        Log.e("UPDATEQ","AddBreakdownGroups");
+        //Log.e("UPDATEQ","AddBreakdownGroups");
         SQLiteDatabase db = getWritableDatabase();
         for (BreakdownGroup group:groups) {
             //Log.e("TTTT0",group.GetParentBreakdownId()+"/"+group.GetParentStatusId()+"/"+group.GetBreakdownId());
@@ -885,36 +901,42 @@ public class DBHandler extends SQLiteOpenHelper
         iResult=1; //Return Success
         return iResult;
     }
-    public int[] getBreakdownCounts()
+    public Statistics getBreakdownCounts()
     {
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT COUNT(*) AS TOTAL," +
-                        "SUM(CASE STATUS  WHEN "+Breakdown.JOB_COMPLETED +" THEN 1 ELSE 0 END) AS COMPLETED," +
                 "SUM(CASE STATUS  WHEN "+Breakdown.JOB_DELIVERED +"  THEN 1 ELSE 0 END) AS DELIVERED," +
                 "SUM(CASE STATUS  WHEN "+Breakdown.JOB_ACKNOWLEDGED +" THEN 1 ELSE 0 END) AS ACKNOWLEDGED," +
+                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_VISITED +" THEN 1 ELSE 0 END) AS VISITED, " +
                 "SUM(CASE STATUS  WHEN "+Breakdown.JOB_ATTENDING +" THEN 1 ELSE 0 END) AS ATTENDING," +
-                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_VISITED +" THEN 1 ELSE 0 END) AS VISITED " +
-                        " FROM BreakdownRecords;";
+                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_TEMPORARY_COMPLETED +" THEN 1 ELSE 0 END) AS TEMPORARY_COMPLETED," +
+                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_COMPLETED +" THEN 1 ELSE 0 END) AS COMPLETED," +
+                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_WITHDRAWN +" THEN 1 ELSE 0 END) AS WITHDRAWN," +
+                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_REJECT +" THEN 1 ELSE 0 END) AS REJECT," +
+                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_RE_CALLED +" THEN 1 ELSE 0 END) AS RE_CALLED," +
+                "SUM(CASE STATUS  WHEN "+Breakdown.JOB_RETURNED +" THEN 1 ELSE 0 END) AS RETURNED" +
+                " FROM BreakdownRecords;";
 
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
+        Statistics stat = new Statistics();
 
-        int[] counts = new int[5];
         if (!c.isAfterLast()){
-            counts[0] = c.getInt(c.getColumnIndex("COMPLETED"));
-            counts[1] = c.getInt(c.getColumnIndex("DELIVERED"));
-            counts[2] = c.getInt(c.getColumnIndex("ACKNOWLEDGED"));
-            counts[3] = c.getInt(c.getColumnIndex("ATTENDING"));
-            counts[4] = c.getInt(c.getColumnIndex("VISITED"));
+            stat.DELIVERED = c.getInt(c.getColumnIndex("DELIVERED"));
+            stat.ACKNOWLEDGED = c.getInt(c.getColumnIndex("ACKNOWLEDGED"));
+            stat.VISITED = c.getInt(c.getColumnIndex("VISITED"));
+            stat.ATTENDING = c.getInt(c.getColumnIndex("ATTENDING"));
+            stat.TEMPORARY_COMPLETED = c.getInt(c.getColumnIndex("TEMPORARY_COMPLETED"));
+            stat.COMPLETED = c.getInt(c.getColumnIndex("COMPLETED"));
+            stat.WITHDRAWN = c.getInt(c.getColumnIndex("WITHDRAWN"));
+            stat.REJECT = c.getInt(c.getColumnIndex("REJECT"));
+            stat.RE_CALLED = c.getInt(c.getColumnIndex("RE_CALLED"));
+            stat.RETURNED = c.getInt(c.getColumnIndex("RETURNED"));
         }
-        /*Log.e("COMPLETED","="+counts[0]);
-        Log.e("DELIVERED","="+counts[1]);
-        Log.e("ACKNOWLEDGED","="+counts[2]);
-        Log.e("ATTENDING","="+counts[3]);
-        Log.e("VISITED","="+counts[4]);*/
+
         c.close();
         //db.close();
-        return counts;
+        return stat;
     }
     public long getAttendedTime()
     {
@@ -1107,7 +1129,7 @@ public class DBHandler extends SQLiteOpenHelper
         }else if (iStatus==Breakdown.JOB_COMPLETED){/*Completed*/
             statusQuery=" AND B.STATUS =  '6' ";
         }else if (iStatus==Breakdown.JOB_NOT_ATTENDED){/*"pending"*/
-            statusQuery=" AND (B.STATUS = '1' OR B.STATUS = '2' OR B.STATUS = '3' OR B.STATUS = '4' OR B.STATUS = '5' OR B.STATUS IS NULL)";
+            statusQuery=" AND (B.STATUS = '1' OR B.STATUS = '2' OR B.STATUS = '4' OR B.STATUS IS NULL)";
         }else{
             statusQuery=" AND B.STATUS =  '" + iStatus + "' ";
         }

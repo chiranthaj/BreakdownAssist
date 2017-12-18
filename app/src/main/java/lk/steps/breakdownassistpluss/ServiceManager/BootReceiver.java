@@ -9,7 +9,9 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.Log;
 
 import lk.steps.breakdownassistpluss.Globals;
@@ -24,8 +26,12 @@ public class BootReceiver extends BroadcastReceiver {
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
 
-            Intent signalRService = new Intent(context, SignalRService.class);
-            context.startService(signalRService);
+            //Intent signalRService = new Intent(context, SignalRService.class);
+            //context.startService(signalRService);
+
+            Intent signalRIntent = new Intent(context, SignalRService.class);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) signalRIntent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            context.startActivity(signalRIntent);
 
             Intent syncService = new Intent(context, SyncService.class);
             context.startService(syncService);

@@ -1,25 +1,17 @@
 package lk.steps.breakdownassistpluss.Sync;
 
-
-import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.PowerManager;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -33,16 +25,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import lk.steps.breakdownassistpluss.Breakdown;
+import lk.steps.breakdownassistpluss.Common;
 import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
 import lk.steps.breakdownassistpluss.JobChangeStatus;
 import lk.steps.breakdownassistpluss.JobCompletion;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
-import lk.steps.breakdownassistpluss.SelectorActivity;
 import lk.steps.breakdownassistpluss.StartUpTasks;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -61,10 +51,11 @@ public class SyncService extends Service {
     //MyTimerTask myTimerTask;
     String area_id ;
     String team_id ;
+    private static String TAG = "BG-Service";
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e("Sync","onCreate");
+        Log.e(TAG,"Sync->onCreate");
 
     }
 
@@ -79,15 +70,15 @@ public class SyncService extends Service {
         // Let it continue running until it is stopped.
         syncRESTService = new SyncRESTService(10);
         //Toast.makeText(this, "Sync Service Started", Toast.LENGTH_SHORT).show();
-        area_id = ReadStringPreferences(getApplicationContext(),"area_id","");
-        team_id = ReadStringPreferences(getApplicationContext(), "team_id","");
+        area_id = Common.ReadStringPreferences(getApplicationContext(),"area_id","");
+        team_id = Common.ReadStringPreferences(getApplicationContext(), "team_id","");
       //  timer = new Timer();
       //  myTimerTask = new MyTimerTask();
 
         //delay 1000ms, repeat in 5000ms
        // timer.schedule(myTimerTask, 1000, 20000);
         //GetAuthToken();
-        Log.e("Sync","onStartCommand");
+        Log.e(TAG,"Sync->onStartCommand");
         StartSync();
         return START_NOT_STICKY;
     }
@@ -95,8 +86,8 @@ public class SyncService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.e("Sync","*onDestroy*");
-        Toast.makeText(this, "Sync Service Destroyed", Toast.LENGTH_SHORT).show();
+        Log.e(TAG,"Sync->*onDestroy*");
+        Toast.makeText(this, "Sync->Service Destroyed", Toast.LENGTH_SHORT).show();
     }
 
     /*@Override
@@ -114,7 +105,7 @@ public class SyncService extends Service {
 
     public static void PostBreakdownStatusChange(final Context context){
         List<JobChangeStatus> JobChangeStatusList = Globals.dbHandler.getBreakdownStatusChange();
-        Log.e("Sync","PostBreakdownStatusChange->"+JobChangeStatusList.size());
+        Log.e("Sync","Sync->PostBreakdownStatusChange->"+JobChangeStatusList.size());
         if(JobChangeStatusList.size()<1){
             return;
         }
@@ -146,13 +137,11 @@ public class SyncService extends Service {
                 @Override
                 public void onResponse(Call<SyncObject> call, Response<SyncObject> response) {
                     if (response.isSuccessful()) {
-                        Globals.serverConnected = true;
                         //Log.e("SyncStatusChange","successful1");
                         if(Globals.dbHandler.UpdateSyncState_JobStatusChangeObj(obj,1)==1){//Successfully done
                             Log.e("SyncStatusChange","successful");
                         }
                     } else if (response.errorBody() != null) {
-                        Globals.serverConnected = false;
                         Toast.makeText(context,"SyncBreakdownStatus-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                         Log.e("SyncStatusChange","onResponse"+response.errorBody());
                         Globals.dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0); //ToDo : Change this for each reason
@@ -168,7 +157,7 @@ public class SyncService extends Service {
                         }*/
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            MainActivity.ReLoginRequired=true;
+                            SendRestartRequest(context);
                         }else{
                             Toast.makeText(context, "SyncStatusChange\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -179,7 +168,7 @@ public class SyncService extends Service {
 
                 @Override
                 public void onFailure(Call<SyncObject> call, Throwable t) {
-                    Globals.serverConnected = false;
+                    
                     Toast.makeText(context,"SyncBreakdownStatus-Strings\n"+t, Toast.LENGTH_SHORT).show();
                     Log.e("SyncStatusChange","onFailure "+t);
                     Globals.dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0);//Not Uploaded due to no network
@@ -187,6 +176,14 @@ public class SyncService extends Service {
                 }
             });
         }
+    }
+
+    private static void SendRestartRequest(Context context){
+        Common.RemoteLoginWithLastCredentials(context);
+        /*Intent intent = new Intent();
+        intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
+        intent.putExtra("re_login_required", "re_login_required");
+        context.sendBroadcast(intent);*/
     }
 
     public static void PostBreakdowns(final Context context){
@@ -197,17 +194,17 @@ public class SyncService extends Service {
             return;
         }
 
-        final String area_id = ReadStringPreferences(context, "area_id","");
-        final String team_id = ReadStringPreferences(context, "team_id","");
-        final String user_id = ReadStringPreferences(context, "user_id","");
+        final String area_id = Common.ReadStringPreferences(context, "area_id","");
+        final String team_id = Common.ReadStringPreferences(context, "team_id","");
+        final String user_id = Common.ReadStringPreferences(context, "user_id","");
 
         if(area_id == null | team_id == null | user_id == null) return;
         if(area_id.isEmpty() | team_id.isEmpty() | user_id.isEmpty()) return;
 
         for (final Breakdown breakdown: breakdowns)
         {
-            if(breakdown.get_Name()==null | breakdown.get_ADDRESS()==null) continue;
-            if(breakdown.get_Name().isEmpty() | breakdown.get_ADDRESS().isEmpty()) continue;
+            //if(breakdown.get_Name()==null | breakdown.get_ADDRESS()==null) continue;
+            //if(breakdown.get_Name().isEmpty() | breakdown.get_ADDRESS().isEmpty()) continue;
 
             breakdown.set_ECSC(team_id);
             breakdown.set_Area(area_id);
@@ -216,28 +213,31 @@ public class SyncService extends Service {
 
             Globals.dbHandler.UpdateSyncState_NewBreakdown(breakdown, -1);//Uploading Started
             final SyncRESTService syncRESTService = new SyncRESTService(10);
-            Call<String> call = syncRESTService.getService()
+            Call<List<Breakdown>> call = syncRESTService.getService()
                     .CreateBreakdown( "Bearer "+ Globals.mToken.access_token, breakdown);
 
-            call.enqueue(new Callback<String>(){
+            call.enqueue(new Callback<List<Breakdown>>(){
 
                 @Override
-                public void onResponse(Call<String> call, Response<String> response) {
+                public void onResponse(Call<List<Breakdown>> call, Response<List<Breakdown>> response) {
                     if (response.isSuccessful()) {
-                        Globals.serverConnected = true;
-                        //Log.e("PostBreakdowns","Successfull"+new Gson().toJson(response));
+                        
+                        //Log.e("PostBreakdowns","Successfull->"+response);
                         //Log.e("PostBreakdowns","Successfull"+response.body());
                         Log.e("PostBreakdowns","Successfull");
-                       // dbHandler.UpdateSyncState_NewBreakdown(breakdown,1);//Successfully done
-                        Globals.dbHandler.UpdateNewJobNumber(breakdown.get_Job_No(),response.body());//Successfully done
+                        List<Breakdown> _breakdowns = response.body();
+                        Globals.dbHandler.UpdateNewJobNumber(breakdown.get_Job_No(),_breakdowns.get(0));//Successfully done
 
-                        Intent myintent=new Intent();
-                        myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
-                        myintent.putExtra("job_status_changed","refresh_list");
-                        context.sendBroadcast(myintent);
+                        Intent intent = new Intent();
+                        intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
+                        //intent.putExtra("_id", sIssuedBreakdownID);
+                        intent.putExtra("new_breakdowns", "new_breakdowns");
+                        intent.putExtra("new_breakdown_list", new Gson().toJson(_breakdowns));
+                        context.sendBroadcast(intent);
 
+                        PlayTone(context, R.raw.ding_ling, false);
                     } else if (response.errorBody() != null) {
-                        Globals.serverConnected = false;
+                        
                         Log.e("PostBreakdowns","Error"+response.errorBody());
                         Toast.makeText(context,"PostBreakdowns-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                         Globals.dbHandler.UpdateSyncState_NewBreakdown(breakdown, 0);//Not Uploaded due to no network
@@ -252,7 +252,7 @@ public class SyncService extends Service {
                         }*/
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            MainActivity.ReLoginRequired=true;
+                            SendRestartRequest(context);
                         }else{
                             Toast.makeText(context, "PostBreakdowns\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -262,8 +262,8 @@ public class SyncService extends Service {
                 }
 
                 @Override
-                public void onFailure(Call<String> call, Throwable t) {
-                    Globals.serverConnected = false;
+                public void onFailure(Call<List<Breakdown>> call, Throwable t) {
+                    
                     Globals.dbHandler.UpdateSyncState_NewBreakdown(breakdown, 0);//Not Uploaded due to no network
                     Toast.makeText(context,"PostBreakdowns-Strings\n"+t, Toast.LENGTH_SHORT).show();
                     Log.e("PostBreakdowns","onResponse" + t);
@@ -277,7 +277,7 @@ public class SyncService extends Service {
         List<JobCompletion> JobCompletionList = Globals.dbHandler.getBreakdownCompletion();
        // final String area_id = ReadStringPreferences(context, "area_id","");
        // final String team_id = ReadStringPreferences(context, "team_id","");
-        Log.e("Sync","PostBreakdownCompletion->"+JobCompletionList.size());
+        Log.e("Sync","Sync->PostBreakdownCompletion->"+JobCompletionList.size());
         if(JobCompletionList.size()<1){
             return;
         }
@@ -310,11 +310,11 @@ public class SyncService extends Service {
                 @Override
                 public void onResponse(Call<SyncObject> call, Response<SyncObject> response) {
                     if (response.isSuccessful()) {
-                        Globals.serverConnected = true;
-                        Log.e("PostBreakdownCompletion","Successfull");
+                        
+                        Log.e("PostBreakdownCompletion","Sync->Successfull");
                         Globals.dbHandler.UpdateSyncState_JobCompletionObj(obj,1);//Successfully done
                     } else if (response.errorBody() != null) {
-                        Globals.serverConnected = false;
+                        
                         Log.e("PostBreakdownCompletion","Error"+response.errorBody());
                         Toast.makeText(context,"PostBreakdownCompletion-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                         Globals.dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
@@ -329,7 +329,7 @@ public class SyncService extends Service {
                         }*/
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            MainActivity.ReLoginRequired=true;
+                            SendRestartRequest(context);
                         }else{
                             Toast.makeText(context, "PostBreakdownCompletion\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -340,7 +340,7 @@ public class SyncService extends Service {
 
                 @Override
                 public void onFailure(Call<SyncObject> call, Throwable t) {
-                    Globals.serverConnected = false;
+                    
                     Globals.dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     Toast.makeText(context,"PostBreakdownCompletion-Strings\n"+t, Toast.LENGTH_SHORT).show();
                     syncRESTService.CloseAllConnections();
@@ -367,19 +367,19 @@ public class SyncService extends Service {
             @Override
             public void onResponse(Call<SyncMaterialObject> call, Response<SyncMaterialObject> response) {
                 if (response.isSuccessful()) {
-                    Globals.serverConnected = true;
+                    
                     Log.e("PostMaterials","Successfull");
                     for (final SyncMaterialObject obj: list) {
                         Globals.dbHandler.UpdateMaterials(obj);//Successfully done
                     }
                 } else if (response.errorBody() != null) {
-                    Globals.serverConnected = false;
+                    
                     Log.e("PostMaterials","Error"+response.errorBody());
                     Toast.makeText(context,"PostMaterials-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                        MainActivity.ReLoginRequired=true;
+                        SendRestartRequest(context);
                     }else{
                         Toast.makeText(context, "PostMaterials\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -390,7 +390,7 @@ public class SyncService extends Service {
 
             @Override
             public void onFailure(Call<SyncMaterialObject> call, Throwable t) {
-                Globals.serverConnected = false;
+                
                 // dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                 Toast.makeText(context,"PostTrackingData-Strings\n"+t, Toast.LENGTH_SHORT).show();
                 syncRESTService.CloseAllConnections();
@@ -416,19 +416,19 @@ public class SyncService extends Service {
             @Override
             public void onResponse(Call<TrackerObject> call, Response<TrackerObject> response) {
                 if (response.isSuccessful()) {
-                    Globals.serverConnected = true;
+                    
                     Log.e("PostTrackingData","Successfull");
                     for (final TrackerObject obj: list) {
                         Globals.dbHandler.UpdateTrackingData(obj);//Successfully done
                     }
                 } else if (response.errorBody() != null) {
-                    Globals.serverConnected = false;
+                    
                     Log.e("PostTrackingData","Error"+response.errorBody());
                     Toast.makeText(context,"PostTrackingData-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                        MainActivity.ReLoginRequired=true;
+                        SendRestartRequest(context);
                     }else{
                         Toast.makeText(context, "PostTrackingData\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -439,7 +439,7 @@ public class SyncService extends Service {
 
             @Override
             public void onFailure(Call<TrackerObject> call, Throwable t) {
-                Globals.serverConnected = false;
+                
                // dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                 Toast.makeText(context,"PostTrackingData-Strings\n"+t, Toast.LENGTH_SHORT).show();
                 syncRESTService.CloseAllConnections();
@@ -464,19 +464,19 @@ public class SyncService extends Service {
             @Override
             public void onResponse(Call<BreakdownGroup> call, Response<BreakdownGroup> response) {
                 if (response.isSuccessful()) {
-                    Globals.serverConnected = true;
+                    
                     Log.e("PostGroups","Successfull");
                     for (final BreakdownGroup obj: list) {
                         Globals.dbHandler.UpdateGroupSynced(obj);//Successfully done
                     }
                 } else if (response.errorBody() != null) {
-                    Globals.serverConnected = false;
+                    
                     Log.e("PostGroups","Error"+response.errorBody());
                     Toast.makeText(context,"PostGroups-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                        MainActivity.ReLoginRequired=true;
+                        SendRestartRequest(context);
                     }else{
                         Toast.makeText(context, "PostGroups\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -487,7 +487,7 @@ public class SyncService extends Service {
 
             @Override
             public void onFailure(Call<BreakdownGroup> call, Throwable t) {
-                Globals.serverConnected = false;
+                
                 // dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                 Toast.makeText(context,"PostGroups-Strings\n"+t, Toast.LENGTH_SHORT).show();
                 syncRESTService.CloseAllConnections();
@@ -579,7 +579,7 @@ public class SyncService extends Service {
 
     private void InstallApk(File apkFile){
         Intent myintent=new Intent();
-        myintent.setAction("lk.steps.breakdownassistpluss.NewBreakdownBroadcast");
+        myintent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
         myintent.putExtra("finish_app_req","finish_app_req");
         getApplicationContext().sendBroadcast(myintent);
 
@@ -620,12 +620,12 @@ public class SyncService extends Service {
             wl_cpu.acquire(10000);
         }
     }
-    private static String ReadStringPreferences(Context context, String key, String defaultValue){
+    /*private static String ReadStringPreferences(Context context, String key, String defaultValue){
         SharedPreferences prfs = context.getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getString(key, defaultValue);
-    }
+    }*/
 
-    int i = 0;
+    /*int i = 0;
     private class MyTimerTask extends TimerTask {
         @Override
         public void run() {
@@ -661,18 +661,18 @@ public class SyncService extends Service {
                 //Log.e("Sync","PostTrackingData");
                 PostTrackingData(getApplicationContext());
             }
-            /*else if(i==6){
+            else if(i==6){
                 i=0;
                 Log.e("Sync","DownloadApk");
                 DownloadApk();
-            }*/
+            }
         }
-    }
+    }*/
 
 
     private void StartSync(){
-        if(Globals.mToken == null | !Globals.serverConnected){
-            RemoteLoginWithLastCredentials();
+        if(Globals.mToken == null | ! Globals.ServerConnected){
+            Common.RemoteLoginWithLastCredentials(getApplicationContext());
             StartUpTasks.InitVariables(getApplicationContext());
             return;
         }
@@ -684,7 +684,7 @@ public class SyncService extends Service {
         PostTrackingData(getApplicationContext());
     }
 
-    public void RemoteLoginWithLastCredentials(){
+    /*public void RemoteLoginWithLastCredentials(){
         final String lastUsername = ReadStringPreferences("last_username", "");
         final String lastPassword = ReadStringPreferences("last_password", "");
         final SyncRESTService syncAuthService = new SyncRESTService(2);
@@ -708,10 +708,10 @@ public class SyncService extends Service {
                     WriteStringPreferences("last_username",lastUsername);
                     WriteStringPreferences("last_password",lastPassword);
                     Globals.mToken = token;
-                    Globals.serverConnected = true;
+                    
 
                 } else if (response.errorBody() != null) {
-                    Globals.serverConnected = false;
+                    
                 }
                 syncAuthService.CloseAllConnections();
             }
@@ -723,9 +723,33 @@ public class SyncService extends Service {
             }
 
         });
+    }*/
+
+    private static void PlayTone(Context context, int resourceId, boolean looping) {
+        MediaPlayer mMediaPlayer = MediaPlayer.create(context, resourceId);
+        mMediaPlayer.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
+        mMediaPlayer.setLooping(looping);
+        mMediaPlayer.setVolume(1.0f, 1.0f);
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.stop();
+                mp.release();
+                Log.e("MediaPlayer", "onCompletion");
+            }
+        });
+        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+                Log.e("MediaPlayer", "onPrepared");
+            }
+        });
+        //mMediaPlayer.prepareAsync();
+        //mMediaPlayer.start();
     }
 
-    private void WriteLongPreferences(String key, long value){
+    /*private void WriteLongPreferences(String key, long value){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prfs.edit();
         editor.putLong(key,value).apply();
@@ -740,5 +764,5 @@ public class SyncService extends Service {
     private String ReadStringPreferences(String key, String defaultValue){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getString(key, defaultValue);
-    }
+    }*/
 }

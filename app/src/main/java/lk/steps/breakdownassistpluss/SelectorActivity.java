@@ -29,10 +29,10 @@ public class SelectorActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //Toast.makeText(this, "I'm alive", Toast.LENGTH_LONG).show();
-        if(!ReadBooleanPreferences("server",false))GetIpAddress();
+        if(!Common.ReadBooleanPreferences(this,"server",false))GetIpAddress();
         Log.e("SERVER",Globals.serverUrl);
-        if(ReadBooleanPreferences2("keep_sign_in",false)){
-            performAutoLogin();
+        if(Common.ReadBooleanPreferences(this,"keep_sign_in",false)){
+            performAutoLogin(this);
         }else{
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
@@ -64,9 +64,10 @@ public class SelectorActivity extends Activity {
         });
         thread.start();
     }
-    private void performAutoLogin(){
-        String lastUsername = ReadStringPreferences("last_username", "");
-        String lastPassword = ReadStringPreferences("last_password", "");
+
+    private void performAutoLogin(final Context context){
+        String lastUsername = Common.ReadStringPreferences(context,"last_username", "");
+        String lastPassword = Common.ReadStringPreferences(context,"last_password", "");
         final SyncRESTService syncAuthService = new SyncRESTService(2);
         Call<Token> call = syncAuthService.getService().GetJwt(lastUsername,lastPassword);
         call.enqueue(new Callback<Token>() {
@@ -76,13 +77,14 @@ public class SelectorActivity extends Activity {
                     Log.e("GetAuthToken","Authorized");
                     Token token = response.body();
                     //SaveToken(token);
-                    WriteStringPreferences("user_id",token.user_id);
-                    WriteStringPreferences("area_id",token.area_id);
-                    WriteStringPreferences("area_name",token.area_name);
-                    WriteStringPreferences("team_id",token.team_id);
-                    WriteLongPreferences("expires_in",token.expires_in);
-                    WriteStringPreferences("access_token",token.access_token);
-                    WriteStringPreferences("group_token",token.group_token);
+                    Common.WriteStringPreferences(context,"user_id",token.user_id);
+                    Common.WriteStringPreferences(context,"area_id",token.area_id);
+                    Common.WriteStringPreferences(context,"area_name",token.area_name);
+                    Common.WriteStringPreferences(context,"team_id",token.team_id);
+                    Common.WriteLongPreferences(context,"expires_in",token.expires_in);
+                    Common.WriteStringPreferences(context,"access_token",token.access_token);
+                    Common.WriteStringPreferences(context,"group_token",token.group_token);
+
 
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(new Runnable() {
@@ -91,8 +93,7 @@ public class SelectorActivity extends Activity {
                             SelectorActivity.this.startActivity(myIntent);
                         }
                     });
-                    Globals.serverConnected = true;
-                    WriteBooleanPreferences("restart_due_to_authentication_fail",false);
+                    Common.WriteBooleanPreferences(context,"restart_due_to_authentication_fail",false);
                     Toast.makeText(getApplicationContext(),"Remote login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
                     //WriteBooleanPreferences("keep_sign_in",true);
                     //WriteBooleanPreferences("login_status",true);
@@ -100,7 +101,6 @@ public class SelectorActivity extends Activity {
                 } else if (response.errorBody() != null) {
                     Log.d("GetAuthToken","Fail"+response.errorBody());
                     Toast.makeText(getApplicationContext(),"Network failure..\nSwitch to local login"+response.errorBody(), Toast.LENGTH_LONG).show();
-                    Globals.serverConnected = false;
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(new Runnable() {
                         public void run() {
@@ -128,7 +128,7 @@ public class SelectorActivity extends Activity {
         });
     }
 
-    private void WriteLongPreferences(String key, long value){
+   /* private void WriteLongPreferences(String key, long value){
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prfs.edit();
         editor.putLong(key,value).apply();
@@ -157,5 +157,5 @@ public class SelectorActivity extends Activity {
         SharedPreferences prfs = PreferenceManager.getDefaultSharedPreferences(this);
         //SharedPreferences prfs = getPreferences(Context.MODE_PRIVATE);
         return prfs.getBoolean(key, defaultValue);
-    }
+    }*/
 }

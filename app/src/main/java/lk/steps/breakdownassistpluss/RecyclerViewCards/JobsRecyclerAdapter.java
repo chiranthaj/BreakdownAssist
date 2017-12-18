@@ -173,8 +173,6 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
             holder.note.setText(breakdownList.get(position).get_Note());
         }
 
-
-
         holder.setBreakdown(breakdownList.get(position));
     }
 
