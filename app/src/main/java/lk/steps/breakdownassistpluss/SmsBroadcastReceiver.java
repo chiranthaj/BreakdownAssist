@@ -1,15 +1,20 @@
 package lk.steps.breakdownassistpluss;
 
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -18,7 +23,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import lk.steps.breakdownassistpluss.Sync.SignalRObject;
+import lk.steps.breakdownassistpluss.Sync.SignalRService;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 public class SmsBroadcastReceiver extends BroadcastReceiver
 {
@@ -27,7 +36,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
 // TODO :or make it a service to add the sms in background to the Database, then no need to Sync
 
     public static final String SMS_BUNDLE = "pdus";
-
+    MediaPlayer mMediaPlayer;
     public void onReceive(Context context, Intent intent)
     {
         try{
@@ -104,14 +113,16 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                     Log.d("sPhone_No","="+sPhone_No);
                     Log.d("iPriority","="+iPriority);*/
                     //dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
-                    Globals.dbHandler.addBreakdown2(breakdown);
+                    StartMainActivityIfRequired(context);
 
+                    Globals.dbHandler.InsertOrUpdateBreakdown(breakdown);
                     //Informing the Map view about the new bd, then it can add it
                     Intent myintent=new Intent();
                     myintent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
                     myintent.putExtra("sms_received", "sms_received");
                     context.sendBroadcast(myintent);
                     SyncService.PostBreakdowns(context);
+                    PlayTone(context, R.raw.ding_ling, false);
                 }else{
                     Log.d("SmsReceiver","NOt a breakdown sms ->"+sJob_No);
                 }
@@ -124,4 +135,64 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
             Log.e("SmsBroadcastReceiver",e.getMessage());
         }
     }
+
+    private void StartMainActivityIfRequired(final Context context) {
+        if(Globals.dbHandler==null){
+            StartUpTasks.InitVariables(context);
+        }
+        if (!isForeground(context)) {
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                public void run() {
+                    Intent myIntent = new Intent(context, MainActivity.class);
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(myIntent);
+               }
+            });
+        }
+    }
+
+    public boolean isForeground(Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> runningTaskInfo = manager.getRunningTasks(1);
+        ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
+        return componentInfo.getPackageName().equals("lk.steps.breakdownassistpluss");
+    }
+
+    private void PlayTone(Context context, int resourceId, boolean looping) {
+        mMediaPlayer = MediaPlayer.create(context, resourceId);
+        mMediaPlayer.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
+        mMediaPlayer.setLooping(looping);
+        mMediaPlayer.setVolume(1.0f, 1.0f);
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.stop();
+                mp.release();
+                Log.e("MediaPlayer", "onCompletion");
+            }
+        });
+        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+                Log.e("MediaPlayer", "onPrepared");
+            }
+        });
+        //mMediaPlayer.prepareAsync();
+        //mMediaPlayer.start();
+    }
+    private void StopMediaPlayer(){
+        try{
+            if(mMediaPlayer != null){
+                mMediaPlayer.stop();
+                mMediaPlayer.release();
+                mMediaPlayer = null;
+            }
+        }catch(Exception e){
+
+        }
+    }
+
+
 }

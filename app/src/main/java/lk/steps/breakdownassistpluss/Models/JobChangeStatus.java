@@ -1,7 +1,9 @@
-package lk.steps.breakdownassistpluss;
+package lk.steps.breakdownassistpluss.Models;
 
 
 import java.util.Date;
+
+import lk.steps.breakdownassistpluss.Globals;
 
 /**
  * Created by Chirantha on 13/06/2017.
@@ -13,6 +15,8 @@ public class JobChangeStatus {
     public String AreaId;
     public String EcscId;
     public String TeamId;
+    public String ReceivedTime;
+    public String ParentBreakdownId;
     public String change_datetime;  //TODO :Change this to a suitable variable format
     public String comment;
     public String device_timestamp; //TODO :Change this to a suitable variable format
@@ -27,7 +31,7 @@ public class JobChangeStatus {
         this.status = String.valueOf(STATUS);
         this.change_datetime = change_datetime;
         this.comment = comment;
-        this.device_timestamp=Globals.timeFormat.format(new Date( System.currentTimeMillis()));
+        this.device_timestamp= Globals.timeFormat.format(new Date( System.currentTimeMillis()));
         this.synchro_mobile_db=0;
     }
 

@@ -1,16 +1,13 @@
 package lk.steps.breakdownassistpluss.Sync;
 
-import org.json.JSONStringer;
-
 import java.util.List;
 
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
-import lk.steps.breakdownassistpluss.JobChangeStatus;
-import lk.steps.breakdownassistpluss.MaterialList.MaterialObject;
+import lk.steps.breakdownassistpluss.Models.JobChangeStatus;
+import lk.steps.breakdownassistpluss.Models.Team;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
@@ -19,7 +16,6 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Streaming;
-import retrofit2.http.Url;
 
 /**
  * Created by JagathPrasnaga on 24/08/2017.
@@ -64,9 +60,17 @@ public interface SyncApi {
                                         @Path("userId") String UserId,
                                         @Path("breakdownId") String breakdownId);
 
+    @GET("/Mobile/GetNotCompletedBreakdowns/{areaId}/{teamId}")
+    Call<List<Breakdown>> GetNotCompletedBreakdowns(@Header("Authorization") String auth,
+                                        @Path("areaId") String AreaId,
+                                        @Path("teamId") String TeamId);
+
     @GET("/Mobile/GetBreakdownGroups/{parentBreakdownId}")
     Call<List<BreakdownGroup>> GetBreakdownGroups(@Header("Authorization") String auth,
                                                   @Path("parentBreakdownId") String ParentBreakdownId);
+    @GET("/Mobile/GetTeams/{AreaId}")
+    Call<List<Team>> GetTeams(@Header("Authorization") String auth,
+                              @Path("AreaId") String AreaId);
 
     @GET("/Mobile/GetBreakdownsStatus/{breakdownId}")
     Call<List<JobChangeStatus>> GetBreakdownsStatus(@Header("Authorization") String auth,

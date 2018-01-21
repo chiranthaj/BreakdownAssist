@@ -124,6 +124,15 @@
                     android:layout_weight="1">
 
                     <Button
+                        android:id="@+id/btnAttending"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.25"
+                        android:text="Attending"
+                        android:textSize="18sp" />
+
+                    <Button
                         android:id="@+id/btnVisted"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
@@ -132,14 +141,7 @@
                         android:text="Visited"
                         android:textSize="18sp" />
 
-                    <Button
-                        android:id="@+id/btnAttending"
-                        style="@style/Widget.AppCompat.Button.Colored"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="0.25"
-                        android:text="Attending"
-                        android:textSize="18sp" />
+
 
                     <Button
                         android:id="@+id/btnDone"

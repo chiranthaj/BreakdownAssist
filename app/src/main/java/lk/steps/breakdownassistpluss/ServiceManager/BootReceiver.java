@@ -31,7 +31,7 @@ public class BootReceiver extends BroadcastReceiver {
 
             Intent signalRIntent = new Intent(context, SignalRService.class);
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) signalRIntent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
-            context.startActivity(signalRIntent);
+            context.startService(signalRIntent);
 
             Intent syncService = new Intent(context, SyncService.class);
             context.startService(syncService);

@@ -19,6 +19,7 @@ public class Breakdown {
     public static final int JOB_REJECT = 8;
     public static final int JOB_RE_CALLED = 9;
     public static final int JOB_RETURNED = 10;
+    public static final int JOB_FORWARDED = 11;
 
     public static final int Priority_Normal = 3;
     public static final int Priority_High = 2;
@@ -50,9 +51,12 @@ public class Breakdown {
     private String OLD_JOB_NO;
     private String CONTACT_NO;
     private String PREMISES_ID;
-    private String inbox_ref;
+    private String SMS_INBOX_REFERENCE;
     private String PARENT_BREAKDOWN_ID;
     private String NOTE;
+    public String MobilePhNo;
+    public String LandPhNo;
+
 
     public String get_PremisesID() {
         return PREMISES_ID;
@@ -82,15 +86,6 @@ public class Breakdown {
         this.STATUS=STATUS;
     }
 
-    public LatLng getLocation()
-    {
-        if (this.LATITUDE!=null &&  this.LONGITUDE !=null)
-        {
-            return new LatLng(Double.parseDouble (LATITUDE),Double.parseDouble (LONGITUDE) );
-        }else
-            return null;
-
-    }
 
     public String get_ADDRESS() {
         return ADDRESS;
@@ -160,11 +155,11 @@ public class Breakdown {
     }
 
     public String get_inbox_ref() {
-        return inbox_ref;
+        return SMS_INBOX_REFERENCE;
     }
 
     public void set_inbox_ref(String _inbox_ref) {
-        this.inbox_ref = _inbox_ref;
+        this.SMS_INBOX_REFERENCE = _inbox_ref;
     }
 
     public String get_JOB_SOURCE() {
@@ -176,7 +171,7 @@ public class Breakdown {
     }
 
 
-    public String get_LATITUDE() {
+    public String getLatitude() {
         return LATITUDE;
     }
 
@@ -184,17 +179,19 @@ public class Breakdown {
         this.LATITUDE = LATITUDE;
     }
 
-    public LatLng get_location() {
-        if(LATITUDE != null & LONGITUDE != null)
-        return new LatLng(Double.parseDouble(LATITUDE),Double.parseDouble(LONGITUDE));
-        else return new LatLng(0,0);
+    public LatLng getLocation() {
+        try{
+            return new LatLng(Double.parseDouble(LATITUDE),Double.parseDouble(LONGITUDE));
+        }catch(Exception e){
+            return null;
+        }
     }
 
     public void set_location(LatLng LOCATION) {
         this.LOCATION = LOCATION;
     }
 
-    public String get_LONGITUDE() {
+    public String getLongitude() {
         return LONGITUDE;
     }
 
@@ -283,6 +280,9 @@ public class Breakdown {
     }
     public void set_TeamId(String teamId) {
         this.TEAM_ID = teamId;
+    }
+    public String get_TeamId() {
+        return TEAM_ID;
     }
     public void set_UserId(String userId) {
         this.USER_ID = userId;

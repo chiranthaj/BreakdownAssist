@@ -1,16 +1,19 @@
 package lk.steps.breakdownassistpluss;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import lk.steps.breakdownassistpluss.HtmlTextView.HtmlTextView;
-
+import mehdi.sakout.fancybuttons.FancyButton;
 
 
 public class AboutActivity extends Activity {
@@ -41,7 +44,16 @@ public class AboutActivity extends Activity {
         HtmlTextView text = (HtmlTextView) findViewById(R.id.html_text);
         text.setHtmlFromString(readEula(this), true);
        // Typeface font = Typeface.createFromAsset(this.getApplicationContext().getAssets(), "fonts/Roboto-Light.ttf");
-      //  text.setTypeface(font);
+       //  text.setTypeface(font);
+
+        FancyButton btnUpdate = (FancyButton) findViewById(R.id.btn_check_update);
+        btnUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               // if (min_supported_version <= BuildConfig.VERSION_CODE) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=lk.steps.breakdownassistpluss")));
+            }
+        });
 
     }
 

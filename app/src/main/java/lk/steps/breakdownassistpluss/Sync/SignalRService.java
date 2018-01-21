@@ -29,7 +29,6 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -39,9 +38,8 @@ import java.util.concurrent.ExecutionException;
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.Common;
 import lk.steps.breakdownassistpluss.Globals;
-import lk.steps.breakdownassistpluss.JobChangeStatus;
-import lk.steps.breakdownassistpluss.JobCompletion;
-import lk.steps.breakdownassistpluss.LoginActivity;
+import lk.steps.breakdownassistpluss.Models.JobChangeStatus;
+import lk.steps.breakdownassistpluss.Models.JobCompletion;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.SelectorActivity;
@@ -92,8 +90,7 @@ public class SignalRService extends Service {
         }
         //IgnoringBatteryOptimizations();
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
-        // this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "BreakdownAssist");
-        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssist");
+        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssistSignalR");
         this.mWakeLock.acquire();
     }
 
@@ -104,6 +101,11 @@ public class SignalRService extends Service {
         //Toast.makeText(this, "SignalR Service Started", Toast.LENGTH_SHORT).show();
         IgnoringBatteryOptimizations();
         StartRetryTimer();
+        StopMediaPlayer();
+
+        final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
+        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssistSignalR");
+        this.mWakeLock.acquire();
         // return result;
         // return START_STICKY;
         return START_REDELIVER_INTENT;
@@ -112,6 +114,7 @@ public class SignalRService extends Service {
     @Override
     public void onDestroy() {
         if(mHubConnection != null)mHubConnection.stop();
+
         //Log.e("SignalRService","501");
         if (mBound) {
             unbindService(mConnection);
@@ -119,6 +122,8 @@ public class SignalRService extends Service {
         }
         if (this.mWakeLock.isHeld()) this.mWakeLock.release();
         unregisterReceiver(broadcastReceiver);
+        StopMediaPlayer();
+
         super.onDestroy();
     }
 
@@ -290,13 +295,50 @@ public class SignalRService extends Service {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        SignalRObject msg = new Gson().fromJson(json, SignalRObject.class);
-                        // Log.e("onMessageReceived ", msg.toString());
-                        if (msg.M != null) {
-                            if (!msg.M.equals("PostFeedback") & !msg.M.equals("PostHeartBeat")) {//Post feedback and Heartbeat not required running activity
-                                StartMainActivityIfRequired(getApplicationContext(), msg);
+                        if(json.toString().contains("EditedBreakdown")){
+                            SignalRBreakdownObject msg = new Gson().fromJson(json, SignalRBreakdownObject.class);
+                            // Log.e("SignalR ", "TEST3");
+                            if(msg.M!=null) {
+                                //  Log.e("SignalR ", "TEST4");
+                                if(msg.M.equals("EditedBreakdown")){
+                                     Log.e("SignalR ", "EditedBreakdown");
+                                    CreateNotification(getApplicationContext(), "Breakdown "+msg.A.get(0).get_Job_No() + " has edited." );
+
+                                    Globals.dbHandler.UpdateEditBreakdownByJobNo(msg.A.get(0));
+
+                                    List<FeedbackObject> feedbacks = new ArrayList<FeedbackObject>();
+                                    FeedbackObject feedback = new FeedbackObject();
+                                    feedback.FeedbackType = "EDITED_BD";
+                                    feedback.BreakdownId = msg.A.get(0).get_Job_No();
+                                    feedback.UserId = Globals.mToken.user_id;
+                                    feedback.AreaId = Globals.mToken.area_id;
+                                    feedback.EcscId = Globals.mToken.team_id;
+                                    feedbacks.add(feedback);
+
+                                    PostFeedbackNew(feedbacks);
+                                    Intent intent = new Intent();
+
+                                    intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
+                                    intent.putExtra("breakdown_edited", "refresh_list");
+                                    intent.putExtra("edited_breakdown", new Gson().toJson(msg.A.get(0)));
+                                    getApplicationContext().sendBroadcast(intent);
+
+                                    if (msg.A.get(0).get_Priority() == 4){
+                                        PlayTone(getApplicationContext(), R.raw.buzzer, false);
+                                    }else{
+                                        PlayTone(getApplicationContext(), R.raw.ding_ling, false);
+                                    }
+
+                                }
                             }
-                            HandleMsg(getApplicationContext(), msg.M, msg.A);
+                        }else{
+                            SignalRObject msg = new Gson().fromJson(json, SignalRObject.class);
+                            if (msg.M != null) {
+                                if (!msg.M.equals("PostFeedback") & !msg.M.equals("PostHeartBeat")) {//Post feedback and Heartbeat not required running activity
+                                    StartMainActivityIfRequired(getApplicationContext(), msg);
+                                }
+                                HandleMsg(getApplicationContext(), msg.M, msg.A);
+                            }
                         }
                     }
                 });
@@ -344,33 +386,61 @@ public class SignalRService extends Service {
 
         if (method.equals("GetNewBreakdowns")) {
             Log.e(TAG, "SignalR->GetNewBreakdowns");
-            Toast.makeText(context, "SignalR NewBreakdowns request received", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, "SignalR NewBreakdowns request received", Toast.LENGTH_SHORT).show();
             String breakdownId = data.get(1);
             GetBreakdowns(context, breakdownId);
         } else if (method.equals("GetBreakdownStatusUpdate")) {
             Log.e(TAG, "SignalR->GetBreakdownStatusUpdate");
-            Toast.makeText(context, "SignalR BreakdownStatusUpdate request received", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(context, "SignalR BreakdownStatusUpdate request received", Toast.LENGTH_SHORT).show();
             String breakdownId = data.get(1);
             GetBreakdownsStatusChange(context, breakdownId);
         } else if (method.equals("GetBreakdownGroups")) {
             Log.e(TAG, "SignalR->GetBreakdownGroups");
-            Toast.makeText(context, "SignalR BreakdownGroups request received", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(context, "SignalR BreakdownGroups request received", Toast.LENGTH_SHORT).show();
             String breakdownId = data.get(1);
             GetBreakdownGroups(context, breakdownId);
-        } else if (method.equals("PostFeedback")) {
+        } else if (method.equals("GetBreakdownUngroups")) {
+            Log.e(TAG, "SignalR->GetBreakdownUngroups");
+            // Toast.makeText(context, "SignalR BreakdownGroups request received", Toast.LENGTH_SHORT).show();
+            String breakdownId = data.get(1);
+            Globals.dbHandler.UpdateUngroups(breakdownId);
+            Intent intent = new Intent();
+            intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
+            intent.putExtra("group_breakdowns", "group_breakdowns");
+            context.sendBroadcast(intent);
+            CreateNotification(context, "Breakdowns ungrouped.");
+
+            PlayTone(context, R.raw.ching, false);
+
+            List<FeedbackObject> feedbacks = new ArrayList<FeedbackObject>();
+            FeedbackObject feedback = new FeedbackObject();
+            feedback.FeedbackType = "UNGROUP";
+            feedback.BreakdownId = breakdownId;
+            //feedback.StatusId = String.valueOf(breakdown.get_Status());
+            //feedback.StatusTime = breakdown.get_Received_Time();
+            feedback.UserId = Globals.mToken.user_id;
+            feedback.AreaId = Globals.mToken.area_id;
+            feedback.EcscId = Globals.mToken.team_id;
+            feedbacks.add(feedback);
+
+            PostFeedbackNew(feedbacks);
+
+
+
+        }  else if (method.equals("PostFeedback")) {
             //Log.e("SignalR", "PostFeedback");
             //Toast.makeText(context,"SignalR PostFeedback received", Toast.LENGTH_SHORT).show();
             String fbType = data.get(1);
             if (fbType.equals("GpsPoint")) {
                 Log.e(TAG, "SignalR->PostFeedback GpsPoint");
-                Toast.makeText(context, "SignalR PostFeedback received GpsPoint", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(context, "SignalR PostFeedback received GpsPoint", Toast.LENGTH_SHORT).show();
                 String timestamp = data.get(2);
                 Globals.dbHandler.UpdateTrackingDataByTimeStamp(timestamp);//Successfully done
             }
         } else if (method.equals("PostHeartBeat")) {
             Log.e(TAG, "SignalR->HeartBeatReceived");
             //Toast.makeText(context, "SignalR HeartBeatReceived", Toast.LENGTH_SHORT).show();
-            PlayTone(context, R.raw.heartbeat2, false);
+            //PlayTone(context, R.raw.heartbeat2, false);
         }
     }
 
@@ -438,7 +508,7 @@ public class SignalRService extends Service {
             public void onCompletion(MediaPlayer mp) {
                 mp.stop();
                 mp.release();
-                mMediaPlayer=null;
+                mMediaPlayer = null;
                 Log.e("MediaPlayer", "onCompletion");
             }
         });
@@ -452,6 +522,19 @@ public class SignalRService extends Service {
         //mMediaPlayer.prepareAsync();
         //mMediaPlayer.start();
     }
+
+    private void StopMediaPlayer(){
+        try{
+            if(mMediaPlayer != null){
+                mMediaPlayer.stop();
+                mMediaPlayer.release();
+                mMediaPlayer = null;
+            }
+        }catch(Exception e){
+
+        }
+    }
+
 
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -483,7 +566,7 @@ public class SignalRService extends Service {
         @Override
         public void run() {
             Log.e(TAG, "*NOT*Connected*");
-            PlayTone(getApplicationContext(), R.raw.hone, false);
+            //PlayTone(getApplicationContext(), R.raw.hone, false);
             if (!Common.ReadBooleanPreferences(getApplicationContext(),"server", false))
                 SelectorActivity.GetIpAddress();
             SendOnlineStatusChanged();
@@ -502,21 +585,23 @@ public class SignalRService extends Service {
                 .setContentText(msg)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentIntent(pi)
-                .setAutoCancel(true).setDefaults(0);
-             //   .setDefaults(Notification.FLAG_ONLY_ALERT_ONCE);
-        NotificationManager manager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+                .setAutoCancel(true).setDefaults(0)
+                .setDefaults(Notification.FLAG_INSISTENT);
 
-        manager.notify(73195, builder.build());
+        NotificationManager manager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+        if(manager!=null)manager.notify(73195, builder.build());
 
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        boolean isScreenOn = pm.isScreenOn();
-        if (!isScreenOn) {
-            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
-                    PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                    PowerManager.ON_AFTER_RELEASE, "NotificationWakeLock");
-            wl.acquire(10000);
-            PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationCpuLock");
-            wl_cpu.acquire(10000);
+        if(pm!=null){
+            boolean isScreenOn = pm.isScreenOn();
+            if (!isScreenOn) {
+                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                        PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                        PowerManager.ON_AFTER_RELEASE, "NotificationWakeLock");
+                wl.acquire(10000);
+                PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationCpuLock");
+                wl_cpu.acquire(10000);
+            }
         }
     }
 
@@ -555,7 +640,7 @@ public class SignalRService extends Service {
 
                                 breakdown.set_BA_SERVER_SYNCED("1");
                                 breakdown.set_JOB_SOURCE("BA");
-                                result = Globals.dbHandler.addBreakdown2(breakdown);
+                                result = Globals.dbHandler.InsertOrUpdateBreakdown(breakdown);
                                 //Log.e("breakdown","Job_No-"+breakdown.get_Job_No());
                                 //Log.e("breakdown","ParentBreakdownId-"+breakdown.get_ParentBreakdownId());
                                 if (breakdown.get_Priority() == 4) ring = "1";
@@ -565,34 +650,12 @@ public class SignalRService extends Service {
 
                             if (result > 0) {
                                 if (ring.equals("1")) {
-                                    PlayTone(context, R.raw.buzzer, true);
+                                    PlayTone(context, R.raw.buzzer, false);
                                 } else {
                                     PlayTone(context, R.raw.ding_ling, false);
                                 }
 
-                                /*if (mediaPlayer == null) {
-                                    if (ring.equals("1")) {
-                                        Log.e("mediaPlayer", "1");
-                                        mediaPlayer = MediaPlayer.create(context, R.raw.buzzer);
-                                        mediaPlayer.setLooping(true);
-                                    } else {
-                                        Log.e("mediaPlayer", "2");
-                                        mediaPlayer = MediaPlayer.create(context, R.raw.ding_ling);
-                                    }
-                                    mediaPlayer.setVolume(1.0f, 1.0f);
-                                    mediaPlayer.start();
-                                } else if (!mediaPlayer.isPlaying()) {
-                                    if (ring.equals("1")) {
-                                        Log.e("mediaPlayer", "3");
-                                        mediaPlayer = MediaPlayer.create(context, R.raw.buzzer);
-                                        mediaPlayer.setLooping(true);
-                                    } else {
-                                        Log.e("mediaPlayer", "4");
-                                        mediaPlayer = MediaPlayer.create(context, R.raw.ding_ling);
-                                    }
-                                    mediaPlayer.setVolume(1.0f, 1.0f);
-                                    mediaPlayer.start();
-                                }*/
+
                                // String sIssuedBreakdownID = Globals.dbHandler.getLastBreakdownID();
                                 //Informing the Map view about the new bd, then it can add it
                                 Intent intent = new Intent();
@@ -652,7 +715,7 @@ public class SignalRService extends Service {
                             Globals.dbHandler.AddBreakdownGroups(breakdownGroups);
                             List<FeedbackObject> feedbacks = new ArrayList<FeedbackObject>();
                             FeedbackObject feedback = new FeedbackObject();
-                            feedback.FeedbackType = "BG";
+                            feedback.FeedbackType = "GROUP";
                             feedback.BreakdownId = breakdownGroups.get(0).GetParentBreakdownId();
                             //feedback.StatusId = String.valueOf(breakdown.get_Status());
                             //feedback.StatusTime = breakdown.get_Received_Time();
@@ -662,17 +725,7 @@ public class SignalRService extends Service {
                             feedbacks.add(feedback);
 
                             PostFeedbackNew(feedbacks);
-                            /*if (mediaPlayer == null) {
-                                Log.e("mediaPlayer", "5");
-                                mediaPlayer = MediaPlayer.create(context, R.raw.ching);
-                                mediaPlayer.setVolume(1.0f, 1.0f);
-                                mediaPlayer.start();
-                            } else if (!mediaPlayer.isPlaying()) {
-                                Log.e("mediaPlayer", "6");
-                                mediaPlayer = MediaPlayer.create(context, R.raw.ching);
-                                mediaPlayer.setVolume(1.0f, 1.0f);
-                                mediaPlayer.start();
-                            }*/
+
                             PlayTone(context, R.raw.ching, false);
                             //Informing the Map view about the new bd, then it can add it
                             Intent intent = new Intent();
@@ -790,17 +843,7 @@ public class SignalRService extends Service {
                             PostFeedbackNew(feedbacks);
 
                             if (result > 0) {
-                                /*if (mediaPlayer == null) {
-                                    Log.e("mediaPlayer", "9");
-                                    mediaPlayer = MediaPlayer.create(context, R.raw.ching);
-                                    mediaPlayer.setVolume(1.0f, 1.0f);
-                                    mediaPlayer.start();
-                                } else if (!mediaPlayer.isPlaying()) {
-                                    Log.e("mediaPlayer", "10");
-                                    mediaPlayer = MediaPlayer.create(context, R.raw.ching);
-                                    mediaPlayer.setVolume(1.0f, 1.0f);
-                                    mediaPlayer.start();
-                                }*/
+
                                 PlayTone(context, R.raw.ching, false);
 
                                 //Informing the Map view about the new bd, then it can add it

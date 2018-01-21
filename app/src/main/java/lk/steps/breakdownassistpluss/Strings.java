@@ -9,6 +9,22 @@ import android.content.SharedPreferences;
 
 public class Strings {
 
+    public static String GetStatusName(int StatusId){
+       // int StatusId = Integer.parseInt(statusId);
+        if(StatusId == Breakdown.JOB_DELIVERED) return "Unattained";
+        else if(StatusId == Breakdown.JOB_ACKNOWLEDGED) return "Unattained";
+        else if(StatusId == Breakdown.JOB_VISITED) return "Visited";
+        else if(StatusId == Breakdown.JOB_ATTENDING) return "Attending";
+        else if(StatusId == Breakdown.JOB_TEMPORARY_COMPLETED) return "Temporary completed";
+        else if(StatusId == Breakdown.JOB_COMPLETED) return "Completed";
+        else if(StatusId == Breakdown.JOB_WITHDRAWN) return "Withdrawn";
+        else if(StatusId == Breakdown.JOB_REJECT) return "Rejected";
+        else if(StatusId == Breakdown.JOB_RE_CALLED) return "Re-called";
+        else if(StatusId == Breakdown.JOB_RETURNED) return "Returned";
+        else if(StatusId == Breakdown.JOB_FORWARDED) return "Forwarded";
+        else return "Undefined";
+    }
+
     public static String[][] VisitedComments = {
             {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
             {"-", "1", "-","No required materials","අවශ්\u200Dය ද්\u200Dරව්\u200Dය නොමැත"},
@@ -28,14 +44,14 @@ public class Strings {
             {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
             {"-", "1", "-","No required materials","අවශ්\u200Dය ද්\u200Dරව්\u200Dය නොමැත"},
             {"-", "2", "-","Time consuming","විශාල කාලයක් අවශ්\u200Dයයි"},
-            {"-", "3", "-","Other","වෙනත්"}
+           // {"-", "3", "-","Other","වෙනත්"}
     };
 
     public static String[][] RejectComments = {
             {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
-            {"-", "1", "-","Internal fault","ගෘහ අභ්‍යන්තර දෝෂ"},
+            {"-", "1", "-","Internal fault","ගෘහ අභ්‍යන්තර දෝෂයකි"},
             {"-", "2", "-","No fault","දෝෂයක් නැත"},
-            {"-", "3", "-","Other","වෙනත්"}
+           // {"-", "3", "-","Other","වෙනත්"}
     };
 
     public static String[] CompletedComments = {
@@ -53,21 +69,21 @@ public class Strings {
             {"-", "0", "-","Not belongs to the Team","වෙනත් කණ්ඩායමකට අයත්ය"},
     };
 
-    /*public static String[][] ComplainTypeList77 = {
-            {"77", "1", "Supply failed at home"},
-            {"77", "2", "Supply failed in area"},
-            {"77", "3", "Broken service wire"},
-            {"77", "4", "Abnormal/ Low Voltage"},
-            {"77", "5", "Conductor Burning"},
-            {"77", "6", "Flood"},
-            {"77", "7", "Flashing Insulators"},
-            {"77", "8", "High Voltage"},
-            {"77", "9", "Meter Burning"},
-            {"77", "10", "Road accident cause pole damage"},
-            {"77", "11", "Road accident cause Cable / Conductor damage"},
-            {"77", "12", "Tree has fallen on to the line"},
-            {"77", "13", "Other"}
-    };*/
+    public static String[][] ComplainTypeList00 = {
+            {"-", "1", "-","Supply failed at premises","නිවසේ විදුලිය නැත"},
+            {"-", "2", "-","Supply failed in area","ප්\u200Dරදේශයේ විදුලිය නැත"},
+            {"-", "3", "-","Broken service wire","සවිස් වයරය කැඩී ඇත"},
+            {"-", "4", "-", "Abnormal/ Low Voltage","අසාමන්\u200Dය / අඩු වෝල්ටීය තාවයක්"},
+            {"-", "5", "-","Conductor Burning","වයර් පිළිස්සී ඇත"},
+            {"-", "6", "-","Flood","ග0වතුර"},
+            {"-", "7", "-","Flashing Insulators","ඉන්සුලේටර් විනාශ වී ඇත"},
+            {"-", "8", "-","High Voltage","අධි වෝල්ටීය තාවයක්"},
+            {"-", "9", "-","Meter Burning","මීටර්ය පිළිස්සීමක්"},
+            {"-", "10", "-","Road accident cause pole damage","රිය අනතුරක් නිස කණු කැඩීමක්"},
+            {"-", "11", "-","Road accident cause Cable / Conductor damage","රිය අනතුරක් නිස වයර් කැඩීමක්"},
+            {"-", "12", "-","Tree has fallen on to the line","ගසක් වැටීමක්"},
+            {"-", "13", "-","Other","වෙනත්"}
+    };
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -340,7 +356,7 @@ public class Strings {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     public static String[][] GetFailureTypeList(Context context) {
-        final String area_id = ReadStringPreferences(context, "area_id", "");
+        final String area_id = Common.ReadStringPreferences(context, "area_id", "");
         if (area_id.equals("77")) {
             return FailureTypeList77;
         } else {
@@ -349,7 +365,7 @@ public class Strings {
     }
 
     public static String[][] GetFailureCauseList(Context context) {
-        final String area_id = ReadStringPreferences(context, "area_id", "");
+        final String area_id = Common.ReadStringPreferences(context, "area_id", "");
         if (area_id.equals("77")) {
             return FailureCauseList77;
         } else {
@@ -358,7 +374,7 @@ public class Strings {
     }
 
     public static String[][] GetFailureNatureList(Context context) {
-        final String area_id = ReadStringPreferences(context, "area_id", "");
+        final String area_id = Common.ReadStringPreferences(context, "area_id", "");
         if (area_id.equals("77")) {
             return FailureNatureList77;
         } else {
@@ -367,8 +383,11 @@ public class Strings {
     }
 
 
-    private static String ReadStringPreferences(Context context, String key, String defaultValue) {
-        SharedPreferences prfs = context.getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getString(key, defaultValue);
+    public static String GetDescription(String text){
+        for(int i=0;i< Strings.ComplainTypeList00.length;i++){
+            if(Strings.ComplainTypeList00[i][3].equals(text))
+                return Strings.ComplainTypeList00[i][4];
+        }
+        return text;
     }
 }

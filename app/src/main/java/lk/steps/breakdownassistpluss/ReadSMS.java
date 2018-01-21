@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -67,17 +68,17 @@ public class ReadSMS {
                     String sPhone_No = extractPhoneNo(sFullMessage);
                     int iPriority=extractPriority(sFullMessage);
 
-                    Log.d("sID","="+sID);// empty box, no SMS
-                    Log.d("sAddress","="+sAddress);
-                    Log.d("sFullMessage","="+sFullMessage);
-                    Log.d("callDayTime","="+callDayTime);
-                    Log.d("time","="+time);
-                    Log.d("sJob_No","="+sJob_No);
-                    Log.d("sAcct_num","="+sAcct_num);
-                    Log.d("sPhone_No","="+sPhone_No);
-                    Log.d("iPriority","="+iPriority);
+                   // Log.d("sID","="+sID);// empty box, no SMS
+                   // Log.d("sAddress","="+sAddress);
+                  //  Log.d("sFullMessage","="+sFullMessage);
+                  //  Log.d("callDayTime","="+callDayTime);
+                  //  Log.d("time","="+time);
+                   // Log.d("sJob_No","="+sJob_No);
+                  //  Log.d("sAcct_num","="+sAcct_num);
+                  //  Log.d("sPhone_No","="+sPhone_No);
+                  //  Log.d("iPriority","="+iPriority);
 
-                    if (IsValidJobNo(sJob_No)) {// Added on 2017/05/22 to prevent irrelevant sms to add as a breakdown
+                    if (IsValidJobNo(sJob_No) &&  yesterday().compareTo(callDayTime) == -1 ) {// Added on 2017/05/22 to prevent irrelevant sms to add as a breakdown
 
                         Breakdown breakdown = new Breakdown();
 
@@ -111,7 +112,7 @@ public class ReadSMS {
                         breakdown.set_Priority(iPriority);
                         breakdown.set_BA_SERVER_SYNCED("0");
                         //dbHandler.addBreakdown(sID, time, sAcct_num, sFullMessage, sJob_No, sPhone_No, sAddress,iPriority);
-                        Globals.dbHandler.addBreakdown2(breakdown);
+                        Globals.dbHandler.InsertOrUpdateBreakdown(breakdown);
                         breakdowns.add(breakdown);
                         Log.d("SmsReceiver",sJob_No);// empty box, no SMS
                     }
@@ -132,7 +133,11 @@ public class ReadSMS {
             cursor.close();
         }
     }
-
+    private static Date yesterday() {
+        final Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -1);
+        return cal.getTime();
+    }
 
     public static boolean IsValidJobNo(String jobNo) {
         if (jobNo == null) return false;

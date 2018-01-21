@@ -440,9 +440,10 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         //the include method will calculate the min and max bound.
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         for (Breakdown bd : breakdownList) {
-            double latCentre = Double.parseDouble(bd.get_LATITUDE());
-            double lonCentre = Double.parseDouble(bd.get_LONGITUDE());
-            builder.include(new LatLng(latCentre, lonCentre));
+            LatLng loc = bd.getLocation();
+                if(loc!=null) {
+                    builder.include(loc);
+                }
         }
 
         LatLngBounds bounds = builder.build();
@@ -502,7 +503,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onResume() {
         super.onResume();
-        mContext.registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver"));
+        if(mContext!=null)mContext.registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver"));
         // Resuming the periodic location updates
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             startLocationUpdates();
@@ -520,7 +521,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onPause() {
         super.onPause();
-        mContext.unregisterReceiver(broadcastReceiver);
+        if(mContext!=null)mContext.unregisterReceiver(broadcastReceiver);
         stopLocationUpdates();
     }
 

@@ -1,6 +1,8 @@
-package lk.steps.breakdownassistpluss;
+package lk.steps.breakdownassistpluss.Models;
 
 import java.util.Date;
+
+import lk.steps.breakdownassistpluss.Globals;
 
 /**
  * Created by Chirantha on 25/06/2017.
@@ -38,7 +40,7 @@ public class JobCompletion {
         this.type_failure = type_failure;
         this.job_completed_by = job_completed_by;
         this.action_code = action_code;
-        this.device_timestamp=Globals.timeFormat.format(new Date( System.currentTimeMillis()));
+        this.device_timestamp= Globals.timeFormat.format(new Date( System.currentTimeMillis()));
         this.synchro_mobile_db=0;
     }
 }

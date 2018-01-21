@@ -84,10 +84,12 @@ public class Globals
     public static String getNightMode(Context context)
     {
         String sReturn="1";
-        SharedPreferences sharedPrefs = PreferenceManager
-                .getDefaultSharedPreferences(context);
+        try{
+            SharedPreferences sharedPrefs = PreferenceManager
+                    .getDefaultSharedPreferences(context);
+            sReturn=sharedPrefs.getString("night_mode", "1");
+        }catch(Exception e){ }
 
-        sReturn=sharedPrefs.getString("night_mode", "1");
         return sReturn;
     }
 

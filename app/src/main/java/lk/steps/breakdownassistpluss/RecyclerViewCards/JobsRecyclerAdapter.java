@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.SimpleCursorAdapter;
 
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
 import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.R;
+import lk.steps.breakdownassistpluss.Strings;
 
 
 public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHolder>  {
@@ -55,66 +57,84 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         return viewHolder;
     }
 
+
+
     @Override
     public void onBindViewHolder(MapLocationViewHolder holder, int position) {
 
         holder.acc_no.setText(breakdownList.get(position).get_Acct_Num());
         holder.JOB_NO.setText(breakdownList.get(position).get_Job_No());
         holder.received_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Received_Time()));
-        holder.name.setText(breakdownList.get(position).get_Name());
-        holder.address.setText(breakdownList.get(position).get_ADDRESS());
-        holder.description.setText(breakdownList.get(position).get_Full_Description());
-       // holder.description.setText("-");
+
+        if(breakdownList.get(position).get_Name() != null && !breakdownList.get(position).get_Name().equals("null"))
+            holder.name.setText(breakdownList.get(position).get_Name());
+        else
+            holder.name.setVisibility(View.GONE);
+
+        if(breakdownList.get(position).get_ADDRESS() != null && !breakdownList.get(position).get_ADDRESS().equals("null"))
+            holder.address.setText(breakdownList.get(position).get_ADDRESS());
+        else
+            holder.address.setVisibility(View.GONE);
+
+
+        holder.description.setText(Strings.GetDescription(breakdownList.get(position).get_Full_Description()));
+
 
         int STATUS = breakdownList.get(position).get_Status();
         Drawable drawable = (Drawable)holder.completed_date_time.getBackground();
         String Completed_Time = "*";
         try{
+            Log.e("TIME TEST","="+breakdownList.get(position).get_Completed_Time());
             if(!breakdownList.get(position).get_Completed_Time().isEmpty()){
                 Completed_Time = Globals.parseDate(breakdownList.get(position).get_Completed_Time());
             }
         }catch(Exception e){
 
         }
+        holder.completed_date_time.setText(Strings.GetStatusName(STATUS));
 
         if(STATUS==Breakdown.JOB_DELIVERED){
             holder.JOB_NO.setTextColor(Color.parseColor("#6c0082"));
-            holder.completed_date_time.setText("Not acknowledged");
+          //  holder.completed_date_time.setText("Not acknowledged");
             drawable.setColorFilter(Color.parseColor("#6c0082"), PorterDuff.Mode.SRC_IN);
         }if(STATUS==Breakdown.JOB_ATTENDING){
             holder.JOB_NO.setTextColor(Color.parseColor("#06823e"));
-            holder.completed_date_time.setText("Attending");
+          //  holder.completed_date_time.setText("Attending");
             drawable.setColorFilter(Color.parseColor("#06823e"), PorterDuff.Mode.SRC_IN);
         }else if(STATUS==Breakdown.JOB_VISITED){
             holder.JOB_NO.setTextColor(Color.parseColor("#9b8404"));
-            holder.completed_date_time.setText("Visited");
+          //  holder.completed_date_time.setText("Visited");
             drawable.setColorFilter(Color.parseColor("#9b8404"), PorterDuff.Mode.SRC_IN);
         }else if(STATUS==Breakdown.JOB_TEMPORARY_COMPLETED){
             holder.JOB_NO.setTextColor(Color.parseColor("#033e7c"));
-            holder.completed_date_time.setText("Temporary completed on " +Completed_Time);
+          //  holder.completed_date_time.setText("Temporary completed on " +Completed_Time);
             drawable.setColorFilter(Color.parseColor("#033e7c"), PorterDuff.Mode.SRC_IN);
         }else if(STATUS==Breakdown.JOB_COMPLETED){
             holder.JOB_NO.setTextColor(Color.parseColor("#0d7504"));
-            holder.completed_date_time.setText("Completed on "+Completed_Time);
+           // holder.completed_date_time.setText("Completed on "+Completed_Time);
             drawable.setColorFilter(Color.parseColor("#0d7504"), PorterDuff.Mode.SRC_IN);
         }else if(STATUS==Breakdown.JOB_REJECT){
             holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
-            holder.completed_date_time.setText("Rejected on "+Completed_Time);
+           // holder.completed_date_time.setText("Rejected on "+Completed_Time);
             drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
         }else if(STATUS==Breakdown.JOB_WITHDRAWN){
             holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
-            holder.completed_date_time.setText("Withdrawn on "+Completed_Time);
+           // holder.completed_date_time.setText("Withdrawn on "+Completed_Time);
             drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
         }else if(STATUS==Breakdown.JOB_RE_CALLED){
-            holder.completed_date_time.setText("Re-Called");
+           // holder.completed_date_time.setText("Re-Called");
             holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
             drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
         }else if(STATUS==Breakdown.JOB_RETURNED){
             holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
-            holder.completed_date_time.setText("Returned");
+           // holder.completed_date_time.setText("Returned");
+            drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
+        }else if(STATUS==Breakdown.JOB_FORWARDED){
+            holder.JOB_NO.setTextColor(Color.parseColor("#000000"));
+            // holder.completed_date_time.setText("Returned");
             drawable.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_IN);
         }else {
-            holder.completed_date_time.setText("Unattained");
+           // holder.completed_date_time.setText("Unattained");
             holder.JOB_NO.setTextColor(Color.parseColor("#c9082b"));
             drawable.setColorFilter(Color.parseColor("#c9082b"), PorterDuff.Mode.SRC_IN);
         }
@@ -131,13 +151,11 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         /*else{
             holder.completed_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Completed_Time()));
         }*/
-        String lat = breakdownList.get(position).get_LATITUDE();
+        LatLng lat = breakdownList.get(position).getLocation();
         if(lat==null){
             holder.imgMap.setVisibility(View.INVISIBLE);
-        }else if(lat.trim().length()>3){
+        }else {
             holder.imgMap.setVisibility(View.VISIBLE);
-        }else{
-            holder.imgMap.setVisibility(View.INVISIBLE);
         }
 
         int priority = breakdownList.get(position).get_Priority();

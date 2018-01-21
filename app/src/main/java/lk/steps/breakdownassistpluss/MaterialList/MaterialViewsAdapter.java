@@ -163,13 +163,16 @@ public class MaterialViewsAdapter extends ArrayAdapter<MaterialObject> {
             public void onClick(View view) {
                 // the code to execute repeatedly
                 if(!etCount.getText().toString().equals("0")){
-                    int n = Integer.parseInt(etCount.getText().toString())-1 ;
-                    etCount.setText(String.valueOf(n));
-                    item.setQuantity(n);
+                    try{
+                        int n = Integer.parseInt(etCount.getText().toString())-1 ;
+                        etCount.setText(String.valueOf(n));
+                        item.setQuantity(n);
 
-                    if(item.getQuantity()>0)selectedMaterials.add(item);
-                    else selectedMaterials.remove(item);
+                        if(item.getQuantity()>0)selectedMaterials.add(item);
+                        else selectedMaterials.remove(item);
+                    }catch(Exception e){
 
+                    }
                 }else{
                     down.setEnabled(false);
                 }

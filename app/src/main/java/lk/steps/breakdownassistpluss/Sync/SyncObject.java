@@ -8,6 +8,7 @@ public class SyncObject {
     public String BreakdownId;
     public String StatusId;
     public String StatusTime;
+    public String ReceivedTime;
     public String UserId;
     public String AreaId;
     public String EcscId;
@@ -17,4 +18,5 @@ public class SyncObject {
     public String FailureCauseId;
     public String FailureNatureId;
     public String Note;
+    public String ParentBreakdownId;
 }

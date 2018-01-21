@@ -1,14 +1,17 @@
 package lk.steps.breakdownassistpluss.Fragments;
 
 
+import android.Manifest;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -118,19 +121,24 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
         } catch (Exception e) {
             Log.e("MapsActivityRaw", "Can't find style.", e);
         }
+      //  if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+          try{
+              googleMap.setMyLocationEnabled(true);
+          }catch(SecurityException e){ }
 
+      //  }
         if (BreakdownList.size() > 0) {
             LatLngBounds.Builder builder = LatLngBounds.builder();
 
             for (Breakdown bd : BreakdownList) {
-                double lat = Double.parseDouble(bd.get_LATITUDE());
-                double lon = Double.parseDouble(bd.get_LONGITUDE());
-                LatLng loc = new LatLng(lat, lon);
-                map.addMarker(new MarkerOptions()
-                        .position(loc)
-                        .title(bd.get_Job_No())
-                        .icon(MapMarker.GetBitmap(bd)));
-                builder.include(loc);
+                LatLng loc = bd.getLocation();
+                if (loc != null) {
+                    map.addMarker(new MarkerOptions()
+                            .position(loc)
+                            .title(bd.get_Job_No())
+                            .icon(MapMarker.GetBitmap(bd)));
+                    builder.include(loc);
+                }
             }
             LatLngBounds bounds = builder.build();
             map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));

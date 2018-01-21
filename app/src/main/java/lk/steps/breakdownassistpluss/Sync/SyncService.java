@@ -24,13 +24,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.Common;
 import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
-import lk.steps.breakdownassistpluss.JobChangeStatus;
-import lk.steps.breakdownassistpluss.JobCompletion;
+import lk.steps.breakdownassistpluss.Models.JobCompletion;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.StartUpTasks;
@@ -103,87 +103,64 @@ public class SyncService extends Service {
         alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() +100, restartServicePI);
     }*/
 
-    public static void PostBreakdownStatusChange(final Context context){
-        List<JobChangeStatus> JobChangeStatusList = Globals.dbHandler.getBreakdownStatusChange();
-        Log.e("Sync","Sync->PostBreakdownStatusChange->"+JobChangeStatusList.size());
-        if(JobChangeStatusList.size()<1){
-            return;
-        }
-        for (final JobChangeStatus obj: JobChangeStatusList)
-        {
-            Log.e("StatusChange","*"+ obj.job_no+","+obj.change_datetime+", "+ obj.status);
-            SyncObject syncObject = new SyncObject();
-
-            Breakdown breakdown= Globals.dbHandler.ReadBreakdown_by_JonNo(obj.job_no);
-
-            syncObject.StatusId=obj.status;
-            syncObject.AreaId=obj.AreaId;
-            syncObject.EcscId=obj.EcscId;
-            syncObject.TeamId= Globals.mToken.team_id;
-            syncObject.BreakdownId = Globals.dbHandler.GetNewJobNumber(obj.job_no);
-            syncObject.StatusTime = obj.change_datetime;
-            syncObject.Note=obj.comment;
-            syncObject.UserId = Globals.mToken.user_id;
-            syncObject.Sin=breakdown.get_SUB();
-            //TODO : if program crashes then this particular record may not be updated, hence use another task or change the
-            //query to update state==0 OR (update_state==-1 AND currentTimestamp-update_timestamp>2min
-            Globals.dbHandler.UpdateSyncState_JobStatusChangeObj(obj, -1);//Uploading Started
-
+    public static void GetNotCompletedBreakdowns(final Context context) {
+        try {
             final SyncRESTService syncRESTService = new SyncRESTService(10);
-            Call<SyncObject> call = syncRESTService.getService()
-                    .UpdateBreakdownStatus( "Bearer "+ Globals.mToken.access_token, syncObject);
+            Call<List<Breakdown>> call = syncRESTService.getService()
+                    .GetNotCompletedBreakdowns("Bearer " + Globals.mToken.access_token,
+                            Globals.mToken.area_id, Globals.mToken.team_id);
 
-            call.enqueue(new Callback<SyncObject>(){
+            call.enqueue(new Callback<List<Breakdown>>() {
                 @Override
-                public void onResponse(Call<SyncObject> call, Response<SyncObject> response) {
+                public void onResponse(Call<List<Breakdown>> call, Response<List<Breakdown>> response) {
                     if (response.isSuccessful()) {
-                        //Log.e("SyncStatusChange","successful1");
-                        if(Globals.dbHandler.UpdateSyncState_JobStatusChangeObj(obj,1)==1){//Successfully done
-                            Log.e("SyncStatusChange","successful");
+                        Log.e("GetNotCompBreakdowns","Successful");
+                        //Log.e("GetNewBreakdowns","Successful"+response.body());
+                        List<Breakdown> breakdowns = response.body();
+                        Log.e("GetNotCompBreakdowns","Number-"+breakdowns.size());
+
+                        if (breakdowns.size() > 0) {
+
+                            long result = 0;
+                            for (Breakdown breakdown : breakdowns) {
+                                breakdown.set_BA_SERVER_SYNCED("1");
+                                breakdown.set_JOB_SOURCE("BA");
+                                result = Globals.dbHandler.InsertOrUpdateBreakdown(breakdown);
+                                //Log.e("breakdown","Job_No-"+breakdown.get_Job_No());
+                                //Log.e("breakdown","ParentBreakdownId-"+breakdown.get_ParentBreakdownId());
+                            }
+
+                            /*if (result > 0) {
+                                Intent intent = new Intent();
+                                intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
+                                //intent.putExtra("_id", sIssuedBreakdownID);
+                                intent.putExtra("new_breakdowns", "new_breakdowns");
+                                intent.putExtra("new_breakdown_list", new Gson().toJson(breakdowns));
+                                context.sendBroadcast(intent);
+
+                            }*/
                         }
                     } else if (response.errorBody() != null) {
-                        Toast.makeText(context,"SyncBreakdownStatus-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
-                        Log.e("SyncStatusChange","onResponse"+response.errorBody());
-                        Globals.dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0); //ToDo : Change this for each reason
-                        /*if (error.getResponse().getStatus()==409){
-                            Log.e("SyncStatusChange","409");
-                            dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 1); //Already record is there, may be due to timeout
-                        }else if (error.getResponse().getStatus()==401){
-                            Log.e("SyncStatusChange","Unauthorized");
-                            dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0); //Not Uploaded due to Unauthorized, need to refresh jwt
-                        }else {
-                            Log.e("SyncStatusChange","already synced");
-                            dbHandler.UpdateSyncState_JobStatusChangeObj(obj, -5); //To avoid retry again and again
-                        }*/
-                        if(response.code() == 401) { //Authentication fail
+                        if (response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            SendRestartRequest(context);
-                        }else{
-                            Toast.makeText(context, "SyncStatusChange\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(context, "GetNewBreakdowns\nResponse code =" + response.code(), Toast.LENGTH_SHORT).show();
                         }
-                        Log.e("SyncStatusChange","onResponse" + response.errorBody()+"*code*"+response.code());
+                        Log.e("GetNotCompBreakdowns", "onResponse" + response.errorBody() + "*code*" + response.code());
                     }
                     syncRESTService.CloseAllConnections();
                 }
 
                 @Override
-                public void onFailure(Call<SyncObject> call, Throwable t) {
-                    
-                    Toast.makeText(context,"SyncBreakdownStatus-Strings\n"+t, Toast.LENGTH_SHORT).show();
-                    Log.e("SyncStatusChange","onFailure "+t);
-                    Globals.dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0);//Not Uploaded due to no network
+                public void onFailure(Call<List<Breakdown>> call, Throwable t) {
+                    Toast.makeText(context, "Error in network..\n" + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("GetNotCompBreakdowns", "5-" + t.getMessage());
                     syncRESTService.CloseAllConnections();
                 }
             });
+        } catch (Exception e) {
+            Log.e("GetNotCompBreakdowns", "" + e.getMessage());
         }
-    }
-
-    private static void SendRestartRequest(Context context){
-        Common.RemoteLoginWithLastCredentials(context);
-        /*Intent intent = new Intent();
-        intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
-        intent.putExtra("re_login_required", "re_login_required");
-        context.sendBroadcast(intent);*/
     }
 
     public static void PostBreakdowns(final Context context){
@@ -206,10 +183,14 @@ public class SyncService extends Service {
             //if(breakdown.get_Name()==null | breakdown.get_ADDRESS()==null) continue;
             //if(breakdown.get_Name().isEmpty() | breakdown.get_ADDRESS().isEmpty()) continue;
 
+            //Log.e("Sync","PostBreakdowns->"+breakdown.get_Job_No());
+            //Log.e("Sync","PostBreakdowns->"+breakdown.get_Received_Time());
+
             breakdown.set_ECSC(team_id);
             breakdown.set_Area(area_id);
             breakdown.set_TeamId(team_id);
             breakdown.set_UserId(user_id);
+
 
             Globals.dbHandler.UpdateSyncState_NewBreakdown(breakdown, -1);//Uploading Started
             final SyncRESTService syncRESTService = new SyncRESTService(10);
@@ -221,24 +202,27 @@ public class SyncService extends Service {
                 @Override
                 public void onResponse(Call<List<Breakdown>> call, Response<List<Breakdown>> response) {
                     if (response.isSuccessful()) {
-                        
-                        //Log.e("PostBreakdowns","Successfull->"+response);
-                        //Log.e("PostBreakdowns","Successfull"+response.body());
+
+                        Log.e("PostBreakdowns","Successfull->"+response);
+                        Log.e("PostBreakdowns","Successfull"+response.body());
                         Log.e("PostBreakdowns","Successfull");
                         List<Breakdown> _breakdowns = response.body();
-                        Globals.dbHandler.UpdateNewJobNumber(breakdown.get_Job_No(),_breakdowns.get(0));//Successfully done
+                        if(_breakdowns!=null && _breakdowns.size()>0){
+                            Globals.dbHandler.UpdateNewJobNumber(breakdown.get_Job_No(),_breakdowns.get(0));//Successfully done
 
-                        Intent intent = new Intent();
-                        intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
-                        //intent.putExtra("_id", sIssuedBreakdownID);
-                        intent.putExtra("new_breakdowns", "new_breakdowns");
-                        intent.putExtra("new_breakdown_list", new Gson().toJson(_breakdowns));
-                        context.sendBroadcast(intent);
+                            Intent intent = new Intent();
+                            intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
+                            //intent.putExtra("_id", sIssuedBreakdownID);
+                            intent.putExtra("new_breakdowns", "new_breakdowns");
+                            intent.putExtra("new_breakdown_list", new Gson().toJson(_breakdowns));
+                            context.sendBroadcast(intent);
 
-                        PlayTone(context, R.raw.ding_ling, false);
+                            PlayTone(context, R.raw.ding_ling, false);
+                        }
+
+
                     } else if (response.errorBody() != null) {
-                        
-                        Log.e("PostBreakdowns","Error"+response.errorBody());
+                        Log.e("PostBreakdowns","Error1"+response.errorBody());
                         Toast.makeText(context,"PostBreakdowns-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
                         Globals.dbHandler.UpdateSyncState_NewBreakdown(breakdown, 0);//Not Uploaded due to no network
                         /*if (error.getKind() != RetrofitError.Kind.NETWORK | error.getResponse() != null) {
@@ -252,7 +236,7 @@ public class SyncService extends Service {
                         }*/
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            SendRestartRequest(context);
+                            Common.RemoteLoginWithLastCredentials(context);
                         }else{
                             Toast.makeText(context, "PostBreakdowns\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -263,10 +247,93 @@ public class SyncService extends Service {
 
                 @Override
                 public void onFailure(Call<List<Breakdown>> call, Throwable t) {
-                    
-                    Globals.dbHandler.UpdateSyncState_NewBreakdown(breakdown, 0);//Not Uploaded due to no network
-                    Toast.makeText(context,"PostBreakdowns-Strings\n"+t, Toast.LENGTH_SHORT).show();
                     Log.e("PostBreakdowns","onResponse" + t);
+                    Globals.dbHandler.UpdateSyncState_NewBreakdown(breakdown, 0);//Not Uploaded due to no network
+                    Toast.makeText(context,"Error in post breakdowns\n"+t, Toast.LENGTH_SHORT).show();
+
+                    syncRESTService.CloseAllConnections();
+                }
+            });
+        }
+    }
+
+    public static void PostBreakdownStatusChange(final Context context){
+        List<SyncObject> JobChangeStatusList = Globals.dbHandler.getBreakdownStatusChangeNew();
+        Log.e("Sync","Sync->PostBreakdownStatusChange->"+JobChangeStatusList.size());
+        if(JobChangeStatusList.size()<1){
+            return;
+        }
+        for (final SyncObject obj: JobChangeStatusList)
+        {
+           // Log.e("StatusChange","*"+ obj.job_no+","+obj.change_datetime+", "+ obj.status);
+            /*SyncObject syncObject = new SyncObject();
+
+            Breakdown breakdown= Globals.dbHandler.ReadBreakdown_by_JonNo(obj.job_no);
+
+            syncObject.StatusId=obj.status;
+            syncObject.AreaId=obj.AreaId;
+            syncObject.EcscId=obj.EcscId;
+            syncObject.ReceivedTime=obj.ReceivedTime;
+            syncObject.TeamId= Globals.mToken.team_id;
+            syncObject.BreakdownId = Globals.dbHandler.GetNewJobNumber(obj.job_no);
+            syncObject.StatusTime = obj.change_datetime;
+            syncObject.Note=obj.comment;
+            syncObject.ParentBreakdownId=obj.ParentBreakdownId;
+            syncObject.UserId = Globals.mToken.user_id;
+            syncObject.Sin=breakdown.get_SUB();*/
+            if(!Globals.mToken.team_id.equals(obj.TeamId) && obj.StatusId.equals(String.valueOf(Breakdown.JOB_RETURNED))){
+                obj.StatusId = String.valueOf(Breakdown.JOB_FORWARDED);
+            }
+
+            obj.BreakdownId = Globals.dbHandler.GetNewJobNumber(obj.BreakdownId);
+
+            //TODO : if program crashes then this particular record may not be updated, hence use another task or change the
+            //query to update state==0 OR (update_state==-1 AND currentTimestamp-update_timestamp>2min
+            Globals.dbHandler.UpdateSyncStates(obj, -1);//Uploading Started
+
+            final SyncRESTService syncRESTService = new SyncRESTService(10);
+            Call<SyncObject> call = syncRESTService.getService()
+                    .UpdateBreakdownStatus( "Bearer "+ Globals.mToken.access_token, obj);
+
+            call.enqueue(new Callback<SyncObject>(){
+                @Override
+                public void onResponse(Call<SyncObject> call, Response<SyncObject> response) {
+                    if (response.isSuccessful()) {
+                        //Log.e("SyncStatusChange","successful1");
+                        if(Globals.dbHandler.UpdateSyncStates(obj,1)==1){//Successfully done
+                            Log.e("SyncStatusChange","successful");
+                        }
+                    } else if (response.errorBody() != null) {
+                        Toast.makeText(context,"SyncBreakdownStatus-Error\n"+response.errorBody(), Toast.LENGTH_SHORT).show();
+                        Log.e("SyncStatusChange","onResponse"+response.errorBody());
+                        Globals.dbHandler.UpdateSyncStates(obj, 0); //ToDo : Change this for each reason
+                        /*if (error.getResponse().getStatus()==409){
+                            Log.e("SyncStatusChange","409");
+                            dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 1); //Already record is there, may be due to timeout
+                        }else if (error.getResponse().getStatus()==401){
+                            Log.e("SyncStatusChange","Unauthorized");
+                            dbHandler.UpdateSyncState_JobStatusChangeObj(obj, 0); //Not Uploaded due to Unauthorized, need to refresh jwt
+                        }else {
+                            Log.e("SyncStatusChange","already synced");
+                            dbHandler.UpdateSyncState_JobStatusChangeObj(obj, -5); //To avoid retry again and again
+                        }*/
+                        if(response.code() == 401) { //Authentication fail
+                            Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
+                            Common.RemoteLoginWithLastCredentials(context);
+                        }else{
+                            Toast.makeText(context, "SyncStatusChange\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                        Log.e("SyncStatusChange","onResponse" + response.errorBody()+"*code*"+response.code());
+                    }
+                    syncRESTService.CloseAllConnections();
+                }
+
+                @Override
+                public void onFailure(Call<SyncObject> call, Throwable t) {
+                    
+                    Toast.makeText(context,"Error in Sync Breakdown Status\n"+t, Toast.LENGTH_SHORT).show();
+                    Log.e("SyncStatusChange","onFailure "+t);
+                    Globals.dbHandler.UpdateSyncStates(obj, 0);//Not Uploaded due to no network
                     syncRESTService.CloseAllConnections();
                 }
             });
@@ -329,7 +396,7 @@ public class SyncService extends Service {
                         }*/
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            SendRestartRequest(context);
+                            Common.RemoteLoginWithLastCredentials(context);
                         }else{
                             Toast.makeText(context, "PostBreakdownCompletion\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -348,7 +415,6 @@ public class SyncService extends Service {
             });
         }
     }
-
 
     public static void PostMaterials(final Context context){
         final List<SyncMaterialObject> list = Globals.dbHandler.getNotSyncMaterials();
@@ -379,7 +445,7 @@ public class SyncService extends Service {
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                        SendRestartRequest(context);
+                        Common.RemoteLoginWithLastCredentials(context);
                     }else{
                         Toast.makeText(context, "PostMaterials\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -428,7 +494,7 @@ public class SyncService extends Service {
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                        SendRestartRequest(context);
+                        Common.RemoteLoginWithLastCredentials(context);
                     }else{
                         Toast.makeText(context, "PostTrackingData\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -476,7 +542,7 @@ public class SyncService extends Service {
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                        SendRestartRequest(context);
+                        Common.RemoteLoginWithLastCredentials(context);
                     }else{
                         Toast.makeText(context, "PostGroups\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -576,7 +642,13 @@ public class SyncService extends Service {
 
         }
     }
-
+    private static void SendRestartRequest2(Context context){
+        Common.RemoteLoginWithLastCredentials(context);
+        /*Intent intent = new Intent();
+        intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
+        intent.putExtra("re_login_required", "re_login_required");
+        context.sendBroadcast(intent);*/
+    }
     private void InstallApk(File apkFile){
         Intent myintent=new Intent();
         myintent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");

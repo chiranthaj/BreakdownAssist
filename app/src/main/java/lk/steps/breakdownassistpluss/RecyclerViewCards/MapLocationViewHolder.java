@@ -165,18 +165,18 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         if(mBreakdown.get_Status()== Breakdown.JOB_COMPLETED){
             mapView.setVisibility(View.GONE);
             txtTripInfo.setVisibility(View.GONE);
-        }else
-            if(mBreakdown.get_LATITUDE()== null | mBreakdown.get_LONGITUDE()== null){
+       // }else if(mBreakdown.get_LATITUDE()== null | mBreakdown.get_LONGITUDE()== null){
+        }else if(mBreakdown.getLocation() == null){
             mapView.setVisibility(View.GONE);
             txtTripInfo.setVisibility(View.GONE);
-        }else if(mBreakdown.get_LATITUDE().equals("0") | mBreakdown.get_LONGITUDE().equals("0")){
+        }else if(mBreakdown.getLatitude().equals("0") | mBreakdown.getLongitude().equals("0")){
             mapView.setVisibility(View.GONE);
             txtTripInfo.setVisibility(View.GONE);
-        }else if(JobListFragment.currentLocation != null){
+        }else if(JobListFragment.currentLocation != null & mBreakdown.getLocation() != null){
             BitmapDescriptor icon = MapMarker.GetBitmap(mBreakdown);
             BitmapDescriptor iconBk = BitmapDescriptorFactory.fromResource(R.drawable.breakdown_vehicle);
-            setDirections(Globals.LastLocation,mBreakdown.get_location());
-            mGoogleMap.addMarker(new MarkerOptions().position(mBreakdown.get_location()).icon(icon));
+            setDirections(Globals.LastLocation,mBreakdown.getLocation());
+            mGoogleMap.addMarker(new MarkerOptions().position(mBreakdown.getLocation()).icon(icon));
             mGoogleMap.addMarker(new MarkerOptions().position(Globals.LastLocation).icon(iconBk));
         }
     }
@@ -188,11 +188,14 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
 
     @Override
     public void onDirectionFinderSuccess(List<Route> routes) {
-
+        if(routes.size()<1) return;
+        LatLng bdLoc = mBreakdown.getLocation();
+        if(bdLoc==null)return;
         List<Polyline> polylinePaths = new ArrayList<>();
+
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(JobListFragment.currentLocation);
-        builder.include(mBreakdown.get_location());
+        builder.include(bdLoc);
 
         PolylineOptions polylineOptions = new PolylineOptions().geodesic(true).color(Color.BLUE).width(4);
         for (Route route : routes) {

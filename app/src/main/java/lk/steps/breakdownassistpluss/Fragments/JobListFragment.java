@@ -228,7 +228,7 @@ public class JobListFragment extends Fragment {
 
             @Override
             public void onCardViewTap(View view, final int position) {
-                if (TextUtils.isEmpty(BreakdownList.get(position).get_LATITUDE())) {
+                if (BreakdownList.get(position).getLocation() == null) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
                     Dialog dialog = JobView.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
                     if (dialog != null)
@@ -240,7 +240,7 @@ public class JobListFragment extends Fragment {
                                 //CreateListView(fragment);
                             }
                         });
-                }else if (BreakdownList.get(position).get_LATITUDE().equals("0")) {
+                }else if (BreakdownList.get(position).getLatitude().equals("0")) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
                     Dialog dialog = JobView.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
                     if (dialog != null)

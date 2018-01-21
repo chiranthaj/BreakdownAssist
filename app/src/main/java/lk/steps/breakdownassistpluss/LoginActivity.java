@@ -29,6 +29,7 @@ import android.widget.Toast;
 import java.net.InetAddress;
 import java.net.URL;
 
+import lk.steps.breakdownassistpluss.Sync.Network;
 import lk.steps.breakdownassistpluss.Sync.SyncRESTService;
 import lk.steps.breakdownassistpluss.Sync.Token;
 import mehdi.sakout.fancybuttons.FancyButton;
@@ -281,32 +282,41 @@ public class LoginActivity extends AppCompatActivity  {
                     if (response.isSuccessful()) {
                         Log.e("GetAuthToken","Authorized");
                         Token token = response.body();
-                        Log.e("area_name",token.area_name);
+                       // Log.e("area_name",token.area_name);
                         //SaveToken(token);
-                        Common.WriteStringPreferences(context,"user_id",token.user_id);
-                        Common.WriteStringPreferences(context,"area_id",token.area_id);
-                        Common.WriteStringPreferences(context,"area_name",token.area_name);
-                        Common.WriteStringPreferences(context,"team_id",token.team_id);
-                        Common.WriteLongPreferences(context,"expires_in",token.expires_in);
-                        Common.WriteStringPreferences(context,"access_token",token.access_token);
-                        Common.WriteStringPreferences(context,"group_token",token.group_token);
-                        Common.WriteStringPreferences(context,"last_username",username);
-                        Common.WriteStringPreferences(context,"last_password",password);
+                        if(token!=null){
+                            Common.WriteStringPreferences(context,"user_id",token.user_id);
+                            Common.WriteStringPreferences(context,"area_id",token.area_id);
+                            Common.WriteStringPreferences(context,"area_name",token.area_name);
+                            Common.WriteStringPreferences(context,"team_id",token.team_id);
+                            Common.WriteLongPreferences(context,"expires_in",token.expires_in);
+                            Common.WriteStringPreferences(context,"access_token",token.access_token);
+                            Common.WriteStringPreferences(context,"group_token",token.group_token);
+                            Common.WriteStringPreferences(context,"last_username",username);
+                            Common.WriteStringPreferences(context,"last_password",password);
 
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        handler.post(new Runnable() {
-                            public void run() {
-                                //Log.d("TEST","3");
-                                Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
-                                LoginActivity.this.startActivity(myIntent);
-                            }
-                        });
-                        Common.WriteBooleanPreferences(context,"restart_due_to_authentication_fail",false);
-                        Toast.makeText(getApplicationContext(),"Remote login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
-                        CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
-                        Common.WriteBooleanPreferences(context,"login_status",true);
-                        Common.WriteBooleanPreferences(context,"keep_sign_in",chk.isChecked());
-                        finish();
+                            Handler handler = new Handler(Looper.getMainLooper());
+                            handler.post(new Runnable() {
+                                public void run() {
+                                    //Log.d("TEST","3");
+                                    Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
+                                    LoginActivity.this.startActivity(myIntent);
+                                }
+                            });
+                            Common.WriteBooleanPreferences(context,"restart_due_to_authentication_fail",false);
+                            Toast.makeText(getApplicationContext(),"Remote login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
+                            CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
+                            Common.WriteBooleanPreferences(context,"login_status",true);
+                            Common.WriteBooleanPreferences(context,"keep_sign_in",chk.isChecked());
+                            finish();
+                        }else{
+                            Log.d("GetAuthToken", "Fail" + response.errorBody());
+                            Log.d("GetAuthToken", "Fail" + response.message());
+                            Log.d("GetAuthToken", "Fail" + response);
+                            Toast.makeText(getApplicationContext(), "Network failure..\n" + response.errorBody(), Toast.LENGTH_LONG).show();
+                            ForceLocalLogin = true;
+                            performLogin(username,password);
+                        }
                     } else  {
                         if (response.code() == 403) {
                             Log.d("Register", "Fail" + response.code());

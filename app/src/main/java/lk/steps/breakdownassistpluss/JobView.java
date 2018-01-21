@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -26,8 +27,11 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -40,6 +44,9 @@ import lk.steps.breakdownassistpluss.MaterialList.MaterialObject;
 import lk.steps.breakdownassistpluss.MaterialList.MaterialViewsAdapter;
 import lk.steps.breakdownassistpluss.MaterialList.Store;
 import lk.steps.breakdownassistpluss.Models.FailureObject;
+import lk.steps.breakdownassistpluss.Models.JobChangeStatus;
+import lk.steps.breakdownassistpluss.Models.JobCompletion;
+import lk.steps.breakdownassistpluss.Models.Team;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
 
 
@@ -69,7 +76,7 @@ public class JobView {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        //dialog.setCancelable(false);
+        dialog.setCancelable(false);
 
         TextView txtJobno = (TextView) dialog.findViewById(R.id.jobno);
         txtJobno.setText(breakdown.get_Job_No().trim());
@@ -112,7 +119,7 @@ public class JobView {
 
 
         TextView txtFullDescription = (TextView) dialog.findViewById(R.id.fulldescription);
-        txtFullDescription.setText(breakdown.get_Full_Description());
+        txtFullDescription.setText(Strings.GetDescription(breakdown.get_Full_Description()));
 
         ImageButton btnCancel = (ImageButton) dialog.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(new View.OnClickListener() {
@@ -252,12 +259,13 @@ public class JobView {
 
 
     private static void JobVisitedDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
-        if (fragment == null) return;
+        if (fragment == null ) return;
+        if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_visited_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        //dialog.setCancelable(false);
+        dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if (breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
@@ -327,11 +335,12 @@ public class JobView {
 
     private static void JobAttendingDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
+        if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_attending_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        //dialog.setCancelable(false);
+        dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if (breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
@@ -378,15 +387,25 @@ public class JobView {
             }
         });
         dialog.show();
+
+
+        /*new Handler().postDelayed(new Runnable() {
+
+            public void run() {
+                Log.d("TTT","gg");
+                if(dialog!=null)dialog.dismiss();
+            }
+        }, 10000);*/
     }
 
     private static void JobDoneDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
+        if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_done_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        //dialog.setCancelable(false);
+        dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if (breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
@@ -458,7 +477,7 @@ public class JobView {
 
     public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return null;
-
+        if(!fragment.isAdded())return null;
 
         LoadFailureTypeList(fragment);
         LoadFailureCauseList(fragment,"1");
@@ -469,7 +488,7 @@ public class JobView {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_complete_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        //dialog.setCancelable(false);
+        dialog.setCancelable(false);
 
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if (breakdown.get_Name() != null)
@@ -556,9 +575,11 @@ public class JobView {
                     //SetCauseSpinners(fragment,spinnerType,spinnerNature,spinnerCause);
                     if (view != null) {
                         TextView textView = (TextView) view.findViewById(R.id.textView);
-                        if (position > 0)
-                            textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
-                        else textView.setTextColor(Color.RED);
+                        if(textView != null){
+                            if (position > 0)
+                                textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                            else textView.setTextColor(Color.RED);
+                        }
                     }
                 }
 
@@ -648,11 +669,12 @@ public class JobView {
 
     private static void JobRejectDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
+        if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_reject_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        //dialog.setCancelable(false);
+        dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if (breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
@@ -724,13 +746,40 @@ public class JobView {
         dialog.show();
     }
 
+    private static List<Team> GetTeamsList(Fragment fragment){
+
+        final List<Team> teams = new ArrayList<Team>();
+
+        String json = Common.ReadStringPreferences(fragment.getActivity(),"teams_in_area",null);
+        if(json!=null){
+            Type listType = new TypeToken<List<Team>>() {}.getType();
+            List<Team> _teams = new Gson().fromJson(json, listType);
+            if(_teams!=null)teams.addAll(_teams);
+        }
+
+        Team pleaseSelect = new Team();
+        pleaseSelect.teamId="0";
+        pleaseSelect.teamName="කරුණාකර තෝරන්න";
+
+        Team backOffice = new Team();
+        backOffice.teamId="1";
+        backOffice.teamName="Back Office";
+
+        teams.add(0,pleaseSelect);
+        teams.add(1,backOffice);
+
+        return teams;
+    }
+
+
     private static void JobReturnDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
+        if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_return_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        //dialog.setCancelable(false);
+        dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
         if (breakdown.get_Name() != null)
             txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
@@ -749,11 +798,36 @@ public class JobView {
         }
 
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
+        final Spinner teamSpinner = (Spinner) dialog.findViewById(R.id.spinner2);
+
+        final List<Team> teams = GetTeamsList(fragment);
+
+        teamSpinner.setAdapter(new ArrayAdapter<Team>(fragment.getActivity(),
+                R.layout.spinner_row, R.id.textView, teams));
+
+        teamSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
+                TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
+                if (position == 0) {
+                    textView.setTextColor(Color.RED);
+                    etComment.setText("", TextView.BufferType.EDITABLE);
+                } else {
+                    etComment.setText(textView.getText().toString(), TextView.BufferType.EDITABLE);
+                    textView.setTextColor(fragment.getResources().getColor(R.color.darkGreen));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
         //Spinner
-        final Spinner spinner = (Spinner) dialog.findViewById(R.id.spinner1);
-        spinner.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
+        final Spinner reasonSpinner = (Spinner) dialog.findViewById(R.id.spinner1);
+        reasonSpinner.setAdapter(new ArrayAdapter<FailureObject>(fragment.getActivity(),
                 R.layout.spinner_row, R.id.textView, list));
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        reasonSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long arg3) {
                 TextView textView = (TextView) view.findViewById(R.id.textView);//Spinner textbox
@@ -776,13 +850,29 @@ public class JobView {
         btnReject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(spinner.getSelectedItemPosition()==0){
+                if(teamSpinner.getSelectedItemPosition()==0){
+                    Toast.makeText(fragment.getActivity(), "Please select a team to forward", Toast.LENGTH_SHORT).show();
+                }else if(reasonSpinner.getSelectedItemPosition()==0){
                     Toast.makeText(fragment.getActivity(), "Please select a reason", Toast.LENGTH_SHORT).show();
                 }else {
-                    FailureObject obj = (FailureObject) spinner.getSelectedItem();
-                    JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
-                            Breakdown.JOB_RETURNED, GetSelectedDateTime(dialog), obj.English);
-                    UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_RETURNED);
+                    String teamId = Globals.mToken.team_id;
+                    if(teamSpinner.getSelectedItemPosition()>1){
+                        teamId = teams.get(teamSpinner.getSelectedItemPosition()).teamId;
+                        FailureObject obj = (FailureObject) reasonSpinner.getSelectedItem();
+                        JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                                Breakdown.JOB_FORWARDED, GetSelectedDateTime(dialog), obj.English);
+                        breakdown.set_TeamId(teamId);
+
+                        UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_FORWARDED);
+                    }else{
+                        FailureObject obj = (FailureObject) reasonSpinner.getSelectedItem();
+                        JobChangeStatus jobStatusChangeRec = new JobChangeStatus(breakdown.get_Job_No(),
+                                Breakdown.JOB_RETURNED, GetSelectedDateTime(dialog), obj.English);
+                        breakdown.set_TeamId(teamId);
+
+                        UpdateJobStatusChange(fragment, jobStatusChangeRec, breakdown, Breakdown.JOB_RETURNED);
+                    }
+
                     JobListFragment.CreateListView(fragment);
                     dialog.dismiss();
                 }
@@ -803,12 +893,13 @@ public class JobView {
 
     private static void JobMaterialDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
+        if(!fragment.isAdded())return;
         MaterialViewsAdapter.selectedMaterials = new ArrayList<>();
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.job_material);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
-        //dialog.setCancelable(false);
+        dialog.setCancelable(false);
 
         List<MaterialObject> MaterialList = new ArrayList<>();
         List<MaterialObject> _MaterialList = Globals.dbHandler.getMaterials(breakdown.get_Job_No());
@@ -980,6 +1071,7 @@ public class JobView {
     }
 
     private static void LoadFailureTypeList(Fragment fragment){
+        if(fragment==null) return;
         FailureTypeList = Strings.GetFailureTypeList(fragment.getActivity().getApplicationContext());
 
         FailureTypeList2.clear();
@@ -994,6 +1086,7 @@ public class JobView {
         }
     }
     private static void LoadFailureCauseList(Fragment fragment,String parentId){
+        if(fragment==null) return;
         FailureCauseList = Strings.GetFailureCauseList(fragment.getActivity().getApplicationContext());
 
         FailureCauseList2.clear();
@@ -1011,6 +1104,7 @@ public class JobView {
         }
     }
     private static void LoadFailureNatureList(Fragment fragment,String parentId){
+        if(fragment==null) return;
         FailureNatureList = Strings.GetFailureNatureList(fragment.getActivity().getApplicationContext());
         FailureNatureList2.clear();
         for (String[] array : FailureNatureList) {

@@ -187,7 +187,7 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {//TODO : Use Enum class to to have Breakdownstatus.Done like thing
-                        Globals.dbHandler.AddTestBreakdownObj(selectedBreakdown,getActivity().getApplicationContext());
+                       // Globals.dbHandler.AddTestBreakdownObj(selectedBreakdown,getActivity().getApplicationContext());
                         //TODO : Use an Undo option
 
 

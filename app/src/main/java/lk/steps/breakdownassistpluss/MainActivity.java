@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -36,6 +35,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.stetho.Stetho;
+import com.github.javiersantos.appupdater.AppUpdater;
+import com.github.javiersantos.appupdater.AppUpdaterUtils;
+import com.github.javiersantos.appupdater.enums.AppUpdaterError;
+import com.github.javiersantos.appupdater.objects.Update;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.Marker;
 import com.google.gson.Gson;
@@ -44,14 +47,14 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 import lk.steps.breakdownassistpluss.Fragments.DashboardFragment;
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
 import lk.steps.breakdownassistpluss.Fragments.GmapFragment;
 import lk.steps.breakdownassistpluss.Fragments.SearchViewFragment;
+import lk.steps.breakdownassistpluss.Models.JobChangeStatus;
 import lk.steps.breakdownassistpluss.ServiceManager.AlarmReceiver;
+import lk.steps.breakdownassistpluss.Sync.Network;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
 import lk.steps.breakdownassistpluss.Sync.SignalRService;
 
@@ -100,8 +103,9 @@ public class MainActivity extends AppCompatActivity
 
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
-        // this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "BreakdownAssist");
-        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssist");
+        // this.mWakeLock = pm.newWakeLock(PowerManager.FLAG_KEEP_SCREEN_ON, "BreakdownAssist");
+        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssistWakeLock");
         this.mWakeLock.acquire();
 
         startService(new Intent(getBaseContext(), SyncService.class));
@@ -127,12 +131,12 @@ public class MainActivity extends AppCompatActivity
         }
 
         View v = navigationView.getHeaderView(0);
-        UserName = ReadStringPreferences("last_username", "[username]");
+        UserName = Common.ReadStringPreferences(this,"last_username", "[username]");
         TextView username = (TextView) v.findViewById(R.id.txtUsername);
         username.setText(UserName);//
 
         username = (TextView) v.findViewById(R.id.txtArea);
-        username.setText(ReadStringPreferences("area_name", "[Area name]"));//
+        username.setText(Common.ReadStringPreferences(this,"area_name", "[Area name]"));//
 
 
         Bundle extras = getIntent().getExtras();
@@ -145,29 +149,35 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+        if(Globals.dbHandler.IsDatabaseEmpty()){
+            SyncService.GetNotCompletedBreakdowns(this);
+        }
+
         //UpdateOnlineStatus();
 
         // Show the "What's New" screen once for each new release of the application
-        new WhatsNewScreen(this).show();
+        //new WhatsNewScreen(this).show(); no need since AppUpdater is working well
 
+        Network.GetTeams(this);
+        CheckUpdates();
     }
 
 
 
 
 
-    private String ReadStringPreferences(String key, String defaultValue) {
+    /*private String ReadStringPreferences(String key, String defaultValue) {
         SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
         return prfs.getString(key, defaultValue);
-    }
+    }*/
 
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(broadcastReceiver);
-        //if (this.mWakeLock.isHeld())
-        //    this.mWakeLock.release();
+        if (this.mWakeLock.isHeld())
+            this.mWakeLock.release();
     }
 
     @Override
@@ -217,6 +227,7 @@ public class MainActivity extends AppCompatActivity
             String re_login_required = intent.getStringExtra("re_login_required");
             String online_status_changed = intent.getStringExtra("online_status_changed");
             String sms_received = intent.getStringExtra("sms_received");
+            String breakdown_edited = intent.getStringExtra("breakdown_edited");
 
             Log.d("TEST","MainActivityBroadcastReceiver");
             //Log.e("TEST","555");
@@ -224,8 +235,7 @@ public class MainActivity extends AppCompatActivity
                 Log.d("TEST","MainActivityBroadcastReceiver1");
                 String json = intent.getStringExtra("new_breakdown_list");
                 if(json!=null) {
-                    Type type = new TypeToken<List<Breakdown>>() {
-                    }.getType();
+                    Type type = new TypeToken<List<Breakdown>>(){}.getType();
                     List<Breakdown> breakdowns = new Gson().fromJson(json, type);
                     NewBreakdownsDialog(breakdowns);
                 }
@@ -233,8 +243,21 @@ public class MainActivity extends AppCompatActivity
                 i.setAction("lk.steps.breakdownassistpluss.DashboardBroadcastReceiver");
                 i.putExtra("refresh_counts", "refresh_counts");
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
-            } else if (statusUpdate != null) {
+                if (JobListFragment.mAdapter != null)
+                    JobListFragment.mAdapter.notifyDataSetChanged();
+            } else if (breakdown_edited != null) {
                 Log.d("TEST","MainActivityBroadcastReceiver2");
+                String json = intent.getStringExtra("edited_breakdown");
+                if(json!=null) {
+                    Type type = new TypeToken<Breakdown>(){}.getType();
+                    Breakdown breakdown = new Gson().fromJson(json, type);
+                    EditedBreakdownDialog(breakdown);
+                }
+
+                if (JobListFragment.mAdapter != null)
+                    JobListFragment.mAdapter.notifyDataSetChanged();
+            }else if (statusUpdate != null) {
+                Log.d("TEST","MainActivityBroadcastReceiver3");
                 String json = intent.getStringExtra("updated_breakdowns");
                 Type type = new TypeToken<List<JobChangeStatus>>() {
                 }.getType();
@@ -249,12 +272,12 @@ public class MainActivity extends AppCompatActivity
                 if (JobListFragment.mAdapter != null)
                     JobListFragment.mAdapter.notifyDataSetChanged();
             } else if (group_breakdowns != null) {
-                Log.d("TEST","MainActivityBroadcastReceiver3");
+                Log.d("TEST","MainActivityBroadcastReceiver4");
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
                 if (JobListFragment.mAdapter != null)
                     JobListFragment.mAdapter.notifyDataSetChanged();
             } else if (re_login_required != null) {
-                Log.d("TEST","MainActivityBroadcastReceiver4");
+                Log.d("TEST","MainActivityBroadcastReceiver5");
                 Common.WriteBooleanPreferences(getApplicationContext(),"restart_due_to_authentication_fail", true);
                 /*Intent i = getBaseContext().getPackageManager()
                         .getLaunchIntentForPackage(getBaseContext().getPackageName());
@@ -262,11 +285,11 @@ public class MainActivity extends AppCompatActivity
                 startActivity(i);
                 MainActivity.this.finish();*/
             } else if (finish_app_req != null) {
-                Log.d("TEST","MainActivityBroadcastReceiver5");
+                Log.d("TEST","MainActivityBroadcastReceiver6");
                 //Log.d("TEST","BroadcastReceiver"+finish_app_req);
                 finish();
             }else if (online_status_changed != null) {
-                Log.d("TEST","MainActivityBroadcastReceiver6");
+                Log.d("TEST","MainActivityBroadcastReceiver7");
                 //Log.d("TEST","BroadcastReceiver"+online_status_changed);
                 UpdateOnlineStatus();
                 Intent i = new Intent();
@@ -274,7 +297,7 @@ public class MainActivity extends AppCompatActivity
                 i.putExtra("online_status_changed", "online_status_changed");
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
             }else if (sms_received != null) {
-                Log.d("TEST","MainActivityBroadcastReceiver7");
+                Log.d("TEST","MainActivityBroadcastReceiver8");
                 //Log.d("TEST","BroadcastReceiver"+online_status_changed);
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
                 if (JobListFragment.mAdapter != null)
@@ -562,6 +585,28 @@ public class MainActivity extends AppCompatActivity
         newBreakdownDialog.show();
         onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
     }
+    private void EditedBreakdownDialog(final Breakdown breakdown) {
+        if(breakdown==null) return;
+        // final List<Breakdown> AllNotAckedBreakdowns = breakdowns;
+        final Dialog newBreakdownDialog;
+        newBreakdownDialog = new Dialog(this);
+        newBreakdownDialog.setContentView(R.layout.alert_dialog);
+        TextView msg = (TextView) newBreakdownDialog.findViewById(R.id.textDialog);
+        msg.setText("Breakdown \n ID : " + breakdown.get_Job_No() + " has edited.");
+
+        //dialog.setTitle("BreakdownAssist...");
+        newBreakdownDialog.setCancelable(false);
+        Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                newBreakdownDialog.dismiss();
+            }
+        });
+        newBreakdownDialog.show();
+        onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
+    }
 
 
     private void NewStatusDialog(List<JobChangeStatus> jobChangeStatus) {
@@ -585,6 +630,8 @@ public class MainActivity extends AppCompatActivity
             statusWord = ("Withdrawn");
         } else if (STATUS == Breakdown.JOB_RE_CALLED) {
             statusWord = ("Re-called");
+        }else  {
+            statusWord = ("Unknown");
         }
 
 
@@ -705,4 +752,14 @@ public class MainActivity extends AppCompatActivity
         alarmManager.cancel(pendingIntent);
     }
 
+    private void CheckUpdates(){
+        AppUpdater appUpdater = new AppUpdater(this)
+                .setCancelable(false)
+                .showEvery(1)
+               // .showAppUpdated(true)
+                .setButtonDoNotShowAgain(null);
+
+        appUpdater.start();
+
+    }
 }
