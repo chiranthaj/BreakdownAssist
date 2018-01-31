@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="lk.steps.breakdownassistpluss">
-
 
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
@@ -14,24 +12,22 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <uses-feature android:name="android.hardware.location.gps"/>
-    <uses-feature android:name="android.hardware.location.network"/>
+    <uses-feature android:name="android.hardware.location.gps" />
+    <uses-feature android:name="android.hardware.location.network" />
 
     <application
         android:name=".BreakdownAssist"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:supportsRtl="true"
         android:launchMode="singleInstance"
+        android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBaj0WI-4h1fm70i-iPaDziec3x6PhfM8c" />
@@ -41,26 +37,21 @@
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".LoginActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".AboutActivity" />
-
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -69,23 +60,20 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="lk.steps.breakdownassistpluss.MainActivity" />
         </activity>
-
         <activity
             android:name=".FileExplorer.FileChooser"
             android:label="Choose File"
             android:theme="@android:style/Theme.Holo">
             <action android:name="lk.steps.breakdownassistpluss.fileexplorer.FileChooser" />
+
             <category android:name="android.intent.category.DEFAULT" />
         </activity>
 
-        <service
-            android:name=".Sync.SyncService" />
-
+        <service android:name=".Sync.SyncService" />
         <service
             android:name=".Sync.SignalRService"
             android:enabled="true"
-            android:exported="true" >
-        </service>
+            android:exported="true"></service>
 
         <receiver
             android:name=".SmsBroadcastReceiver"
@@ -94,21 +82,39 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
-
-        <receiver
-            android:name=".ServiceManager.BootReceiver">
+        <receiver android:name=".ServiceManager.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".ServiceManager.AlarmReceiver"></receiver>
 
-        <receiver
-            android:name=".ServiceManager.AlarmReceiver">
-        </receiver>
+        <service android:name=".GpsTracker.LocationService"></service>
 
-        <service
-            android:name=".GpsTracker.LocationService">
-        </service>
+        <activity
+            android:name=".BreakdownDialogs.VisitedDialog"
+            android:theme="@style/Theme.UserDialog"></activity>
+        <activity
+            android:name=".BreakdownDialogs.AttendingDialog"
+            android:theme="@style/Theme.UserDialog"></activity>
+        <activity
+            android:name=".BreakdownDialogs.NotAttendingDialog"
+            android:theme="@style/Theme.UserDialog"></activity>
+        <activity
+            android:name=".BreakdownDialogs.TempCompletedDialog"
+            android:theme="@style/Theme.UserDialog"></activity>
+        <activity
+            android:name=".BreakdownDialogs.CompletedDialog"
+            android:theme="@style/Theme.UserDialog"></activity>
+        <activity
+            android:name=".BreakdownDialogs.RejectDialog"
+            android:theme="@style/Theme.UserDialog"></activity>
+        <activity
+            android:name=".BreakdownDialogs.ReturnDialog"
+            android:theme="@style/Theme.UserDialog"></activity>
+        <activity
+            android:name=".BreakdownDialogs.MaterialDialog"
+            android:theme="@style/Theme.UserDialog"></activity>
     </application>
 
 </manifest>

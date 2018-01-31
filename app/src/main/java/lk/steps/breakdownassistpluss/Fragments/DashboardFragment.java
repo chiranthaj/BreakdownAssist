@@ -113,6 +113,7 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap map) {
         googleMap = map;
+        if(googleMap==null) return;
         List<Breakdown> BreakdownList = new ArrayList<>(Globals.dbHandler.ReadBreakdowns(Breakdown.JOB_NOT_ATTENDED, true, false));
 
         try {
@@ -140,8 +141,13 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
                     builder.include(loc);
                 }
             }
-            LatLngBounds bounds = builder.build();
-            map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
+
+            try{
+                LatLngBounds bounds = builder.build();
+                map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
+            }catch(Exception e){
+
+            }
 
         } else {
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(7.8204307, 80.2189718), 8));
@@ -169,8 +175,12 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onResume() {
         super.onResume();
-        refreshCounts();
-        if (googleMap != null) onMapReady(googleMap);
+        try{
+            refreshCounts();
+            if (googleMap != null) onMapReady(googleMap);
+        }catch(Exception e){
+
+        }
     }
 
     private void refreshCounts() {

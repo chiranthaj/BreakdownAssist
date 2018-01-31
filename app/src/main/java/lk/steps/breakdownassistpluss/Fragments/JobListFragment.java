@@ -1,54 +1,45 @@
 package lk.steps.breakdownassistpluss.Fragments;
 
 
-import android.Manifest;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.graphics.Canvas;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import lk.steps.breakdownassistpluss.Breakdown;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.CompletedDialog;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.DetailsDialog;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.MaterialDialog;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.TempCompletedDialog;
+import lk.steps.breakdownassistpluss.DBHandler;
 import lk.steps.breakdownassistpluss.Globals;
-import lk.steps.breakdownassistpluss.JobView;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.RecyclerViewCards.SwipeableRecyclerViewTouchListener;
 import lk.steps.breakdownassistpluss.RecyclerViewCards.JobsRecyclerAdapter;
-import lk.steps.breakdownassistpluss.Sync.BreakdownGroup;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
 
 
@@ -230,7 +221,7 @@ public class JobListFragment extends Fragment {
             public void onCardViewTap(View view, final int position) {
                 if (BreakdownList.get(position).getLocation() == null) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
-                    Dialog dialog = JobView.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
+                    Dialog dialog = DetailsDialog.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
                     if (dialog != null)
                         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
@@ -242,7 +233,7 @@ public class JobListFragment extends Fragment {
                         });
                 }else if (BreakdownList.get(position).getLatitude().equals("0")) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
-                    Dialog dialog = JobView.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
+                    Dialog dialog = DetailsDialog.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
                     if (dialog != null)
                         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
@@ -271,12 +262,15 @@ public class JobListFragment extends Fragment {
 
             @Override
             public void onCardViewLongTap(View view, int position) {
-                if(SelectedBreakdownIds.size()>0){
+                Log.e("SelectedBreakdownIds","="+SelectedBreakdownIds.size());
+                if(SelectedBreakdownIds.size()>1){
                     //BreakdownGroup bg = new BreakdownGroup();
                    // bg.SetBreakdownId(BreakdownList.get(position).get_Job_No());
                    // bg.SetParentBreakdownId("PARENT");
                    // bg.SetParentStatusId(String.valueOf(BreakdownList.get(position).get_Status()));
                     GroupDialog(fragment,BreakdownList.get(position).get_Job_No());
+                }else if(Globals.dbHandler.IsParent(BreakdownList.get(position).get_Job_No())){
+                    UngroupDialog(fragment,BreakdownList.get(position).get_Job_No());
                 }
             }
         };
@@ -304,15 +298,34 @@ public class JobListFragment extends Fragment {
                             public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
                                     //Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped left", Toast.LENGTH_SHORT).show();
-                                    Dialog dialog = JobView.JobCompleteDialog(fragment, BreakdownList.get(position),position);
-                                    if (dialog != null)
+                                    //Dialog dialog = DetailsDialog.JobCompleteDialog(fragment, BreakdownList.get(position),position);
+
+                                    /*String json = new Gson().toJson(BreakdownList.get(position), new TypeToken<Breakdown>() {}.getType());
+                                    Intent i = new Intent(fragment.getActivity(), CompletedDialog.class);
+                                    i.putExtra("breakdown", json);
+                                    i.putExtra("position", position);
+                                    fragment.startActivity(i);*/
+                                    Breakdown breakdown = BreakdownList.get(position);
+                                    String json = new Gson().toJson(breakdown, new TypeToken<Breakdown>() {}.getType());
+                                    if (breakdown.get_Status() == Breakdown.JOB_COMPLETED ) {
+                                        Intent i = new Intent(fragment.getActivity(), MaterialDialog.class);
+                                        i.putExtra("breakdown", json);
+                                        fragment.startActivity(i);
+                                    }else{
+                                        Intent i = new Intent(fragment.getActivity(), CompletedDialog.class);
+                                        i.putExtra("breakdown", json);
+                                        i.putExtra("position", position);
+                                        fragment.startActivity(i);
+                                    }
+
+                                    /*if (dialog != null)
                                         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                                             @Override
                                             public void onDismiss(DialogInterface dialog) {
                                                 //CreateListView(fragment);
                                                 mAdapter.notifyDataSetChanged();
                                             }
-                                        });
+                                        });*/
                                     BreakdownList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }
@@ -323,7 +336,7 @@ public class JobListFragment extends Fragment {
                             public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
                                     //Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped right", Toast.LENGTH_SHORT).show();
-                                    Dialog dialog = JobView.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
+                                    Dialog dialog = DetailsDialog.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
                                     if (dialog != null)
                                         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                                             @Override
@@ -349,12 +362,47 @@ public class JobListFragment extends Fragment {
         dialog.setCancelable(false);
         Button btnYes = (Button) dialog.findViewById(R.id.btnYes);
         Button btnNo = (Button) dialog.findViewById(R.id.btnNo);
+        TextView tv = (TextView) dialog.findViewById(R.id.textDialog);
+        tv.setText("Do you want to group selected breakdowns ?");
 
         btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 SelectedBreakdownIds.remove(parentId);
                 Globals.dbHandler.UpdateChildren(SelectedBreakdownIds,parentId);
+                SelectedBreakdownIds.clear();
+                SyncService.PostGroups(fragment.getActivity().getApplicationContext());
+                CreateListView(fragment);
+                dialog.cancel();
+            }
+        });
+        btnNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.cancel();
+            }
+        });
+        dialog.show();
+
+    }
+
+    private static void UngroupDialog(final Fragment fragment,final String parentId){
+        final Dialog dialog = new Dialog(fragment.getActivity());
+        dialog.setContentView(R.layout.dialog_ask_grouping);
+        dialog.setCancelable(false);
+        Button btnYes = (Button) dialog.findViewById(R.id.btnYes);
+        Button btnNo = (Button) dialog.findViewById(R.id.btnNo);
+        TextView tv = (TextView) dialog.findViewById(R.id.textDialog);
+        tv.setText("Do you want to ungroup ?");
+        btnYes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               /* SelectedBreakdownIds.remove(parentId);
+                Globals.dbHandler.UpdateChildren(SelectedBreakdownIds,parentId);
+                SelectedBreakdownIds.clear();
+                SyncService.PostGroups(fragment.getActivity().getApplicationContext());
+                CreateListView(fragment);*/
+                Globals.dbHandler.UpdateUngroups(parentId,"0");
                 SelectedBreakdownIds.clear();
                 SyncService.PostGroups(fragment.getActivity().getApplicationContext());
                 CreateListView(fragment);

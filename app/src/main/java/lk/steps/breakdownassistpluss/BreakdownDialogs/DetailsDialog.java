@@ -1,4 +1,4 @@
-package lk.steps.breakdownassistpluss;
+package lk.steps.breakdownassistpluss.BreakdownDialogs;
 
 import android.app.Dialog;
 import android.app.Fragment;
@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -36,8 +35,16 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import lk.steps.breakdownassistpluss.Breakdown;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.AttendingDialog;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.CompletedDialog;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.RejectDialog;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.ReturnDialog;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.TempCompletedDialog;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.VisitedDialog;
 import lk.steps.breakdownassistpluss.Fragments.GmapFragment;
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
+import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.GpsModules.DirectionFinder;
 import lk.steps.breakdownassistpluss.GpsModules.DirectionFinderListener;
 import lk.steps.breakdownassistpluss.MaterialList.MaterialObject;
@@ -47,6 +54,8 @@ import lk.steps.breakdownassistpluss.Models.FailureObject;
 import lk.steps.breakdownassistpluss.Models.JobChangeStatus;
 import lk.steps.breakdownassistpluss.Models.JobCompletion;
 import lk.steps.breakdownassistpluss.Models.Team;
+import lk.steps.breakdownassistpluss.R;
+import lk.steps.breakdownassistpluss.Strings;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
 
 
@@ -54,7 +63,7 @@ import lk.steps.breakdownassistpluss.Sync.SyncService;
  * Created by JagathPrasanga on 5/22/2017.
  */
 
-public class JobView {
+public class DetailsDialog {
     private static String[][] FailureTypeList;
     private static String[][] FailureCauseList;
     private static String[][] FailureNatureList;
@@ -88,27 +97,47 @@ public class JobView {
             txtAcctNum.setText("Acc. No. : " + breakdown.get_Acct_Num().trim());
         else txtAcctNum.setText("Acc. No. : Not available");
         TextView txtName = (TextView) dialog.findViewById(R.id.name);
-        if (breakdown.get_Name() != null)
-            txtName.setText(breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        if (breakdown.NAME != null)
+            txtName.setText(breakdown.NAME.trim() + "\n" + breakdown.ADDRESS.trim());
 
-        TableRow contacts = (TableRow)dialog.findViewById(R.id.contacts);
-        ImageButton btnCall = (ImageButton) dialog.findViewById(R.id.btnMakeCall);
-        btnCall.setOnClickListener(new View.OnClickListener() {
+        TableRow rowLandPh = (TableRow)dialog.findViewById(R.id.rowLandPh);
+
+        ImageButton btnLandPhNoCall = (ImageButton) dialog.findViewById(R.id.btnLandPhNoCall);
+        btnLandPhNoCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse("tel:" + breakdown.get_Contact_No().trim()));
+                intent.setData(Uri.parse("tel:" + breakdown.LandPhNo));
                 fragment.getActivity().startActivity(intent);
             }
         });
-        TextView txtPhoneNo = (TextView) dialog.findViewById(R.id.phoneno);
-        if (breakdown.get_Contact_No() != null) {
-            txtPhoneNo.setText(breakdown.get_Contact_No().trim());
-            contacts.setVisibility(View.VISIBLE);
+        TextView txtLandPhNo = (TextView) dialog.findViewById(R.id.txtLandPhNo);
+        if (breakdown.LandPhNo != null) {
+            txtLandPhNo.setText(breakdown.LandPhNo);
+            rowLandPh.setVisibility(View.VISIBLE);
         } else {
-            contacts.setVisibility(View.GONE);
-            //btnCall.setVisibility(View.GONE);
+            rowLandPh.setVisibility(View.GONE);
         }
+
+        TableRow rowMobilePh = (TableRow)dialog.findViewById(R.id.rowMobilePh);
+
+        ImageButton btnMobilePhNoCall = (ImageButton) dialog.findViewById(R.id.btnMobilePhNoCall);
+        btnMobilePhNoCall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + breakdown.MobilePhNo));
+                fragment.getActivity().startActivity(intent);
+            }
+        });
+        TextView txtMobilePhNo = (TextView) dialog.findViewById(R.id.txtMobilePhNo);
+        if (breakdown.MobilePhNo != null) {
+            txtMobilePhNo.setText(breakdown.MobilePhNo);
+            rowMobilePh.setVisibility(View.VISIBLE);
+        } else {
+            rowMobilePh.setVisibility(View.GONE);
+        }
+
         TextView txtNote = (TextView) dialog.findViewById(R.id.txtNote);
         if(TextUtils.isEmpty(breakdown.get_Note())){
             txtNote.setVisibility(View.GONE);
@@ -168,7 +197,16 @@ public class JobView {
         btnVisted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobVisitedDialog(fragment, breakdown, position);
+
+
+                String json = new Gson().toJson(breakdown, new TypeToken<Breakdown>() {}.getType());
+                Intent i = new Intent(fragment.getActivity(), VisitedDialog.class);
+                i.putExtra("breakdown", json);
+                i.putExtra("position", position);
+                fragment.startActivity(i);
+
+
+               // JobVisitedDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -176,15 +214,50 @@ public class JobView {
         btnAttending.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobAttendingDialog(fragment, breakdown, position);
+                String json = new Gson().toJson(breakdown, new TypeToken<Breakdown>() {}.getType());
+                if (breakdown.get_Status() == Breakdown.JOB_ATTENDING) {
+                    Intent i = new Intent(fragment.getActivity(), NotAttendingDialog.class);
+                    i.putExtra("breakdown", json);
+                    i.putExtra("position", position);
+                    fragment.startActivity(i);
+                }else{
+                    Intent i = new Intent(fragment.getActivity(), AttendingDialog.class);
+                    i.putExtra("breakdown", json);
+                    i.putExtra("position", position);
+                    fragment.startActivity(i);
+                }
+
+
+               // JobAttendingDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
+
+
         Button btnDone = (Button) dialog.findViewById(R.id.btnDone);
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobDoneDialog(fragment, breakdown, position);
+                /*String json = new Gson().toJson(breakdown, new TypeToken<Breakdown>() {}.getType());
+                Intent i = new Intent(fragment.getActivity(), TempCompletedDialog.class);
+                i.putExtra("breakdown", json);
+                i.putExtra("position", position);
+                fragment.startActivity(i);*/
+
+                String json = new Gson().toJson(breakdown, new TypeToken<Breakdown>() {}.getType());
+                if (breakdown.get_Status() == Breakdown.JOB_TEMPORARY_COMPLETED) {
+                    Intent i = new Intent(fragment.getActivity(), MaterialDialog.class);
+                    i.putExtra("breakdown", json);
+                    fragment.startActivity(i);
+                }else{
+                    Intent i = new Intent(fragment.getActivity(), TempCompletedDialog.class);
+                    i.putExtra("breakdown", json);
+                    i.putExtra("position", position);
+                    fragment.startActivity(i);
+                }
+
+
+               // JobDoneDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -192,7 +265,21 @@ public class JobView {
         btnCompleted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobCompleteDialog(fragment, breakdown, position);
+
+                String json = new Gson().toJson(breakdown, new TypeToken<Breakdown>() {}.getType());
+                if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
+                    Intent i = new Intent(fragment.getActivity(), MaterialDialog.class);
+                    i.putExtra("breakdown", json);
+                    fragment.startActivity(i);
+                }else{
+                    Intent i = new Intent(fragment.getActivity(), CompletedDialog.class);
+                    i.putExtra("breakdown", json);
+                    i.putExtra("position", position);
+                    fragment.startActivity(i);
+                }
+
+
+                //JobCompleteDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -201,7 +288,12 @@ public class JobView {
         btnReject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobRejectDialog(fragment, breakdown, position);
+                String json = new Gson().toJson(breakdown, new TypeToken<Breakdown>() {}.getType());
+                Intent i = new Intent(fragment.getActivity(), RejectDialog.class);
+                i.putExtra("breakdown", json);
+                i.putExtra("position", position);
+                fragment.startActivity(i);
+                //JobRejectDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -210,7 +302,14 @@ public class JobView {
         btnReturn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JobReturnDialog(fragment, breakdown, position);
+
+                String json = new Gson().toJson(breakdown, new TypeToken<Breakdown>() {}.getType());
+                Intent i = new Intent(fragment.getActivity(), ReturnDialog.class);
+                i.putExtra("breakdown", json);
+                i.putExtra("position", position);
+                fragment.startActivity(i);
+
+               // JobReturnDialog(fragment, breakdown, position);
                 dialog.dismiss();
             }
         });
@@ -221,35 +320,41 @@ public class JobView {
             btnVisted.setEnabled(false);
             btnDone.setEnabled(false);
             btnReject.setEnabled(false);
-            btnCompleted.setEnabled(false);
-            btnCompleted.setTextColor(Color.RED);
+            btnCompleted.setEnabled(true);
+            btnReturn.setEnabled(false);
+            //btnCompleted.setTextColor(Color.RED);
         } else if (breakdown.get_Status() == Breakdown.JOB_TEMPORARY_COMPLETED) {
             btnAttending.setEnabled(false);
             btnVisted.setEnabled(false);
-            btnDone.setEnabled(false);
+            btnDone.setEnabled(true);
             btnReject.setEnabled(false);
             btnCompleted.setEnabled(true);
-            btnDone.setTextColor(Color.RED);
+            btnReturn.setEnabled(true);
+            //btnDone.setTextColor(Color.RED);
         } else if (breakdown.get_Status() == Breakdown.JOB_VISITED) {
             btnAttending.setEnabled(true);
             btnVisted.setEnabled(false);
             btnDone.setEnabled(true);
             btnReject.setEnabled(true);
             btnCompleted.setEnabled(true);
+            btnReturn.setEnabled(true);
             btnVisted.setTextColor(Color.RED);
         } else if (breakdown.get_Status() == Breakdown.JOB_ATTENDING) {
-            btnAttending.setEnabled(false);
-            btnVisted.setEnabled(false);
+            btnAttending.setEnabled(true);
+            btnVisted.setEnabled(true);
             btnDone.setEnabled(true);
             btnReject.setEnabled(true);
             btnCompleted.setEnabled(true);
-            btnAttending.setTextColor(Color.RED);
+            btnReturn.setEnabled(true);
+           // btnAttending.setTextColor(Color.RED);
+            btnAttending.setText("Not Attending");
         } else if (breakdown.get_Status() == Breakdown.JOB_REJECT) {
             btnAttending.setEnabled(false);
             btnVisted.setEnabled(false);
             btnDone.setEnabled(false);
             btnReject.setEnabled(false);
             btnCompleted.setEnabled(false);
+            btnReturn.setEnabled(false);
             btnReject.setTextColor(Color.RED);
         }
 
@@ -258,7 +363,7 @@ public class JobView {
     }
 
 
-    private static void JobVisitedDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+    /*private static void JobVisitedDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null ) return;
         if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
@@ -267,8 +372,8 @@ public class JobView {
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if (breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        if (breakdown.NAME != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.NAME.trim() + "\n" + breakdown.ADDRESS.trim());
         else
             txtView.setText(breakdown.get_Job_No());
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
@@ -331,9 +436,9 @@ public class JobView {
             }
         });
         dialog.show();
-    }
+    }*/
 
-    private static void JobAttendingDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+    /*private static void JobAttendingDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
         if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
@@ -342,8 +447,8 @@ public class JobView {
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if (breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        if (breakdown.NAME != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.NAME.trim() + "\n" + breakdown.ADDRESS.trim());
         else
             txtView.setText(breakdown.get_Job_No());
         final EditText etComment = (EditText) dialog.findViewById(R.id.etComment);
@@ -388,27 +493,19 @@ public class JobView {
         });
         dialog.show();
 
+    }*/
 
-        /*new Handler().postDelayed(new Runnable() {
-
-            public void run() {
-                Log.d("TTT","gg");
-                if(dialog!=null)dialog.dismiss();
-            }
-        }, 10000);*/
-    }
-
-    private static void JobDoneDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+   /* private static void JobDoneDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
         if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.job_done_dialog);
+        dialog.setContentView(R.layout.job_temp_complete_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if (breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        if (breakdown.NAME != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.NAME.trim() + "\n" + breakdown.ADDRESS.trim());
         else
             txtView.setText(breakdown.get_Job_No());
 
@@ -473,9 +570,9 @@ public class JobView {
             }
         });
         dialog.show();
-    }
+    }*/
 
-    public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+    /*public static Dialog JobCompleteDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return null;
         if(!fragment.isAdded())return null;
 
@@ -491,8 +588,8 @@ public class JobView {
         dialog.setCancelable(false);
 
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if (breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        if (breakdown.NAME != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.NAME.trim() + "\n" + breakdown.ADDRESS.trim());
         else
             txtView.setText(breakdown.get_Job_No());
 
@@ -663,11 +760,10 @@ public class JobView {
 
         dialog.show();
 
-
         return dialog;
-    }
+    }*/
 
-    private static void JobRejectDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+    /*private static void JobRejectDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
         if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
@@ -676,8 +772,8 @@ public class JobView {
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         dialog.setCancelable(false);
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if (breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        if (breakdown.NAME != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.NAME.trim() + "\n" + breakdown.ADDRESS.trim());
         else
             txtView.setText(breakdown.get_Job_No());
 
@@ -744,9 +840,9 @@ public class JobView {
             }
         });
         dialog.show();
-    }
+    }*/
 
-    private static List<Team> GetTeamsList(Fragment fragment){
+   /* private static List<Team> GetTeamsList(Fragment fragment){
 
         final List<Team> teams = new ArrayList<Team>();
 
@@ -769,10 +865,10 @@ public class JobView {
         teams.add(1,backOffice);
 
         return teams;
-    }
+    }*/
 
 
-    private static void JobReturnDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+    /*private static void JobReturnDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
         if(!fragment.isAdded())return;
         final Dialog dialog = new Dialog(fragment.getActivity());
@@ -780,9 +876,10 @@ public class JobView {
         dialog.setContentView(R.layout.job_return_dialog);
         dialog.getWindow().setLayout(WindowManager.LayoutParams.FILL_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         dialog.setCancelable(false);
+
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if (breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        if (breakdown.NAME != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.NAME.trim() + "\n" + breakdown.ADDRESS.trim());
         else
             txtView.setText(breakdown.get_Job_No());
 
@@ -888,10 +985,10 @@ public class JobView {
             }
         });
         dialog.show();
-    }
+    }*/
 
 
-    private static void JobMaterialDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
+   /* private static void JobMaterialDialog(final Fragment fragment, final Breakdown breakdown, final int position) {
         if (fragment == null) return;
         if(!fragment.isAdded())return;
         MaterialViewsAdapter.selectedMaterials = new ArrayList<>();
@@ -920,8 +1017,8 @@ public class JobView {
 
 
         TextView txtView = (TextView) dialog.findViewById(R.id.jobInfo);
-        if (breakdown.get_Name() != null)
-            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.get_Name().trim() + "\n" + breakdown.get_ADDRESS().trim());
+        if (breakdown.NAME != null)
+            txtView.setText(breakdown.get_Job_No() + "\n" + breakdown.NAME.trim() + "\n" + breakdown.ADDRESS.trim());
         else
             txtView.setText(breakdown.get_Job_No());
 
@@ -961,7 +1058,7 @@ public class JobView {
         }
         return null;
     }
-
+*/
     private static void RestoreCard(Fragment fragment, Breakdown breakdown, int position) {
         if (fragment instanceof JobListFragment) {
             JobListFragment jobListFragment = (JobListFragment) fragment;
@@ -970,7 +1067,7 @@ public class JobView {
     }
 
 
-    private static void UpdateJobStatusChange(Fragment fragment, JobChangeStatus jobchangestatus, Breakdown breakdown, int iStatus) {
+   /* private static void UpdateJobStatusChange(Fragment fragment, JobChangeStatus jobchangestatus, Breakdown breakdown, int iStatus) {
         Globals.dbHandler.addJobStatusChangeRec(jobchangestatus);
         Globals.dbHandler.UpdateBreakdownStatus(breakdown, iStatus);
         SyncService.PostBreakdownStatusChange(fragment.getActivity().getApplicationContext());
@@ -982,9 +1079,9 @@ public class JobView {
             GmapFragment GmapFrag = (GmapFragment) fragment;
             GmapFrag.RefreshJobsFromDB();
         }
-    }
+    }*/
 
-    private static void UpdateCompletedJob(Fragment fragment, JobCompletion jobcompletion, Breakdown breakdown) {
+   /* private static void UpdateCompletedJob(Fragment fragment, JobCompletion jobcompletion, Breakdown breakdown) {
         Globals.dbHandler.addJobCompletionRec(jobcompletion);
         Globals.dbHandler.UpdateBreakdownStatus(breakdown, Breakdown.JOB_COMPLETED);
         SyncService.PostBreakdownCompletion(fragment.getActivity().getApplicationContext());
@@ -997,7 +1094,7 @@ public class JobView {
             GmapFragment GmapFrag = (GmapFragment) fragment;
             GmapFrag.RefreshJobsFromDB();
         }
-    }
+    }*/
 
     private static void getDirections(final Fragment fragment, LatLng origin, LatLng destination) {
         //TODO : Exception when current location is not available
@@ -1122,4 +1219,5 @@ public class JobView {
 
         }
     }
+
 }

@@ -39,7 +39,7 @@ public class ChildAdapter extends ArrayAdapter<Breakdown> {
         if(breakdown!=null){
             tvId.setText(breakdown.get_Job_No());
             tvDate.setText(Globals.parseDate(breakdown.get_Received_Time()));
-            tvAddress.setText(breakdown.get_ADDRESS());
+            tvAddress.setText(breakdown.ADDRESS);
         }
 
         // Return the completed view to render on screen

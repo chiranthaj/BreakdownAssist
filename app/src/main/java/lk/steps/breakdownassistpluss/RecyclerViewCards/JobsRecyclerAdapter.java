@@ -66,13 +66,13 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         holder.JOB_NO.setText(breakdownList.get(position).get_Job_No());
         holder.received_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Received_Time()));
 
-        if(breakdownList.get(position).get_Name() != null && !breakdownList.get(position).get_Name().equals("null"))
-            holder.name.setText(breakdownList.get(position).get_Name());
+        if(breakdownList.get(position).NAME != null && !breakdownList.get(position).NAME.equals("null"))
+            holder.name.setText(breakdownList.get(position).NAME);
         else
             holder.name.setVisibility(View.GONE);
 
-        if(breakdownList.get(position).get_ADDRESS() != null && !breakdownList.get(position).get_ADDRESS().equals("null"))
-            holder.address.setText(breakdownList.get(position).get_ADDRESS());
+        if(breakdownList.get(position).ADDRESS != null && !breakdownList.get(position).ADDRESS.equals("null"))
+            holder.address.setText(breakdownList.get(position).ADDRESS);
         else
             holder.address.setVisibility(View.GONE);
 
@@ -84,7 +84,7 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         Drawable drawable = (Drawable)holder.completed_date_time.getBackground();
         String Completed_Time = "*";
         try{
-            Log.e("TIME TEST","="+breakdownList.get(position).get_Completed_Time());
+           // Log.e("TIME TEST","="+breakdownList.get(position).get_Completed_Time());
             if(!breakdownList.get(position).get_Completed_Time().isEmpty()){
                 Completed_Time = Globals.parseDate(breakdownList.get(position).get_Completed_Time());
             }

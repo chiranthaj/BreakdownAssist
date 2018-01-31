@@ -100,7 +100,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver
                     //breakdown.set_Full_Description(description);
                     breakdown.set_JOB_SOURCE("IT");//sAddress
                     breakdown.set_Job_No(sJob_No);
-                    breakdown.set_Contact_No(sPhone_No);
+                    breakdown.MobilePhNo=(sPhone_No);
                     breakdown.set_Priority(iPriority);
                     breakdown.set_ParentBreakdownId("0000000000");
                     breakdown.set_BA_SERVER_SYNCED("0");

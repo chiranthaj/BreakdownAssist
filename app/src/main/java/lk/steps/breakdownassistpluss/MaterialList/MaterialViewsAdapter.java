@@ -66,12 +66,14 @@ public class MaterialViewsAdapter extends ArrayAdapter<MaterialObject> {
         final MaterialObject item = getItem(position);
 
         CheckBox chkItem = (CheckBox) convertView.findViewById(R.id.chkItem);
+        TextView txtPL = (TextView) convertView.findViewById(R.id.txtPl);
         final EditText etCount = (EditText) convertView.findViewById(R.id.etCount);
         final ImageButton up = (ImageButton) convertView.findViewById(R.id.btnUp);
         final ImageButton down = (ImageButton) convertView.findViewById(R.id.btnDown);
 
         chkItem.setChecked(item.getQuantity()!=0);
         chkItem.setText(item.getName());
+        txtPL.setText(item.getCode());
         Typeface fontSinhala = Typeface.createFromAsset(getContext().getAssets(), "fonts/iskoolapota.ttf");
         chkItem.setTypeface(fontSinhala);
         etCount.setText(String.valueOf(item.getQuantity()));
@@ -83,10 +85,12 @@ public class MaterialViewsAdapter extends ArrayAdapter<MaterialObject> {
         chkItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-                etCount.setText("0");
-                etCount.setEnabled(isChecked);
-                down.setEnabled(isChecked);
-                up.setEnabled(isChecked);
+
+                    etCount.setEnabled(isChecked);
+                    down.setEnabled(isChecked);
+                    up.setEnabled(isChecked);
+                    if(isChecked)etCount.setText("1");
+                    else etCount.setText("0");
                 }
             }
         );

@@ -107,7 +107,7 @@ public class ReadSMS {
                         //breakdown.set_Full_Description(description);
                         breakdown.set_JOB_SOURCE("IT");//sAddress
                         breakdown.set_Job_No(sJob_No);
-                        breakdown.set_Contact_No(sPhone_No);
+                        breakdown.MobilePhNo = (sPhone_No);
                        // breakdown.set_ADDRESS(sAddress);
                         breakdown.set_Priority(iPriority);
                         breakdown.set_BA_SERVER_SYNCED("0");

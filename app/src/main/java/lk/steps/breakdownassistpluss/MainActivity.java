@@ -31,6 +31,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -100,7 +101,6 @@ public class MainActivity extends AppCompatActivity
 
         StartUpTasks.InitVariables(this);
         ManagePermissions.CheckAndRequestAllRuntimePermissions(getApplicationContext(), this);
-
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
         // this.mWakeLock = pm.newWakeLock(PowerManager.FLAG_KEEP_SCREEN_ON, "BreakdownAssist");
@@ -220,8 +220,8 @@ public class MainActivity extends AppCompatActivity
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String statusUpdate = intent.getStringExtra("job_status_changed");
-            String newBreakdowns = intent.getStringExtra("new_breakdowns");
+            String job_status_changed = intent.getStringExtra("job_status_changed");
+            String new_breakdowns = intent.getStringExtra("new_breakdowns");
             String finish_app_req = intent.getStringExtra("finish_app_req");
             String group_breakdowns = intent.getStringExtra("group_breakdowns");
             String re_login_required = intent.getStringExtra("re_login_required");
@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity
 
             Log.d("TEST","MainActivityBroadcastReceiver");
             //Log.e("TEST","555");
-            if (newBreakdowns != null) {
+            if (new_breakdowns != null) {
                 Log.d("TEST","MainActivityBroadcastReceiver1");
                 String json = intent.getStringExtra("new_breakdown_list");
                 if(json!=null) {
@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (JobListFragment.mAdapter != null)
                     JobListFragment.mAdapter.notifyDataSetChanged();
-            }else if (statusUpdate != null) {
+            }else if (job_status_changed != null) {
                 Log.d("TEST","MainActivityBroadcastReceiver3");
                 String json = intent.getStringExtra("updated_breakdowns");
                 Type type = new TypeToken<List<JobChangeStatus>>() {
@@ -619,7 +619,7 @@ public class MainActivity extends AppCompatActivity
         if (STATUS == Breakdown.JOB_ATTENDING) {
             statusWord = ("Attending");
         } else if (STATUS == Breakdown.JOB_VISITED) {
-            statusWord = ("Visited");
+            statusWord = ("VisitedDialog");
         } else if (STATUS == Breakdown.JOB_TEMPORARY_COMPLETED) {
             statusWord = ("Temporary completed");
         } else if (STATUS == Breakdown.JOB_COMPLETED) {

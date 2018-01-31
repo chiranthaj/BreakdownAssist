@@ -193,7 +193,7 @@ public class GmapAddTestBreakdownFragment extends Fragment implements OnMapReady
 
 
                         Toast.makeText(getActivity().getApplicationContext()
-                                , "Added Breakdown"  + selectedBreakdown.get_Name() + ", Undo ? "
+                                , "Added Breakdown"  + selectedBreakdown.NAME + ", Undo ? "
                                 , Toast.LENGTH_SHORT).show();
 
                     }

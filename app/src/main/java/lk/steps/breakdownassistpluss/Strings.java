@@ -13,7 +13,7 @@ public class Strings {
        // int StatusId = Integer.parseInt(statusId);
         if(StatusId == Breakdown.JOB_DELIVERED) return "Unattained";
         else if(StatusId == Breakdown.JOB_ACKNOWLEDGED) return "Unattained";
-        else if(StatusId == Breakdown.JOB_VISITED) return "Visited";
+        else if(StatusId == Breakdown.JOB_VISITED) return "VisitedDialog";
         else if(StatusId == Breakdown.JOB_ATTENDING) return "Attending";
         else if(StatusId == Breakdown.JOB_TEMPORARY_COMPLETED) return "Temporary completed";
         else if(StatusId == Breakdown.JOB_COMPLETED) return "Completed";
@@ -38,6 +38,13 @@ public class Strings {
             "Comment2",
             "Comment3",
             "Custom",
+    };
+
+    public static String[][] NotAttendingComments = {
+            {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
+            {"-", "1", "-","Another breakdown","වෙනත් බිඳවැටුමක්"},
+            {"-", "2", "-","No required materials","අවශ්\u200Dය ද්\u200Dරව්\u200Dය නොමැත"},
+            {"-", "3", "-","Time consuming","විශාල කාලයක් අවශ්\u200Dයයි"},
     };
 
     public static String[][] DoneComments = {

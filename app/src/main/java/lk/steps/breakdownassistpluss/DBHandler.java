@@ -31,7 +31,7 @@ import lk.steps.breakdownassistpluss.Sync.SyncObject;
 
 public class DBHandler extends SQLiteOpenHelper
 {
-    private static final int Database_Version = 122;
+    private static final int Database_Version = 123;
     private static final String DatabaseNAME = "BreakdownAssist.db";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
@@ -87,7 +87,7 @@ public class DBHandler extends SQLiteOpenHelper
                 "DateTime	            TEXT,"+
                 "ACCT_NUM 	            TEXT,"+
                 "STATUS	                TEXT,"+
-                "CONTACT_NO 	        TEXT,"+
+              //  "CONTACT_NO 	        TEXT,"+
                 "MobilePhNo 	        TEXT,"+
                 "LandPhNo 	            TEXT,"+
                 "PRIORITY    	        INTEGER,"+
@@ -374,12 +374,18 @@ public class DBHandler extends SQLiteOpenHelper
         return list;
     }
 
-    public void UpdateUngroups(String parentId)
+    public void UpdateUngroups(String parentId, String syncedStatus)
     {
         SQLiteDatabase db = getWritableDatabase();
-        String query = "UPDATE BreakdownRecords SET PARENT_BREAKDOWN_ID='0000000000' WHERE JOB_NO='" +parentId + "';";
+        String query = "UPDATE BreakdownRecords SET " +
+                "PARENT_BREAKDOWN_ID='0000000000', " +
+                "GROUP_SYNCED='" +syncedStatus+"' "+
+                "WHERE JOB_NO='" +parentId + "';";
         db.execSQL(query);
-        query = "UPDATE BreakdownRecords SET PARENT_BREAKDOWN_ID='0000000000' WHERE PARENT_BREAKDOWN_ID='" +parentId + "';";
+        query = "UPDATE BreakdownRecords SET " +
+                "PARENT_BREAKDOWN_ID='0000000000', " +
+                "GROUP_SYNCED='" +syncedStatus+"' "+
+                "WHERE PARENT_BREAKDOWN_ID='" +parentId + "';";
         db.execSQL(query);
         //db.close();
     }
@@ -476,8 +482,8 @@ public class DBHandler extends SQLiteOpenHelper
                     "BA_SERVER_SYNCED='1', " +
                     "JOB_NO='" + breakdown.get_Job_No() + "', " +
                     "OLD_JOB_NO='" + oldJobNo + "', " +
-                    "NAME='" + breakdown.get_Name() + "', " +
-                    "ADDRESS='" + breakdown.get_ADDRESS() + "', " +
+                    "NAME='" + breakdown.NAME + "', " +
+                    "ADDRESS='" + breakdown.ADDRESS + "', " +
                     "LATITUDE='" + breakdown.getLatitude() + "', " +
                     "LONGITUDE='" + breakdown.getLongitude() + "', " +
                     "TARIFF_COD='" + breakdown.get_TARIFF_COD() + "', " +
@@ -560,9 +566,13 @@ public class DBHandler extends SQLiteOpenHelper
                 //breakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
                 breakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
                 breakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
-                breakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
+                //breakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
                 breakdown.set_Priority(c.getInt(c.getColumnIndex("PRIORITY")));
                 //breakdown.set_PremisesID(c.getString(c.getColumnIndex("PREMISES_ID")));
+
+                breakdown.LandPhNo =c.getString(c.getColumnIndex("LandPhNo"));
+                breakdown.MobilePhNo =c.getString(c.getColumnIndex("MobilePhNo"));
+
                 breakdowns.add(breakdown);
             }
             c.moveToNext();
@@ -679,6 +689,18 @@ public class DBHandler extends SQLiteOpenHelper
         iResult=1; //Return Success
         return iResult;
     }
+
+    public boolean IsParent(String breakdownId){
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT * from BreakdownRecords " +
+                " WHERE BreakdownRecords.JOB_NO = '"+breakdownId+"' and PARENT_BREAKDOWN_ID == 'PARENT';";
+
+        Cursor c = db.rawQuery(query, null);
+        if(c==null || c.getCount() < 1)return false;
+        else return true;
+    }
+
+
     public List<SyncObject> getBreakdownStatusChangeNew() {
 
         SQLiteDatabase db = getWritableDatabase();
@@ -752,12 +774,12 @@ public class DBHandler extends SQLiteOpenHelper
             values.put("TEAM",Globals.mToken.team_id);
             values.put("ECSC",breakdown.get_ECSC());
             values.put("AREA",breakdown.get_AREA());
-            values.put("CONTACT_NO",breakdown.get_Contact_No());
+           // values.put("CONTACT_NO",breakdown.get_Contact_No());
             values.put("PRIORITY",breakdown.get_Priority());
             values.put("JOB_SOURCE",breakdown.get_JOB_SOURCE());
-            values.put("NAME",breakdown.get_Name());
+            values.put("NAME",breakdown.NAME);
             values.put("TARIFF_COD",breakdown.get_TARIFF_COD());
-            values.put("ADDRESS",breakdown.get_ADDRESS());
+            values.put("ADDRESS",breakdown.ADDRESS);
             values.put("LATITUDE",breakdown.getLatitude());
             values.put("LONGITUDE",breakdown.getLongitude());
             values.put("GPS_ACCURACY",breakdown.get_GPS_ACCURACY());
@@ -1053,10 +1075,10 @@ public class DBHandler extends SQLiteOpenHelper
             gpsQuery=" AND B.GPS_ACCURACY <>  '-1' ";
         }
 
-        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD, " +
+        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD,B.LandPhNo, B.MobilePhNo, " +
                 " B.OLD_JOB_NO, B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
                 " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS, B.SUB,  " +
-                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO, B.PARENT_BREAKDOWN_ID,  " +
+                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.PARENT_BREAKDOWN_ID,  " +
                 " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
                 " B.PRIORITY as PRIORITY, B.NOTE " +
                 " FROM BreakdownRecords B " +
@@ -1085,7 +1107,7 @@ public class DBHandler extends SQLiteOpenHelper
             {
                 Breakdown newBreakdown=new Breakdown();
                 newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
-                newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                newBreakdown.NAME=(c.getString(c.getColumnIndex("NAME")));
                 newBreakdown.set_ParentBreakdownId(c.getString(c.getColumnIndex("PARENT_BREAKDOWN_ID")));
                 newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
@@ -1096,13 +1118,17 @@ public class DBHandler extends SQLiteOpenHelper
                 newBreakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
                 newBreakdown.set_Note(c.getString(c.getColumnIndex("NOTE")));
                 newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
-                newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                newBreakdown.ADDRESS=(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
                 newBreakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
                 newBreakdown.set_OldJob_No(c.getString(c.getColumnIndex("OLD_JOB_NO")));
-                newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
+              //  newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
                 newBreakdown.set_Priority(c.getInt(c.getColumnIndex("PRIORITY")));
                 newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
+
+                newBreakdown.LandPhNo =c.getString(c.getColumnIndex("LandPhNo"));
+                newBreakdown.MobilePhNo =c.getString(c.getColumnIndex("MobilePhNo"));
+
                 BreakdownsList.add(newBreakdown);
             }
             c.moveToNext();
@@ -1118,10 +1144,10 @@ public class DBHandler extends SQLiteOpenHelper
     {
         SQLiteDatabase db = getWritableDatabase();
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
-        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD, " +
+        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD,B.LandPhNo, B.MobilePhNo, " +
                 " B.OLD_JOB_NO, B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
                 " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS, B.SUB,  " +
-                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO, B.PARENT_BREAKDOWN_ID,  " +
+                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.PARENT_BREAKDOWN_ID,  " +
                 " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
                 " B.PRIORITY as PRIORITY " +
                 " FROM BreakdownRecords B " +
@@ -1139,7 +1165,7 @@ public class DBHandler extends SQLiteOpenHelper
             {
                 Breakdown newBreakdown=new Breakdown();
                 newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
-                newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                newBreakdown.NAME=(c.getString(c.getColumnIndex("NAME")));
                 newBreakdown.set_ParentBreakdownId(c.getString(c.getColumnIndex("PARENT_BREAKDOWN_ID")));
                 newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
@@ -1149,13 +1175,17 @@ public class DBHandler extends SQLiteOpenHelper
                 newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
                 newBreakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
                 newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
-                newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                newBreakdown.ADDRESS=(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
                 newBreakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
                 newBreakdown.set_OldJob_No(c.getString(c.getColumnIndex("OLD_JOB_NO")));
-                newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
+              //  newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
                 newBreakdown.set_Priority(c.getInt(c.getColumnIndex("PRIORITY")));
                 newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
+
+                newBreakdown.LandPhNo =c.getString(c.getColumnIndex("LandPhNo"));
+                newBreakdown.MobilePhNo =c.getString(c.getColumnIndex("MobilePhNo"));
+
                 BreakdownsList.add(newBreakdown);
             }
             c.moveToNext();
@@ -1169,10 +1199,10 @@ public class DBHandler extends SQLiteOpenHelper
     {
         List<Breakdown> BreakdownsList = new LinkedList<Breakdown>();
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD," +
+        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD,B.LandPhNo,B.MobilePhNo," +
                 " B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
                 " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS,   " +
-                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO,  " +
+                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO,   " +
                 " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
                 " B.PRIORITY as PRIORITY " +
                 " FROM BreakdownRecords B " +
@@ -1190,7 +1220,7 @@ public class DBHandler extends SQLiteOpenHelper
             {
                 Breakdown newBreakdown=new Breakdown();
                 newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
-                newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                newBreakdown.NAME=(c.getString(c.getColumnIndex("NAME")));
                 newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 //newBreakdown.set_BREAKDOWN_ID(c.getString(c.getColumnIndex("BREAKDOWN_ID")));
@@ -1199,12 +1229,16 @@ public class DBHandler extends SQLiteOpenHelper
                 newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                 newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
                 newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
-                newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                newBreakdown.ADDRESS=(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
                 newBreakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
-                newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
+              //  newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
                 newBreakdown.set_Priority(c.getInt(c.getColumnIndex("PRIORITY")));
                 newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
+
+                newBreakdown.LandPhNo =c.getString(c.getColumnIndex("LandPhNo"));
+                newBreakdown.MobilePhNo =c.getString(c.getColumnIndex("MobilePhNo"));
+
                 BreakdownsList.add(newBreakdown);
             }
             c.moveToNext();
@@ -1232,12 +1266,12 @@ public class DBHandler extends SQLiteOpenHelper
             {
                 Breakdown newBreakdown=new Breakdown();
                 newBreakdown.set_id(c.getString(c.getColumnIndex("ID")));
-                newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                newBreakdown.NAME=(c.getString(c.getColumnIndex("NAME")));
                 newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                 newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                 newBreakdown.set_Status(0);
                 newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
-                newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                newBreakdown.ADDRESS=(c.getString(c.getColumnIndex("ADDRESS")));
                 newBreakdown.set_Full_Description("No DESCRIPTION");
                 Breakdownslist.add(newBreakdown);
             }
@@ -1273,12 +1307,10 @@ public class DBHandler extends SQLiteOpenHelper
         Breakdown newBreakdown=null;
 
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE," +
-                " B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
-                " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS,   " +
-                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO,B.SUB as SUB, B.CONTACT_NO as  CONTACT_NO,  " +
-                " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
-                " B.PRIORITY as PRIORITY " +
+        String query = "SELECT B.id  ,B.NAME ,B.LONGITUDE ,B.LandPhNo,B.MobilePhNo," +
+                " B.LATITUDE , B.STATUS ,B.ACCT_NUM ,B.ADDRESS,  B.DESCRIPTION , B.JOB_NO ,B.SUB , " +
+                " P.PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
+                " B.PRIORITY " +
                 " FROM BreakdownRecords B " +
                 //    " LEFT JOIN Customers C ON C.ACCT_NUM = B.ACCT_NUM " +
                 " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.ACCT_NUM " +
@@ -1292,7 +1324,7 @@ public class DBHandler extends SQLiteOpenHelper
         {
             newBreakdown=new Breakdown();
             newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
-            newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+            newBreakdown.NAME=(c.getString(c.getColumnIndex("NAME")));
             newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
             newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
             newBreakdown.set_Status(c.getShort(c.getColumnIndex("STATUS")));
@@ -1300,12 +1332,15 @@ public class DBHandler extends SQLiteOpenHelper
             newBreakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
             newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
             newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
-            newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+            newBreakdown.ADDRESS=(c.getString(c.getColumnIndex("ADDRESS")));
             newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
             newBreakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
-            newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
+           // newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
             newBreakdown.set_Priority(c.getInt(c.getColumnIndex("PRIORITY")));
             newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
+
+            newBreakdown.LandPhNo =c.getString(c.getColumnIndex("LandPhNo"));
+            newBreakdown.MobilePhNo =c.getString(c.getColumnIndex("MobilePhNo"));
         }
         c.close();
         return newBreakdown;
@@ -1315,14 +1350,13 @@ public class DBHandler extends SQLiteOpenHelper
         Breakdown newBreakdown=null;
 
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE," +
+        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE, B.MobilePhNo, B.LandPhNo," +
                 " B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
                 " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS,   " +
-                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO,B.SUB as SUB, B.CONTACT_NO as  CONTACT_NO,  " +
+                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO,B.SUB as SUB,  " +
                 " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
                 " B.PRIORITY as PRIORITY " +
                 " FROM BreakdownRecords B " +
-            //    " LEFT JOIN Customers C ON C.ACCT_NUM = B.ACCT_NUM " +
                 " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.ACCT_NUM " +
                 " WHERE B.id = '" + sID + "';";
 
@@ -1335,7 +1369,7 @@ public class DBHandler extends SQLiteOpenHelper
             Log.e("SUB",c.getString(c.getColumnIndex("SUB")));
             newBreakdown=new Breakdown();
             newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
-            newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+            newBreakdown.NAME=(c.getString(c.getColumnIndex("NAME")));
             newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
             newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
             newBreakdown.set_Status(c.getShort(c.getColumnIndex("STATUS")));
@@ -1343,41 +1377,43 @@ public class DBHandler extends SQLiteOpenHelper
             newBreakdown.set_SUB(c.getString(c.getColumnIndex("SUB")));
             newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
             newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
-            newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+            newBreakdown.ADDRESS=(c.getString(c.getColumnIndex("ADDRESS")));
             newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
             newBreakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
-            newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
+            //newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
             newBreakdown.set_Priority(c.getInt(c.getColumnIndex("PRIORITY")));
             newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
+
+            newBreakdown.LandPhNo =c.getString(c.getColumnIndex("LandPhNo"));
+            newBreakdown.MobilePhNo =c.getString(c.getColumnIndex("MobilePhNo"));
+
+            //Log.e("LandPhNo",""+c.getString(c.getColumnIndex("LandPhNo")));
+            //Log.e("MobilePhNo",""+c.getString(c.getColumnIndex("MobilePhNo")));
         }
         c.close();
         return newBreakdown;
     }
-    public Breakdown ReadBreakdown_by_ACCT_NUM(String sACCT_NUM)
-    {
-        return ReadBreakdown_by_ID(getBreakdown_ID(sACCT_NUM));
-    }
 
-    public List<Breakdown> SearchInDatabase(String word) {
+
+    /*public List<Breakdown> SearchInDatabase(String word) {
         List<Breakdown> part1 = SearchInBreakdowns(word);
-    //    List<Breakdown> part2 = SearchInCustomers2(word);
-       // part1.addAll(part2);
         return part1;
-    }
+    }*/
 
-    private List<Breakdown> SearchInBreakdowns(String word){
+    public List<Breakdown> SearchInDatabase(String word){
         String WORD = "%" + word.trim().toUpperCase() + "%";
 
-        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD," +
+        String query = "SELECT B.id AS id ,B.NAME as NAME,B.LONGITUDE as LONGITUDE,B.TARIFF_COD as TARIFF_COD,B.LandPhNo,B.MobilePhNo," +
                 " B.LATITUDE as LATITUDE, B.STATUS as STATUS, " +
                 " B.ACCT_NUM as ACCT_NUM,B.ADDRESS as ADDRESS,   " +
-                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, B.CONTACT_NO as  CONTACT_NO,  " +
+                " B.DESCRIPTION as DESCRIPTION, B.JOB_NO as JOB_NO, " +
                 " P.PremisesID as PremisesID , B.DateTime as DateTime1, B.COMPLETED_TIME as DateTime2, " +
                 " B.PRIORITY as PRIORITY " +
                 " FROM BreakdownRecords B " +
            //     " LEFT JOIN Customers C ON C.ACCT_NUM = B.ACCT_NUM " +
                 " LEFT JOIN PremisesID P ON P.ACCT_NUM = B.ACCT_NUM " +
                 " WHERE " +
+                "B.JOB_NO LIKE'" + WORD +"' OR " +
                 "B.ACCT_NUM LIKE'" + WORD +"' OR " +
                 "B.NAME LIKE'" + WORD +"' OR " +
                 "B.ADDRESS LIKE'" + WORD +"'"+
@@ -1392,7 +1428,7 @@ public class DBHandler extends SQLiteOpenHelper
                 do {
                     Breakdown newBreakdown = new Breakdown();
                     newBreakdown.set_id(c.getString(c.getColumnIndex("id")));
-                    newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
+                    newBreakdown.NAME=(c.getString(c.getColumnIndex("NAME")));
                     newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
                     newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
                     newBreakdown.set_Status(c.getShort(c.getColumnIndex("STATUS")));
@@ -1400,12 +1436,17 @@ public class DBHandler extends SQLiteOpenHelper
                     newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
                     newBreakdown.set_Received_Time(c.getString(c.getColumnIndex("DateTime1")));
                     newBreakdown.set_Completed_Time(c.getString(c.getColumnIndex("DateTime2")));
-                    newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
+                    newBreakdown.ADDRESS=(c.getString(c.getColumnIndex("ADDRESS")));
                     newBreakdown.set_Full_Description(c.getString(c.getColumnIndex("DESCRIPTION")));
                     newBreakdown.set_Job_No(c.getString(c.getColumnIndex("JOB_NO")));
-                    newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
+                   /// newBreakdown.set_Contact_No(c.getString(c.getColumnIndex("CONTACT_NO")));
                     newBreakdown.set_Priority(c.getInt(c.getColumnIndex("PRIORITY")));
                     newBreakdown.set_PremisesID(c.getString(c.getColumnIndex("PremisesID")));
+
+                    newBreakdown.LandPhNo =c.getString(c.getColumnIndex("LandPhNo"));
+                    newBreakdown.MobilePhNo =c.getString(c.getColumnIndex("MobilePhNo"));
+
+
                     BreakdownsList.add(newBreakdown);
                 } while (c.moveToNext());
             }
@@ -1414,47 +1455,10 @@ public class DBHandler extends SQLiteOpenHelper
         return BreakdownsList;
     }
 
-    //TODO : Add using customer object
-    public Breakdown ReadCustomer_by_ACCT_NUM(String sACCT_NUM)
-    {
-        Breakdown newBreakdown=null;
-        //TODO : Fix Exception
-        SQLiteDatabase db = getWritableDatabase();
-
-        String query = "SELECT id as ID,ACCT_NUM as ACCT_NUM,NAME,TARIFF_COD, ADDRESS,LONGITUDE,LATITUDE " +
-                "FROM Customers WHERE ACCT_NUM='" + sACCT_NUM +"';";
-
-        Cursor c = db.rawQuery(query, null);
-
-        try{
-            c.moveToFirst();
-            if (!c.isAfterLast() && c.getString(0) != null)
-            {
-                newBreakdown=new Breakdown();
-                newBreakdown.set_id(c.getString(c.getColumnIndex("ID")));
-                newBreakdown.set_Name(c.getString(c.getColumnIndex("NAME")));
-                newBreakdown.set_LONGITUDE(c.getString(c.getColumnIndex("LONGITUDE")));
-                newBreakdown.set_LATITUDE(c.getString(c.getColumnIndex("LATITUDE")));
-                newBreakdown.set_TARIFF_COD(c.getString(c.getColumnIndex("TARIFF_COD")));
-                newBreakdown.set_Status(0);
-                newBreakdown.set_Acct_Num(c.getString(c.getColumnIndex("ACCT_NUM")));
-                newBreakdown.set_ADDRESS(c.getString(c.getColumnIndex("ADDRESS")));
-                newBreakdown.set_Full_Description("No DESCRIPTION");
-            }
-        }catch (Exception ex){
-            newBreakdown=null;
-        }
-        finally {
-            c.close();
-            //db.close();
-        }
-        return newBreakdown;
-    }
-
 
     public int UpdateBreakdownStatus(Breakdown breakdown,int Breakdown_Status)
     {
-        Log.e("UPDATEQ","UpdateBreakdownStatus");
+        //Log.e("UPDATEQ","UpdateBreakdownStatus");
         int iResult=-1;
         List<String> family = getFamily(breakdown.get_Job_No());
         SQLiteDatabase db = getWritableDatabase();
@@ -1609,33 +1613,15 @@ public class DBHandler extends SQLiteOpenHelper
 
     public int UpdateEditBreakdownByJobNo(Breakdown breakdown)
     {
-        /*if(breakdown.get_Contact_No()== null)breakdown.set_Contact_No("");
-        if(breakdown.get_Note()== null)breakdown.set_Note("");
-
-        Log.e("UPDATEQ","UpdateEditBreakdown");
-        int iResult=-1;
-        SQLiteDatabase db = getWritableDatabase();
-        String query = "UPDATE BreakdownRecords SET " +
-                "NAME='" + breakdown.get_Name() + "'," +
-                "ADDRESS='" + breakdown.get_ADDRESS() + "'," +
-                "DESCRIPTION='" + breakdown.get_Full_Description() + "'," +
-                "CONTACT_NO='" + breakdown.get_Contact_No() + "'," +
-                "NOTE='" + breakdown.get_Note() + "'," +
-              // "ECSC='" + breakdown.get_ECSC() + "'," +
-              // " AREA= '" +  breakdown.get_AREA() + "' " +
-                "PRIORITY='" + breakdown.get_Priority() + "' " +
-                " WHERE JOB_NO='" +breakdown.get_Job_No() + "';";
-        Log.e("UpdateEditBreakdown","NOTE="+breakdown.get_Note());
-        db.execSQL(query);
-        //Log.e("GetBreakdownsStatus","jobStatus.STATUS:"+Breakdown_Status);
-        iResult=1; //Return Success*/
-
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put("NAME",breakdown.get_Name());
-        cv.put("ADDRESS",breakdown.get_ADDRESS());
+        cv.put("NAME",breakdown.NAME);
+        cv.put("ADDRESS",breakdown.ADDRESS);
         cv.put("DESCRIPTION",breakdown.get_Full_Description());
-        if(breakdown.get_Contact_No()!= null)cv.put("CONTACT_NO",breakdown.get_Contact_No());
+
+        if(breakdown.LandPhNo!= null)cv.put("LandPhNo",breakdown.LandPhNo);
+        if(breakdown.MobilePhNo!= null)cv.put("MobilePhNo",breakdown.MobilePhNo);
+
         if(breakdown.get_Note()!= null)cv.put("NOTE",breakdown.get_Note());
         cv.put("PRIORITY",breakdown.get_Priority());
 
@@ -1643,6 +1629,5 @@ public class DBHandler extends SQLiteOpenHelper
 
         return 1;
     }
-
 
 }

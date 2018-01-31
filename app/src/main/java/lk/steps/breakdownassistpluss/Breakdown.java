@@ -20,6 +20,9 @@ public class Breakdown {
     public static final int JOB_RE_CALLED = 9;
     public static final int JOB_RETURNED = 10;
     public static final int JOB_FORWARDED = 11;
+    public static final int JOB_GROUPED = 12;
+    public static final int JOB_UNGROUPED = 13;
+    public static final int JOB_NOT_ATTENDING = 14;
 
     public static final int Priority_Normal = 3;
     public static final int Priority_High = 2;
@@ -31,8 +34,8 @@ public class Breakdown {
     private String COMPLETED_TIME;
     private String BA_SERVER_SYNCED;
     private String ACCT_NUM;
-    private String NAME;
-    private String ADDRESS;
+    public String NAME;
+    public String ADDRESS;
     private String LATITUDE;
     private String LONGITUDE;
     private LatLng LOCATION ;
@@ -49,7 +52,7 @@ public class Breakdown {
     private String JOB_NO;
     private String USER_ID;
     private String OLD_JOB_NO;
-    private String CONTACT_NO;
+  //  private String CONTACT_NO;
     private String PREMISES_ID;
     private String SMS_INBOX_REFERENCE;
     private String PARENT_BREAKDOWN_ID;
@@ -86,7 +89,7 @@ public class Breakdown {
         this.STATUS=STATUS;
     }
 
-
+/*
     public String get_ADDRESS() {
         return ADDRESS;
     }
@@ -94,7 +97,7 @@ public class Breakdown {
     public void set_ADDRESS(String ADDRESS) {
         this.ADDRESS = ADDRESS;
     }
-
+*/
     public String get_Acct_Num() {
         return ACCT_NUM;
     }
@@ -198,7 +201,7 @@ public class Breakdown {
     public void set_LONGITUDE(String LONGITUDE) {
         this.LONGITUDE = LONGITUDE;
     }
-
+/*
     public String get_Name() {
         return NAME;
     }
@@ -206,7 +209,7 @@ public class Breakdown {
     public void set_Name(String NAME) {
         this.NAME = NAME;
     }
-
+*/
     public int get_Priority() {
         return PRIORITY;
     }
@@ -239,14 +242,14 @@ public class Breakdown {
         this.TARIFF_COD = TARIFF_COD;
     }
 
-    public String get_Contact_No() {
+    /*public String get_Contact_No() {
         return CONTACT_NO;
     }
 
     public void set_Contact_No(String CONTACT_NO) {
         this.CONTACT_NO = CONTACT_NO;
     }
-
+*/
     public String get_Job_No() {
         return JOB_NO;
     }

@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:layout_below="@+id/image"
-        android:text="Do you want to group selected breakdowns ?."
+        android:text=""
         android:gravity="center"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="36sp" />

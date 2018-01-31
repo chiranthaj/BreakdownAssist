@@ -403,7 +403,7 @@ public class SignalRService extends Service {
             Log.e(TAG, "SignalR->GetBreakdownUngroups");
             // Toast.makeText(context, "SignalR BreakdownGroups request received", Toast.LENGTH_SHORT).show();
             String breakdownId = data.get(1);
-            Globals.dbHandler.UpdateUngroups(breakdownId);
+            Globals.dbHandler.UpdateUngroups(breakdownId,"1");
             Intent intent = new Intent();
             intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
             intent.putExtra("group_breakdowns", "group_breakdowns");
@@ -426,7 +426,6 @@ public class SignalRService extends Service {
             PostFeedbackNew(feedbacks);
 
 
-
         }  else if (method.equals("PostFeedback")) {
             //Log.e("SignalR", "PostFeedback");
             //Toast.makeText(context,"SignalR PostFeedback received", Toast.LENGTH_SHORT).show();
@@ -439,7 +438,8 @@ public class SignalRService extends Service {
             }
         } else if (method.equals("PostHeartBeat")) {
             Log.e(TAG, "SignalR->HeartBeatReceived");
-            //Toast.makeText(context, "SignalR HeartBeatReceived", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "SignalR HeartBeatReceived", Toast.LENGTH_SHORT).show();
+            TurnOnScreen(context);
             //PlayTone(context, R.raw.heartbeat2, false);
         }
     }
@@ -591,6 +591,22 @@ public class SignalRService extends Service {
         NotificationManager manager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         if(manager!=null)manager.notify(73195, builder.build());
 
+        /*PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        if(pm!=null){
+            boolean isScreenOn = pm.isScreenOn();
+            if (!isScreenOn) {
+                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                        PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                        PowerManager.ON_AFTER_RELEASE, "NotificationWakeLock");
+                wl.acquire(10000);
+                PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NotificationCpuLock");
+                wl_cpu.acquire(10000);
+            }
+        }*/
+        TurnOnScreen(context);
+    }
+
+    private static void TurnOnScreen(Context context){
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         if(pm!=null){
             boolean isScreenOn = pm.isScreenOn();
@@ -794,8 +810,8 @@ public class SignalRService extends Service {
                                 jobStatus.device_timestamp = jobStatus.change_datetime;
                                 jobStatus.synchro_mobile_db = 1;//No need to send to server
 
-                                if (jobStatus.status.equals(String.valueOf(Breakdown.JOB_VISITED))) {//Visited
-                                    Log.e("GetBreakdownsStatus", "Visited:" + jobStatus.job_no);
+                                if (jobStatus.status.equals(String.valueOf(Breakdown.JOB_VISITED))) {//VisitedDialog
+                                    Log.e("GetBreakdownsStatus", "VisitedDialog:" + jobStatus.job_no);
                                     //jobStatus.STATUS="V";
                                     result = Globals.dbHandler.addJobStatusChangeRec(jobStatus);
                                     Globals.dbHandler.UpdateBreakdownStatusByJobNo(jobStatus.job_no, "", jobStatus.status);

@@ -12,8 +12,17 @@
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_marginStart="10dp"
-        android:layout_weight="0.7"
+        android:layout_weight="0.55"
         android:text="Material name"
+        android:textSize="24sp" />
+    <TextView
+        android:id="@+id/txtPl"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="10dp"
+        android:layout_weight="0.15"
+        android:textColor="@color/colorAccent"
+        android:text="PLCode"
         android:textSize="24sp" />
 
     <ImageButton
