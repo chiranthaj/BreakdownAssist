@@ -48,6 +48,7 @@ public abstract class CalenderActivity extends AppCompatActivity implements Week
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calender);
 
+
         // Get a reference for the week view in the layout.
         mWeekView = (WeekView) findViewById(R.id.weekView);
 
@@ -69,6 +70,7 @@ public abstract class CalenderActivity extends AppCompatActivity implements Week
         setupDateTimeInterpreter(false);
 
         Network.GetInterruptions(this);
+
     }
 
 
