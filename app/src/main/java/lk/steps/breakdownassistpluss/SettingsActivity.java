@@ -48,8 +48,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
-    private static final int READ_REQUEST_CODE_CUSTOMER_DATA = 42;
-    private static final int READ_REQUEST_CODE_PREMISES_DATA = 52;
+    //private static final int READ_REQUEST_CODE_CUSTOMER_DATA = 42;
+    //private static final int READ_REQUEST_CODE_PREMISES_DATA = 52;
 
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -252,7 +252,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     private static Preference.OnPreferenceClickListener PreferenceClickListener = new Preference.OnPreferenceClickListener() {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (preference.getKey().equals("Import_Customer_Data")){
+           /* if (preference.getKey().equals("Import_Customer_Data")){
                 Intent intent1 = new Intent(BreakdownAssist.getAppContext(), FileChooser.class);
                 intent1.putExtra("fileTypeFilter",".db");
                 getPrefActivity(preference).startActivityForResult(intent1,READ_REQUEST_CODE_CUSTOMER_DATA);
@@ -260,7 +260,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 Intent intent1 = new Intent(BreakdownAssist.getAppContext(), FileChooser.class);
                 intent1.putExtra("fileTypeFilter",".db");
                 getPrefActivity(preference).startActivityForResult(intent1,READ_REQUEST_CODE_PREMISES_DATA);
-            }
+            }*/
             return false;
         }
     };
@@ -305,7 +305,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                     Intent resultData) {
 
 
-        if (requestCode == READ_REQUEST_CODE_CUSTOMER_DATA && resultCode == Activity.RESULT_OK) {
+       /* if (requestCode == READ_REQUEST_CODE_CUSTOMER_DATA && resultCode == Activity.RESULT_OK) {
             final String curFileName = resultData.getStringExtra("GetFullPathFileName") ;
             final ProgressDialog progressdialog = new ProgressDialog(SettingsActivity.this);
             progressdialog.setMessage("Please Wait....");
@@ -334,7 +334,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+        }*/
 
     }
 

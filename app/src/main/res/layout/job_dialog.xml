@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
     android:id="@+id/dialoglayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -18,6 +20,33 @@
             android:layout_marginTop="10dp"
             android:orientation="vertical"
             android:weightSum="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:gravity="center"
+                android:background="@drawable/comment"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_launcher" />
+
+                <TextView
+                    android:id="@+id/status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="20dp"
+                    android:text="Breakdown details"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="35sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
 
             <TextView
                 android:id="@+id/jobno"
@@ -66,14 +95,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:gravity="center">
 
                 <TableRow
                     android:id="@+id/rowMobilePh"
-                    android:layout_weight="0.5"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_weight="0.5"
                     android:gravity="center">
 
                     <TextView
@@ -95,11 +124,10 @@
 
                 <TableRow
                     android:id="@+id/rowLandPh"
-                    android:layout_weight="0.5"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_weight="0.5"
                     android:gravity="center">
-
 
 
                     <TextView
@@ -140,54 +168,61 @@
                 android:textColor="@android:color/holo_red_dark"
                 android:textSize="25sp"
                 android:textStyle="bold" />
+
             <TableLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp">
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp">
 
                 <TableRow
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1">
 
-                    <Button
+                    <mehdi.sakout.fancybuttons.FancyButton
                         android:id="@+id/btnAttending"
-                        style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
                         android:layout_weight="0.25"
-                        android:text="Attending"
-                        android:textSize="18sp" />
+                        android:padding="10dp"
+                        fancy:fb_defaultColor="#55acee"
+                        fancy:fb_focusColor="#313131"
+                        fancy:fb_radius="64dp"
+                        fancy:fb_text="Attending"
+                        fancy:fb_textColor="#FFFFFF"
+                        fancy:fb_textSize="22sp" />
 
-                    <Button
+                    <mehdi.sakout.fancybuttons.FancyButton
                         android:id="@+id/btnVisted"
-                        style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
                         android:layout_weight="0.25"
-                        android:text="Visited"
-                        android:textSize="18sp" />
+                        android:padding="10dp"
+                        fancy:fb_defaultColor="#55acee"
+                        fancy:fb_focusColor="#313131"
+                        fancy:fb_radius="64dp"
+                        fancy:fb_text="Visited"
+                        fancy:fb_textColor="#FFFFFF"
+                        fancy:fb_textSize="22sp" />
 
-
-
-                    <Button
+                    <mehdi.sakout.fancybuttons.FancyButton
                         android:id="@+id/btnDone"
-                        style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
                         android:layout_weight="0.25"
-                        android:text="Temporary Completed"
-                        android:textSize="18sp" />
+                        android:padding="10dp"
+                        fancy:fb_defaultColor="#55acee"
+                        fancy:fb_focusColor="#313131"
+                        fancy:fb_radius="64dp"
+                        fancy:fb_text="Temporary Completed"
+                        fancy:fb_textColor="#FFFFFF"
+                        fancy:fb_textSize="22sp" />
 
-                    <Button
-                        android:id="@+id/btnCompleted"
-                        style="@style/Widget.AppCompat.Button.Colored"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="0.25"
-                        android:text="Completed"
-                        android:textSize="18sp" />
+
                 </TableRow>
 
             </TableLayout>
@@ -202,37 +237,111 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1">
 
-                    <ImageButton
-                        android:id="@+id/btnCancel"
-                        style="@style/Widget.AppCompat.Button.Colored"
+                    <mehdi.sakout.fancybuttons.FancyButton
+                        android:id="@+id/btnCompleted"
                         android:layout_width="0dp"
-                        android:layout_height="65dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
                         android:layout_weight="0.25"
-                        android:src="@drawable/ic_cancel" />
+                        android:padding="10dp"
+                        fancy:fb_defaultColor="#55acee"
+                        fancy:fb_focusColor="#313131"
+                        fancy:fb_radius="64dp"
+                        fancy:fb_text="Completed"
+                        fancy:fb_textColor="#FFFFFF"
+                        fancy:fb_textSize="22sp" />
 
-                    <Button
+
+                    <mehdi.sakout.fancybuttons.FancyButton
                         android:id="@+id/btnReject"
-                        style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
-                        android:layout_height="65dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
                         android:layout_weight="0.25"
-                        android:text="Reject"
-                        android:textSize="18sp" />
-                    <Button
+                        android:padding="10dp"
+                        fancy:fb_defaultColor="#55acee"
+                        fancy:fb_focusColor="#313131"
+                        fancy:fb_radius="64dp"
+                        fancy:fb_text="Reject"
+                        fancy:fb_textColor="#FFFFFF"
+                        fancy:fb_textSize="22sp" />
+
+                    <mehdi.sakout.fancybuttons.FancyButton
                         android:id="@+id/btnReturn"
-                        style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
-                        android:layout_height="65dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
                         android:layout_weight="0.25"
-                        android:text="Return"
-                        android:textSize="18sp" />
-                    <ImageButton
+                        android:padding="10dp"
+                        fancy:fb_defaultColor="#55acee"
+                        fancy:fb_focusColor="#313131"
+                        fancy:fb_radius="64dp"
+                        fancy:fb_text="Return"
+                        fancy:fb_textColor="#FFFFFF"
+                        fancy:fb_textSize="22sp" />
+
+
+
+                </TableRow>
+
+            </TableLayout>
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <mehdi.sakout.fancybuttons.FancyButton
+                        android:id="@+id/btnCancel"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        android:layout_weight="0.25"
+                        android:padding="5dp"
+                        fancy:fb_defaultColor="#55acee"
+                        fancy:fb_focusColor="#313131"
+                        fancy:fb_iconPaddingLeft="0dp"
+                        fancy:fb_iconPaddingRight="0dp"
+                        fancy:fb_iconResource="@drawable/ic_cancel"
+                        fancy:fb_radius="64dp"
+                        fancy:fb_text=""
+                        fancy:fb_textColor="#FFFFFF" />
+
+
+                    <mehdi.sakout.fancybuttons.FancyButton
+                        android:id="@+id/btnMaterials"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        android:layout_weight="0.25"
+                        android:padding="5dp"
+                        fancy:fb_defaultColor="#55acee"
+                        fancy:fb_focusColor="#313131"
+                        fancy:fb_radius="64dp"
+                        fancy:fb_text="Materials"
+                        fancy:fb_textColor="#FFFFFF"
+                        fancy:fb_textSize="22sp" />
+
+                    <mehdi.sakout.fancybuttons.FancyButton
                         android:id="@+id/btnNavigate"
-                        style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_width="0dp"
-                        android:layout_height="65dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
                         android:layout_weight="0.25"
-                        android:src="@drawable/ic_navigation" />
+                        android:padding="5dp"
+                        fancy:fb_defaultColor="#55acee"
+                        fancy:fb_focusColor="#313131"
+                        fancy:fb_iconPaddingLeft="0dp"
+                        fancy:fb_iconPaddingRight="0dp"
+                        fancy:fb_iconResource="@drawable/ic_navigation"
+                        fancy:fb_radius="64dp"
+                        fancy:fb_text=""
+                        fancy:fb_textColor="#FFFFFF" />
+
                 </TableRow>
 
             </TableLayout>

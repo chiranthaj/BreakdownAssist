@@ -22,7 +22,9 @@ public class MaterialObject {
     public boolean getSelected() {
         return selected;
     }
-
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
     public String getName() {
         return materialName;
     }

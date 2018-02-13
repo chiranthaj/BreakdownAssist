@@ -33,6 +33,7 @@ import lk.steps.breakdownassistpluss.Models.Team;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.Strings;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
+import mehdi.sakout.fancybuttons.FancyButton;
 
 public class ReturnDialog extends AppCompatActivity {
     Breakdown breakdown;
@@ -117,7 +118,7 @@ public class ReturnDialog extends AppCompatActivity {
                 }
             });
 
-            ImageButton btnReject = (ImageButton) findViewById(R.id.btnReject);
+            FancyButton btnReject = (FancyButton) findViewById(R.id.btnReject);
             btnReject.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -150,7 +151,7 @@ public class ReturnDialog extends AppCompatActivity {
                 }
             });
 
-            ImageButton btnCancel = (ImageButton) findViewById(R.id.btnCancel);
+            FancyButton btnCancel = (FancyButton) findViewById(R.id.btnCancel);
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

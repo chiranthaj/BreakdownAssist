@@ -164,7 +164,7 @@ public class SwipeableRecyclerViewTouchListener implements RecyclerView.OnItemTo
                     break;
                 }
 
-                // Find the child view that was touched (perform a hit test)
+                // Find the child view that was touched (perform a hit job_listview_row_test)
                 Rect rect = new Rect();
                 int childCount = mRecyclerView.getChildCount();
                 int[] listViewCoords = new int[2];

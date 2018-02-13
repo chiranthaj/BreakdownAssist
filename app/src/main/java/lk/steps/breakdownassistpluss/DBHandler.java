@@ -299,11 +299,15 @@ public class DBHandler extends SQLiteOpenHelper
     public void addMaterials(String breakdownId, List<MaterialObject> list){
         SQLiteDatabase db = getWritableDatabase();
 
+        db.execSQL("delete from Materials where BREAKDOWN_ID='" +breakdownId + "'");
+
         for(MaterialObject obj : list){
-            Log.e("addMaterials",obj.getCode()+"="+obj.getQuantity());
-            String query = "INSERT OR REPLACE INTO Materials(BREAKDOWN_ID, MATERIAL_CODE, QUANTITY, SYNC_DONE) " +
-                    "VALUES('"+breakdownId+"', '"+obj.getCode()+"',"+obj.getQuantity()+",'0');";//
-            db.execSQL(query);
+            if(obj.getQuantity()>0){
+                Log.e("addMaterials",obj.getCode()+"="+obj.getQuantity());
+                String query = "INSERT OR REPLACE INTO Materials(BREAKDOWN_ID, MATERIAL_CODE, QUANTITY, SYNC_DONE) " +
+                        "VALUES('"+breakdownId+"', '"+obj.getCode()+"',"+obj.getQuantity()+",'0');";//
+                db.execSQL(query);
+            }
         }
     }
 
@@ -377,15 +381,28 @@ public class DBHandler extends SQLiteOpenHelper
     public void UpdateUngroups(String parentId, String syncedStatus)
     {
         SQLiteDatabase db = getWritableDatabase();
+        //Update parent
         String query = "UPDATE BreakdownRecords SET " +
                 "PARENT_BREAKDOWN_ID='0000000000', " +
                 "GROUP_SYNCED='" +syncedStatus+"' "+
                 "WHERE JOB_NO='" +parentId + "';";
         db.execSQL(query);
+        //Update childrens
         query = "UPDATE BreakdownRecords SET " +
                 "PARENT_BREAKDOWN_ID='0000000000', " +
                 "GROUP_SYNCED='" +syncedStatus+"' "+
                 "WHERE PARENT_BREAKDOWN_ID='" +parentId + "';";
+        db.execSQL(query);
+        //db.close();
+    }
+
+    public void RemoveChild(String childId, String syncedStatus)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "UPDATE BreakdownRecords SET " +
+                "PARENT_BREAKDOWN_ID='0000000000', " +
+                "GROUP_SYNCED='" +syncedStatus+"' "+
+                "WHERE JOB_NO='" +childId + "';";
         db.execSQL(query);
         //db.close();
     }
@@ -1613,6 +1630,13 @@ public class DBHandler extends SQLiteOpenHelper
 
     public int UpdateEditBreakdownByJobNo(Breakdown breakdown)
     {
+        Log.e("EditBreakdown","JOB_NO:"+breakdown.get_Job_No());
+        Log.e("EditBreakdown","NAME:"+breakdown.NAME);
+        Log.e("EditBreakdown","ADDRESS:"+breakdown.ADDRESS);
+        Log.e("EditBreakdown","DESCRIPTION:"+breakdown.get_Full_Description());
+        Log.e("EditBreakdown","LandPhNo:"+breakdown.LandPhNo);
+        Log.e("EditBreakdown","MobilePhNo:"+breakdown.MobilePhNo);
+        Log.e("EditBreakdown","NOTE:"+breakdown.get_Note());
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("NAME",breakdown.NAME);

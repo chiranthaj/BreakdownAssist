@@ -10,20 +10,32 @@
     <CheckBox
         android:id="@+id/chkItem"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="match_parent"
         android:layout_marginStart="10dp"
-        android:layout_weight="0.55"
-        android:text="Material name"
+        android:layout_weight="0.05"
+        android:text=""
+        android:textSize="24sp" />
+    <TextView
+        android:id="@+id/txtMaterialName"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="5dp"
+        android:gravity="center_vertical"
+        android:layout_weight="0.5"
+        android:textColor="#000"
+        android:text="Material Name Material Name Material Name"
         android:textSize="24sp" />
     <TextView
         android:id="@+id/txtPl"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="match_parent"
         android:layout_marginStart="10dp"
+        android:gravity="center"
         android:layout_weight="0.15"
-        android:textColor="@color/colorAccent"
+        android:textColor="#000"
+        android:textStyle="bold"
         android:text="PLCode"
-        android:textSize="24sp" />
+        android:textSize="23sp" />
 
     <ImageButton
         android:id="@+id/btnDown"

@@ -4,6 +4,7 @@ import java.util.List;
 
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
+import lk.steps.breakdownassistpluss.Models.Interruption;
 import lk.steps.breakdownassistpluss.Models.JobChangeStatus;
 import lk.steps.breakdownassistpluss.Models.Team;
 import okhttp3.ResponseBody;
@@ -27,7 +28,12 @@ public interface SyncApi {
     @FormUrlEncoded
     @POST("/token")
     Call<Token> GetJwt(@Field("username") String username,
-                       @Field("password") String password);
+                       @Field("password") String password,
+                       @Field("deviceid") String deviceid,
+                       @Field("appid") String appid,
+                       @Field("version") String version,
+                       @Field("area") String area,
+                       @Field("team") String team);
 
 
     @POST("/Mobile/UpdateBreakdownStatus/")
@@ -86,4 +92,7 @@ public interface SyncApi {
     Call<ResponseBody> GetApk(@Header("Authorization") String auth,
                                         @Path("id") int id);
 
+    @GET("/Mobile/GetAllInterruptions/{deviceId}")
+    Call<List<Interruption>> GetAllInterruptions(@Header("Authorization") String auth,
+                                                 @Path("deviceId") String deviceId);
 }

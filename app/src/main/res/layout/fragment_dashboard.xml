@@ -119,141 +119,236 @@
         </TableRow>
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:weightSum="1">
 
             <android.support.v7.widget.CardView
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="1dp"
                 android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_weight="1"
+                android:layout_marginRight="1dp"
+                android:layout_weight="0.2"
                 android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="openCompletedJobFragment"
                 android:orientation="horizontal"
                 card_view:cardBackgroundColor="#1b1b1b"
                 card_view:cardCornerRadius="5dp"
                 card_view:cardUseCompatPadding="true">
 
                 <TableLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
                     android:orientation="vertical"
-                    android:shrinkColumns="*"
-                    android:stretchColumns="*"
-                    android:layout_margin="5dp"
-                    android:weightSum="1">
+                    android:padding="2dp">
 
-                    <TableRow
-                        android:id="@+id/tableRow2"
-                        android:layout_width="match_parent"
+
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_horizontal">
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            android:gravity="center"
-                            android:text="COMPLETED"
-                            android:textColor="@android:color/darker_gray" />
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            android:gravity="center"
-                            android:text="TEMP. COMPLETED"
-                            android:textColor="@android:color/darker_gray" />
+                        android:gravity="center_horizontal"
+                        android:text="COMPLETED"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="12sp" />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            android:gravity="center"
-                            android:text="WITHDRAWN"
-                            android:textColor="@android:color/darker_gray" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            android:gravity="center"
-                            android:text="REJECT"
-                            android:textColor="@android:color/darker_gray" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            
-                            android:gravity="center"
-                            android:text="RETURNED"
-                            android:textColor="@android:color/darker_gray" />
-                    </TableRow>
-
-                    <TableRow
-                        android:id="@+id/tableRow3"
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/c0"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:text="24"
+                        android:textColor="@android:color/white"
+                        android:textSize="30sp"
+                        android:textStyle="normal|bold" />
 
-                        <TextView
-                            android:id="@+id/c0"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            android:gravity="center"
-                            android:text="E"
-                            android:textSize="30sp"
-                            android:textColor="@android:color/white" />
-
-                        <TextView
-                            android:id="@+id/c1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            android:gravity="center"
-                            android:text="E"
-                            android:textSize="30sp"
-                            android:textColor="@android:color/white" />
-
-                        <TextView
-                            android:id="@+id/c2"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            android:gravity="center"
-                            android:text="F"
-                            android:textSize="30sp"
-                            android:textColor="@android:color/white" />
-
-                        <TextView
-                            android:id="@+id/c3"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            android:gravity="center"
-                            android:text="G"
-                            android:textSize="30sp"
-                            android:textColor="@android:color/white" />
-
-                        <TextView
-                            android:id="@+id/c4"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="1dp"
-                            android:gravity="center"
-                            android:text="H"
-                            android:textSize="30sp"
-                            android:textColor="@android:color/white" />
-                    </TableRow>
                 </TableLayout>
+            </android.support.v7.widget.CardView>
+            <android.support.v7.widget.CardView
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:layout_weight="0.2"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="openTempCompletedJobFragment"
+                android:orientation="horizontal"
+                card_view:cardBackgroundColor="#1b1b1b"
+                card_view:cardCornerRadius="5dp"
+                card_view:cardUseCompatPadding="true">
+
+                <TableLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:orientation="vertical"
+                    android:padding="2dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="T. COMPLETED"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/c1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="24"
+                        android:textColor="@android:color/white"
+                        android:textSize="30sp"
+                        android:textStyle="normal|bold" />
+
+                </TableLayout>
+            </android.support.v7.widget.CardView>
+            <android.support.v7.widget.CardView
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:layout_weight="0.2"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="openWithdrawnJobFragment"
+                android:orientation="horizontal"
+                card_view:cardBackgroundColor="#1b1b1b"
+                card_view:cardCornerRadius="5dp"
+                card_view:cardUseCompatPadding="true">
+
+                <TableLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:orientation="vertical"
+                    android:padding="2dp">
 
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="WITHDRAWN"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/c2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="24"
+                        android:textColor="@android:color/white"
+                        android:textSize="30sp"
+                        android:textStyle="normal|bold" />
+
+                </TableLayout>
+            </android.support.v7.widget.CardView>
+            <android.support.v7.widget.CardView
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="1dp"
+                android:layout_weight="0.2"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="openRejectJobFragment"
+                android:orientation="horizontal"
+                card_view:cardBackgroundColor="#1b1b1b"
+                card_view:cardCornerRadius="5dp"
+                card_view:cardUseCompatPadding="true">
+
+                <TableLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:orientation="vertical"
+                    android:padding="2dp">
 
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="REJECT"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/c3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="24"
+                        android:textColor="@android:color/white"
+                        android:textSize="30sp"
+                        android:textStyle="normal|bold" />
+
+                </TableLayout>
+            </android.support.v7.widget.CardView>
+            <android.support.v7.widget.CardView
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="5dp"
+                android:layout_weight="0.2"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="openReturnedJobFragment"
+                android:orientation="horizontal"
+                card_view:cardBackgroundColor="#1b1b1b"
+                card_view:cardCornerRadius="5dp"
+                card_view:cardUseCompatPadding="true">
+
+                <TableLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:orientation="vertical"
+                    android:padding="2dp">
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="RETURNED"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/c4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="24"
+                        android:textColor="@android:color/white"
+                        android:textSize="30sp"
+                        android:textStyle="normal|bold" />
+
+                </TableLayout>
             </android.support.v7.widget.CardView>
 
         </TableRow>
+
     </TableLayout>
 
 

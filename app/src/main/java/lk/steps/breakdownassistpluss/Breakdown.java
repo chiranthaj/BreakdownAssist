@@ -184,6 +184,8 @@ public class Breakdown {
 
     public LatLng getLocation() {
         try{
+            if(LATITUDE.equals("0") | LONGITUDE.equals("0")) return null;
+
             return new LatLng(Double.parseDouble(LATITUDE),Double.parseDouble(LONGITUDE));
         }catch(Exception e){
             return null;

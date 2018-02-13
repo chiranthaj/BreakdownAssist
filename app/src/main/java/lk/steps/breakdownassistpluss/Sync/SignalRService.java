@@ -38,6 +38,7 @@ import java.util.concurrent.ExecutionException;
 import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.Common;
 import lk.steps.breakdownassistpluss.Globals;
+import lk.steps.breakdownassistpluss.GpsTracker.TrackerObject;
 import lk.steps.breakdownassistpluss.Models.JobChangeStatus;
 import lk.steps.breakdownassistpluss.Models.JobCompletion;
 import lk.steps.breakdownassistpluss.MainActivity;
@@ -68,9 +69,9 @@ public class SignalRService extends Service {
     private static MediaPlayer mMediaPlayer;
     private boolean RetryTimerStarted = false;
     private boolean mBound = false;
+    private boolean mSignalRServerConnected = false;
     SyncRESTService syncRESTService;
-    private static String area_id;
-    private static String team_id;
+    private static String area_id, team_id,device_id;
     protected PowerManager.WakeLock mWakeLock;
 
     private static String TAG = "BGService";
@@ -85,27 +86,37 @@ public class SignalRService extends Service {
         try {
             registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.stopmediaplayer"));
             if (!Common.ReadBooleanPreferences(getApplicationContext(),"server", false))
-                SelectorActivity.GetIpAddress();
+                Common.GetIpAddress();
         } catch (Exception e) {
         }
+        Log.e(TAG, "SignalR->onCreate");
         //IgnoringBatteryOptimizations();
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
         this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssistSignalR");
-        this.mWakeLock.acquire();
+        if(!this.mWakeLock.isHeld()){
+            this.mWakeLock.acquire(60*60*60*6); // 6 hours
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //int result = super.onStartCommand(intent, flags, startId);
+        Log.e(TAG, "SignalR->onStartCommand");
+
         syncRESTService = new SyncRESTService(10);
         //Toast.makeText(this, "SignalR Service Started", Toast.LENGTH_SHORT).show();
         IgnoringBatteryOptimizations();
+        //Log.e(TAG, "SignalR->onStartCommand2");
         StartRetryTimer();
+        //Log.e(TAG, "SignalR->onStartCommand3");
         StopMediaPlayer();
 
         final PowerManager pm = (PowerManager) getSystemService(getApplicationContext().POWER_SERVICE);
         this.mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BreakdownAssistSignalR");
-        this.mWakeLock.acquire();
+        if(!this.mWakeLock.isHeld()){
+            this.mWakeLock.acquire(60*60*60*6); // 6 hours
+        }
+
         // return result;
         // return START_STICKY;
         return START_REDELIVER_INTENT;
@@ -130,7 +141,7 @@ public class SignalRService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         // Return the communication channel to the service.
-        // if(!Globals.ServerConnected)
+        Log.e(TAG, "SignalR->onBind");
         startSignalR();
         return mBinder;
     }
@@ -151,25 +162,63 @@ public class SignalRService extends Service {
         IgnoringBatteryOptimizations();
     }
 
+    private void StartRetryTimer() {
+        Log.e(TAG, "StartRetryTimer0");
+        /*if (!Globals.ServerConnected){
+            Log.e(TAG, "Server not Connected");
+            return;
+        }*/
+        if (RetryTimerStarted) {
+            Log.e(TAG, "RetryTimerStarted started");
+            return;
+        }
+        timer = new Timer();
+        mReconnectTimer = new ReconnectTimer();
+        timer.schedule(mReconnectTimer, 1000, 20000);
+        RetryTimerStarted = true;
+       // Log.e(TAG, "StartRetryTimer1");
+    }
+
+    private void StopRetryTimer() {
+       // Log.e(TAG, "StopRetryTimer0");
+        if (!RetryTimerStarted) return;
+        timer.cancel();
+        RetryTimerStarted = false;
+       // Log.e(TAG, "StopRetryTimer1");
+    }
+
+    private class ReconnectTimer extends TimerTask {
+        @Override
+        public void run() {
+            Log.e(TAG, "*NOT*Connected*");
+            //PlayTone(getApplicationContext(), R.raw.hone, false);
+            if (!Common.ReadBooleanPreferences(getApplicationContext(),"server", false))
+                Common.GetIpAddress();
+            SendOnlineStatusChanged();
+
+            startSignalR();
+        }
+    }
+
     private void IgnoringBatteryOptimizations(){
         try{
-            Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 1");
+           // Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 1");
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { // >=API 23
-                Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 2");
+              //  Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 2");
                 Intent intent = new Intent();
                 String packageName = this.getPackageName();
                 PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
                 if (pm.isIgnoringBatteryOptimizations(packageName)){
-                    Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 3");
+                   // Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 3");
                     intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
                 }
                 else {
-                    Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 4");
+                   // Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 4");
                     intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
                     intent.setData(Uri.parse("package:" + packageName));
                 }
                 this.startService(intent);
-                Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 5");
+               // Log.e(TAG, "SignalR->IgnoringBatteryOptimizations 5");
             }
         }catch(Exception e){
         }
@@ -202,15 +251,26 @@ public class SignalRService extends Service {
 
     }*/
     public static void PostGpsLocation(String Timestamp, String lat, String lon, String accu) {
-        String SERVER_METHOD_SEND_TO = "PostGpsLocation";
-        String groupId = area_id + "_" + team_id;
+
+        if(Globals.mToken == null) return;
+
+       // String SERVER_METHOD_SEND_TO = "PostGpsLocation";
+        String SERVER_METHOD_SEND_TO = "PostLocation";
+        //String groupId = area_id + "_" + team_id;
+
+
+        TrackerObject obj = new TrackerObject();
+        obj.DeviceId=device_id;
+        obj.group_id=area_id + "_" + team_id;
+        obj.UserId=Globals.mToken.user_id;
+        obj.timestamp=Timestamp;
+        obj.lat=lat;
+        obj.lon=lon;
+        obj.accuracy=accu;
 
         if (!Globals.ServerConnected) return;
         try {
-            mHubProxy.invoke(SERVER_METHOD_SEND_TO,
-                    mHubConnection.getConnectionId(),
-                    Globals.mToken.user_id,
-                    groupId, Timestamp, lat, lon, accu);
+            mHubProxy.invoke(SERVER_METHOD_SEND_TO, mHubConnection.getConnectionId(), obj);
         } catch (Exception e) {
         }
     }
@@ -222,7 +282,10 @@ public class SignalRService extends Service {
             Log.e(TAG, "SignalR->User not logged-in");
             return;
         }
-        if (Globals.ServerConnected) return;
+        /*if (!Globals.ServerConnected){
+            Log.e(TAG, "SignalR->Server not Connected");
+            return;
+        }*/
 
         Log.e(TAG, "SignalR->startSignalR()");
         Platform.loadPlatformComponent(new AndroidPlatformComponent());
@@ -246,12 +309,14 @@ public class SignalRService extends Service {
         //final String group_token = ReadStringPreferences("group_token","");
         area_id = Common.ReadStringPreferences(getApplicationContext(),"area_id", "");
         team_id = Common.ReadStringPreferences(getApplicationContext(),"team_id", "");
+        device_id = Common.ReadStringPreferences(getApplicationContext(),"device_id", "");
         //Log.e("SignalR ", "SignalR->*groupid*"+area_id+"_"+team_id);
         mHubConnection.setGroupsToken(area_id + "_" + team_id);
 
         try {
-            signalRFuture.get();
-            StopRetryTimer();
+            Log.d("JAGATH1", "1");
+            signalRFuture.get();//Log.d("JAGATH1", "2");
+            StopRetryTimer();//Log.d("JAGATH1", "3");
             Globals.ServerConnected = true;
 
             SendOnlineStatusChanged();
@@ -259,7 +324,7 @@ public class SignalRService extends Service {
             Log.e(TAG, "SignalR->*Connected*");
             Log.e(TAG, "SignalR->ID=" + mHubConnection.getConnectionId());
         } catch (InterruptedException | ExecutionException e) {
-            Globals.ServerConnected = false;
+           // Globals.ServerConnected = false;
             Log.e(TAG, "SignalR->" + e.toString());
             StartRetryTimer();
             return;
@@ -267,23 +332,6 @@ public class SignalRService extends Service {
         // sendMessage("Hello from BNK!");
 
 
-       /* String CLIENT_METHOD_BROADAST_MESSAGE = "broadcastMessage";
-        mHubProxy.on(CLIENT_METHOD_BROADAST_MESSAGE,
-                new SubscriptionHandler2<String, String>() {
-                    @Override
-                    public void run(final String name, final String msg) {
-                        //Log.e("SimpleSignalR", "4569"+msg+name);
-                        final String finalMsg =  msg;
-                        // display Toast message
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(getApplicationContext(), finalMsg, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                }
-                , String.class,String.class);*/
 
         // Subscribe to the received event
         mHubConnection.received(new MessageReceivedHandler() {
@@ -291,7 +339,7 @@ public class SignalRService extends Service {
             @Override
             public void onMessageReceived(final JsonElement json) {
 
-                Log.e("onMessageReceived ", json.toString());
+                Log.e(TAG,"onMessageReceived "+ json.toString());
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -301,7 +349,7 @@ public class SignalRService extends Service {
                             if(msg.M!=null) {
                                 //  Log.e("SignalR ", "TEST4");
                                 if(msg.M.equals("EditedBreakdown")){
-                                     Log.e("SignalR ", "EditedBreakdown");
+                                     Log.e(TAG, "EditedBreakdown");
                                     CreateNotification(getApplicationContext(), "Breakdown "+msg.A.get(0).get_Job_No() + " has edited." );
 
                                     Globals.dbHandler.UpdateEditBreakdownByJobNo(msg.A.get(0));
@@ -317,7 +365,6 @@ public class SignalRService extends Service {
 
                                     PostFeedbackNew(feedbacks);
                                     Intent intent = new Intent();
-
                                     intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
                                     intent.putExtra("breakdown_edited", "refresh_list");
                                     intent.putExtra("edited_breakdown", new Gson().toJson(msg.A.get(0)));
@@ -349,6 +396,7 @@ public class SignalRService extends Service {
             @Override
             public void onError(Throwable error) {
                 Globals.ServerConnected = false;
+                Log.e(TAG, "SignalR->ERROR");
                 error.printStackTrace();
                 StartRetryTimer();
             }
@@ -438,7 +486,7 @@ public class SignalRService extends Service {
             }
         } else if (method.equals("PostHeartBeat")) {
             Log.e(TAG, "SignalR->HeartBeatReceived");
-            Toast.makeText(context, "SignalR HeartBeatReceived", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, "SignalR HeartBeatReceived", Toast.LENGTH_SHORT).show();
             TurnOnScreen(context);
             //PlayTone(context, R.raw.heartbeat2, false);
         }
@@ -509,14 +557,14 @@ public class SignalRService extends Service {
                 mp.stop();
                 mp.release();
                 mMediaPlayer = null;
-                Log.e("MediaPlayer", "onCompletion");
+                Log.e(TAG,"MediaPlayer onCompletion");
             }
         });
         mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mp.start();
-                Log.e("MediaPlayer", "onPrepared");
+                Log.e(TAG,"MediaPlayer onPrepared");
             }
         });
         //mMediaPlayer.prepareAsync();
@@ -547,33 +595,7 @@ public class SignalRService extends Service {
         }
     };
 
-    private void StartRetryTimer() {
-        if (Globals.ServerConnected) return;
-        if (RetryTimerStarted) return;
-        timer = new Timer();
-        mReconnectTimer = new ReconnectTimer();
-        timer.schedule(mReconnectTimer, 1000, 20000);
-        RetryTimerStarted = true;
-    }
 
-    private void StopRetryTimer() {
-        if (!RetryTimerStarted) return;
-        timer.cancel();
-        RetryTimerStarted = false;
-    }
-
-    private class ReconnectTimer extends TimerTask {
-        @Override
-        public void run() {
-            Log.e(TAG, "*NOT*Connected*");
-            //PlayTone(getApplicationContext(), R.raw.hone, false);
-            if (!Common.ReadBooleanPreferences(getApplicationContext(),"server", false))
-                SelectorActivity.GetIpAddress();
-            SendOnlineStatusChanged();
-
-            startSignalR();
-        }
-    }
 
     private static void CreateNotification(Context context, String msg) {
         Intent i = new Intent(context, MainActivity.class);
@@ -691,7 +713,7 @@ public class SignalRService extends Service {
                     } else if (response.errorBody() != null) {
                         if (response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            SendRestartRequest(context);
+                            Common.RemoteLoginWithLastCredentials(context,2);
                         } else {
                             Toast.makeText(context, "GetNewBreakdowns\nResponse code =" + response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -754,7 +776,7 @@ public class SignalRService extends Service {
                     } else if (response.errorBody() != null) {
                         if (response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            SendRestartRequest(context);
+                            Common.RemoteLoginWithLastCredentials(context,3);
                         } else {
                             Toast.makeText(context, "GetBreakdownGroups\nResponse code =" + response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -879,7 +901,7 @@ public class SignalRService extends Service {
                     } else if (response.errorBody() != null) {
                         if (response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            SendRestartRequest(context);
+                            Common.RemoteLoginWithLastCredentials(context,4);
                         } else {
                             Toast.makeText(context, "GetNewBreakdowns\nResponse code =" + response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -902,13 +924,6 @@ public class SignalRService extends Service {
         }
     }
 
-    private static void SendRestartRequest(Context context){
-        Common.RemoteLoginWithLastCredentials(context);
-        /*Intent intent = new Intent();
-        intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
-        intent.putExtra("re_login_required", "re_login_required");
-        context.sendBroadcast(intent);*/
-    }
 
     private static void PostFeedbackNew(List<FeedbackObject> data) {
 
@@ -933,29 +948,6 @@ public class SignalRService extends Service {
         });
 
     }
-
-    /*private boolean ReadBooleanPreferences(String key, boolean defaultValue) {
-        SharedPreferences prfs = PreferenceManager.getDefaultSharedPreferences(this);
-        //SharedPreferences prfs = getPreferences(Context.MODE_PRIVATE);
-        return prfs.getBoolean(key, defaultValue);
-    }
-
-    private static String ReadStringPreferences(Context context, String key, String defaultValue) {
-        SharedPreferences prfs = context.getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getString(key, defaultValue);
-    }
-
-    private String ReadStringPreferences(String key, String defaultValue) {
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getString(key, defaultValue);
-    }
-
-    private boolean ReadBooleanPreferences2(String key, boolean defaultValue) {
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getBoolean(key, defaultValue);
-    }*/
-
-
 
 }
 

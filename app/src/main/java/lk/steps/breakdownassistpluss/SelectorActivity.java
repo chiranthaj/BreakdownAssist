@@ -29,7 +29,7 @@ public class SelectorActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //Toast.makeText(this, "I'm alive", Toast.LENGTH_LONG).show();
-        if(!Common.ReadBooleanPreferences(this,"server",false))GetIpAddress();
+        if(!Common.ReadBooleanPreferences(this,"server",false))Common.GetIpAddress();
         Log.e("SERVER",Globals.serverUrl);
         if(Common.ReadBooleanPreferences(this,"keep_sign_in",false)){
             performAutoLogin(this);
@@ -44,37 +44,30 @@ public class SelectorActivity extends Activity {
         }
         finish();
     }
-    public static  void GetIpAddress(){
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    //String url = "http://meterasist.hopto.org";
-                    String url = "http://breakdownassist.ddns.net";
-                    //String url = "http://cebkandy.ddns.net";
-                    InetAddress address = InetAddress.getByName(new URL(url).getHost());
-                    String ip = address.getHostAddress();
-                    Globals.serverUrl="http://"+ip+"";
-                    Log.e("IP","="+ip);
-                    Log.e("SERVER",Globals.serverUrl);
-                }catch(Exception e){
-                    Log.e("IP","="+e.getMessage());
-                }
-            }
-        });
-        thread.start();
-    }
+
 
     private void performAutoLogin(final Context context){
+        Log.e("GetAuthToken","Authorized1");
+        boolean deviceEligible = Common.ReadBooleanPreferences(context,"device_eligible", false);
+        if(!deviceEligible){
+            Globals.ServerConnected = false;
+            Intent myIntent = new Intent(SelectorActivity.this, LoginActivity.class);
+            SelectorActivity.this.startActivity(myIntent);
+        }
+
+
         String lastUsername = Common.ReadStringPreferences(context,"last_username", "");
         String lastPassword = Common.ReadStringPreferences(context,"last_password", "");
+        String area = Common.ReadStringPreferences(context, "area_id", "");
+        String team = Common.ReadStringPreferences(context, "team_id", "");
         final SyncRESTService syncAuthService = new SyncRESTService(2);
-        Call<Token> call = syncAuthService.getService().GetJwt(lastUsername,lastPassword);
+        Call<Token> call = syncAuthService.getService().GetJwt(lastUsername,lastPassword,
+                Common.GetDeviceId(context), Globals.APPID,Common.GetVersionCode(context), area, team);
         call.enqueue(new Callback<Token>() {
             @Override
             public void onResponse(Call<Token> call, Response<Token> response) {
                 if (response.isSuccessful()) {
-                    Log.e("GetAuthToken","Authorized");
+                    Log.e("GetAuthToken","Authorized5");
                     Token token = response.body();
                     //SaveToken(token);
                     Common.WriteStringPreferences(context,"user_id",token.user_id);
@@ -84,8 +77,11 @@ public class SelectorActivity extends Activity {
                     Common.WriteLongPreferences(context,"expires_in",token.expires_in);
                     Common.WriteStringPreferences(context,"access_token",token.access_token);
                     Common.WriteStringPreferences(context,"group_token",token.group_token);
-
-
+                    Common.WriteBooleanPreferences(context,"device_eligible", true);
+                    //Common.WriteBooleanPreferences(context,"restart_due_to_authentication_fail",false);
+                    Toast.makeText(getApplicationContext(),"Remote login successful..\n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
+                    //WriteBooleanPreferences("keep_sign_in",true);
+                    Common.WriteBooleanPreferences(context,"login_status",true);
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(new Runnable() {
                         public void run() {
@@ -93,10 +89,6 @@ public class SelectorActivity extends Activity {
                             SelectorActivity.this.startActivity(myIntent);
                         }
                     });
-                    Common.WriteBooleanPreferences(context,"restart_due_to_authentication_fail",false);
-                    Toast.makeText(getApplicationContext(),"Remote login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
-                    //WriteBooleanPreferences("keep_sign_in",true);
-                    //WriteBooleanPreferences("login_status",true);
                     finish();
                 } else if (response.errorBody() != null) {
                     Log.d("GetAuthToken","Fail"+response.errorBody());
@@ -124,7 +116,6 @@ public class SelectorActivity extends Activity {
                 });
                 syncAuthService.CloseAllConnections();
             }
-
         });
     }
 

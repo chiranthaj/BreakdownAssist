@@ -48,7 +48,7 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
     public MapLocationViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         //View itemLayoutView = LayoutInflater.from(parent.getContext()).inflate(
         //        R.layout.job_listview_row,parent, false);
-        final View itemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.job_listview_row, parent, false);
+        final View itemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.job_listview_row_try, parent, false);
 
         // create ViewHolder
         MapLocationViewHolder viewHolder = new MapLocationViewHolder(context, itemLayoutView);
@@ -151,12 +151,12 @@ public class JobsRecyclerAdapter extends RecyclerView.Adapter<MapLocationViewHol
         /*else{
             holder.completed_date_time.setText(Globals.parseDate(breakdownList.get(position).get_Completed_Time()));
         }*/
-        LatLng lat = breakdownList.get(position).getLocation();
+        /*LatLng lat = breakdownList.get(position).getLocation();
         if(lat==null){
             holder.imgMap.setVisibility(View.INVISIBLE);
         }else {
             holder.imgMap.setVisibility(View.VISIBLE);
-        }
+        }*/
 
         int priority = breakdownList.get(position).get_Priority();
         if(priority == 4){

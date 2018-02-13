@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
@@ -12,18 +13,33 @@
         android:layout_marginTop="10dp"
         android:orientation="vertical"
         android:weightSum="1">
-
-        <TextView
+        <LinearLayout
+            android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="Not attending breakdown"
-            android:padding="5dp"
-            android:textAlignment="center"
-            android:textColor="@android:color/white"
-            android:background="@color/colorPrimary"
-            android:textSize="35sp"
-            android:textStyle="normal" />
+            android:layout_margin="5dp"
+            android:gravity="center"
+            android:background="@drawable/comment"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_launcher" />
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="20dp"
+                android:text="Not attending breakdown"
+                android:textColor="@color/colorAccent"
+                android:textSize="35sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
         <TextView
             android:id="@+id/jobInfo"
             android:layout_width="match_parent"
@@ -110,37 +126,46 @@
 
         </TableRow>
 
-
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="20dp"
             android:weightSum="1">
 
-            <ImageButton
+            <mehdi.sakout.fancybuttons.FancyButton
                 android:id="@+id/btnCancel"
-                style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="20dp"
-                android:layout_marginStart="20dp"
+                android:layout_marginRight="10dp"
                 android:layout_weight="0.5"
-                android:src="@drawable/ic_cancel"
-                android:text="Visited" />
+                android:padding="5dp"
+                fancy:fb_defaultColor="#55acee"
+                fancy:fb_focusColor="#313131"
+                fancy:fb_iconPaddingLeft="0dp"
+                fancy:fb_iconPaddingRight="0dp"
+                fancy:fb_iconResource="@drawable/ic_cancel"
+                fancy:fb_radius="64dp"
+                fancy:fb_text=""
+                fancy:fb_textColor="#FFFFFF" />
 
-
-            <ImageButton
+            <mehdi.sakout.fancybuttons.FancyButton
                 android:id="@+id/btnNotAttending"
-                style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="20dp"
-                android:layout_marginStart="20dp"
+                android:layout_marginRight="10dp"
                 android:layout_weight="0.5"
-                android:src="@drawable/ic_done" />
-        </TableRow>
+                android:padding="5dp"
+                fancy:fb_defaultColor="#55acee"
+                fancy:fb_focusColor="#313131"
+                fancy:fb_iconPaddingLeft="0dp"
+                fancy:fb_iconPaddingRight="0dp"
+                fancy:fb_iconResource="@drawable/ic_done"
+                fancy:fb_radius="64dp"
+                fancy:fb_text=""
+                fancy:fb_textColor="#FFFFFF" />
 
+        </TableRow>
     </LinearLayout>
 </ScrollView>
 

@@ -7,6 +7,7 @@ package lk.steps.breakdownassistpluss.GpsTracker;
 public class TrackerObject {
     public String  id;
     public String  UserId;
+    public String  DeviceId;
     public String  timestamp;
     public String  lat;
     public String  lon;
@@ -16,5 +17,7 @@ public class TrackerObject {
     public String  direction;
     public String  distance;
     public String  sync_done;
+    public String  group_id;
+
 
 }

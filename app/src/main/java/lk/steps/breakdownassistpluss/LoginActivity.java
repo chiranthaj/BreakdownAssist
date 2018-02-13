@@ -4,12 +4,16 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +30,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
+
 import java.net.InetAddress;
 import java.net.URL;
 
@@ -41,7 +49,7 @@ import retrofit2.Response;
 /**
  * A login screen that offers login via username/password.
  */
-public class LoginActivity extends AppCompatActivity  {
+public class LoginActivity extends AppCompatActivity {
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -57,76 +65,76 @@ public class LoginActivity extends AppCompatActivity  {
     private AutoCompleteTextView mUsernameView;
     private EditText mPasswordView;
     private View mProgressView;
-  //  private View mLoginFormView;
+    //  private View mLoginFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_login);
-            // Set up the login form.
-            mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
-            mPasswordView = (EditText) findViewById(R.id.password);
+        setContentView(R.layout.activity_login);
+        // Set up the login form.
+        mUsernameView = (AutoCompleteTextView) findViewById(R.id.username);
+        mPasswordView = (EditText) findViewById(R.id.password);
 
-            mUsernameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                    if (id == EditorInfo.IME_ACTION_NEXT) {
-                        mPasswordView.requestFocus();
-                        return true;
-                    }
-                    return false;
+        mUsernameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == EditorInfo.IME_ACTION_NEXT) {
+                    mPasswordView.requestFocus();
+                    return true;
                 }
-            });
-
-            mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                    if (id == R.id.login || id == EditorInfo.IME_NULL || id == EditorInfo.IME_ACTION_DONE) {
-                        mPasswordView.clearFocus();
-                        hideKeyboardFrom(getApplicationContext(),mPasswordView);
-                        attemptLogin();
-                        return true;
-                    }
-                    return false;
-                }
-            });
-
-            FancyButton mUsernameSignInButton = (FancyButton) findViewById(R.id.sign_in_button);
-            mUsernameSignInButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    attemptLogin();
-                }
-            });
-
-            // mLoginFormView = findViewById(R.id.login_form);
-            mProgressView = findViewById(R.id.login_progress);
-            ShowLastCredential();
-
-            TextView txtAppName = (TextView) findViewById(R.id.txt_app_name);
-            try{
-                txtAppName.setText("Breakdown Assist "+ this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName + "\nCeylon Electricity Board  ©  2017");
-            }catch(Exception e){
-                txtAppName.setText("Ceylon Electricity Board  ©  2017");
+                return false;
             }
+        });
+
+        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == R.id.login || id == EditorInfo.IME_NULL || id == EditorInfo.IME_ACTION_DONE) {
+                    mPasswordView.clearFocus();
+                    hideKeyboardFrom(getApplicationContext(), mPasswordView);
+                    attemptLogin();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        FancyButton mUsernameSignInButton = (FancyButton) findViewById(R.id.sign_in_button);
+        mUsernameSignInButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptLogin();
+            }
+        });
+
+        // mLoginFormView = findViewById(R.id.login_form);
+        mProgressView = findViewById(R.id.login_progress);
+        ShowLastCredential();
+
+        TextView txtAppName = (TextView) findViewById(R.id.txt_app_name);
+        try {
+            txtAppName.setText("Breakdown Assist " + this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName + "\nCeylon Electricity Board  ©  2017");
+        } catch (Exception e) {
+            txtAppName.setText("Ceylon Electricity Board  ©  2018");
+        }
         CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
-            chk.setChecked(Common.ReadBooleanPreferences(this,"keep_sign_in",false));
+        chk.setChecked(Common.ReadBooleanPreferences(this, "keep_sign_in", false));
     }
 
-    private void GetIpAddress(){
+    private void GetIpAddress() {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
+                try {
                     String url = "http://meterasist.hopto.org";
                     //String url = "http://cebkandy.ddns.net";
                     InetAddress address = InetAddress.getByName(new URL(url).getHost());
                     String ip = address.getHostAddress();
-                    Globals.serverUrl="http://"+ip+"";
-                    Log.e("IP","="+ip);
-                    Log.e("SERVER",Globals.serverUrl);
-                }catch(Exception e){
-                    Log.e("IP","="+e.getMessage());
+                    Globals.serverUrl = "http://" + ip + "";
+                    Log.e("IP", "=" + ip);
+                    Log.e("SERVER", Globals.serverUrl);
+                } catch (Exception e) {
+                    Log.e("IP", "=" + e.getMessage());
                 }
             }
         });
@@ -184,14 +192,14 @@ public class LoginActivity extends AppCompatActivity  {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            performLogin(username,password);
+            performLogin(username, password);
 
         }
     }
 
     private boolean isUsernameValid(String username) {
         //TODO: Replace this with your own logic
-       // return username.contains("@");
+        // return username.contains("@");
         return true;
     }
 
@@ -235,66 +243,76 @@ public class LoginActivity extends AppCompatActivity  {
             //mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
+
     private boolean ForceLocalLogin = false;
 
 
-
-    private void performLogin(final String username, final String password){
+    private void performLogin(final String username, final String password) {
+        Log.e("GetAuthToken", "Authorized14");
         final Context context = getApplicationContext();
-        long lastLoginTime = Common.ReadLongPreferences(context,"last_login_time", 0);
-        final long currentTime = System.currentTimeMillis()/1000;
-        long expiresIn = Common.ReadLongPreferences(context,"expires_in", 0);
-        String lastUsername = Common.ReadStringPreferences(context,"last_username", "");
-        String lastPassword = Common.ReadStringPreferences(context,"last_password", "");
+       // long lastLoginTime = Common.ReadLongPreferences(context, "last_login_time", 0);
+        final long currentTime = System.currentTimeMillis() / 1000;
+      //  long expiresIn = Common.ReadLongPreferences(context, "expires_in", 0);
+        String lastUsername = Common.ReadStringPreferences(context, "last_username", "");
+        String lastPassword = Common.ReadStringPreferences(context, "last_password", "");
+        String area = Common.ReadStringPreferences(context, "area_id", "");
+        String team = Common.ReadStringPreferences(context, "team_id", "");
+        boolean deviceEligible = Common.ReadBooleanPreferences(context, "device_eligible", false);
 
-        //Log.e("lastLoginTime","="+lastLoginTime);
-        //Log.e("currentTime","="+currentTime);
-        //Log.e("expiresIn","="+expiresIn);
-        //Log.e("lastUsername","="+lastUsername);
-        //Log.e("lastPassword","="+lastPassword);
-        long safeTimeMargin = 60*60;
-        if(((lastLoginTime + expiresIn + safeTimeMargin > currentTime) | ForceLocalLogin ) & // token expired or will not expire in next hour and user/pass are correct
-                (lastUsername.equals(username) & lastPassword.equals(password)) & !Common.ReadBooleanPreferences(context,"restart_due_to_authentication_fail",true)){
-            Log.e("Login","**Local**");//Local login
+        long safeTimeMargin = 60 * 60;
+        //if(((lastLoginTime + expiresIn + safeTimeMargin > currentTime) | ForceLocalLogin ) & // token expired or will not expire in next hour and user/pass are correct
+        //        (lastUsername.equals(username) & lastPassword.equals(password)) & deviceEligible){
+        if (ForceLocalLogin & // token expired or will not expire in next hour and user/pass are correct
+                (lastUsername.equals(username) & lastPassword.equals(password)) & deviceEligible) {
+            Log.e("GetAuthToken", "**Local**");//Local login
             showProgress(false);
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 public void run() {
                     //Log.d("TEST","3");
-                    Common.WriteLongPreferences(context,"last_login_time",currentTime);
+                    Common.WriteLongPreferences(context, "last_login_time", currentTime);
                     Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
                     LoginActivity.this.startActivity(myIntent);
                 }
             });
-            Toast.makeText(getApplicationContext(),"Local login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Local login successful.. \n" + Globals.serverUrl, Toast.LENGTH_LONG).show();
             CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
-            Common.WriteBooleanPreferences(context,"keep_sign_in",chk.isChecked());
-            Common.WriteBooleanPreferences(context,"login_status",true);
+            Common.WriteBooleanPreferences(context, "keep_sign_in", chk.isChecked());
+            Common.WriteBooleanPreferences(context, "login_status", false);
+            Globals.ServerConnected = false;
             finish();
-        }else if(!ForceLocalLogin){
-            Log.e("Login","**Remote**");//Remote login
+        } else { //if(!ForceLocalLogin)
+            Log.e("GetAuthToken", "**Remote**");//Remote login
             final SyncRESTService syncAuthService = new SyncRESTService(2);
-            Call<Token> call = syncAuthService.getService().GetJwt(username,password);
+            Call<Token> call = syncAuthService.getService().GetJwt(username, password,
+                    Common.GetDeviceId(context), Globals.APPID, Common.GetVersionCode(context), area, team);
             call.enqueue(new Callback<Token>() {
                 @Override
                 public void onResponse(Call<Token> call, Response<Token> response) {
                     showProgress(false);
                     if (response.isSuccessful()) {
-                        Log.e("GetAuthToken","Authorized");
+                        Log.e("GetAuthToken", "Authorized2");
                         Token token = response.body();
-                       // Log.e("area_name",token.area_name);
+                        // Log.e("area_name",token.area_name);
                         //SaveToken(token);
-                        if(token!=null){
-                            Common.WriteStringPreferences(context,"user_id",token.user_id);
-                            Common.WriteStringPreferences(context,"area_id",token.area_id);
-                            Common.WriteStringPreferences(context,"area_name",token.area_name);
-                            Common.WriteStringPreferences(context,"team_id",token.team_id);
-                            Common.WriteLongPreferences(context,"expires_in",token.expires_in);
-                            Common.WriteStringPreferences(context,"access_token",token.access_token);
-                            Common.WriteStringPreferences(context,"group_token",token.group_token);
-                            Common.WriteStringPreferences(context,"last_username",username);
-                            Common.WriteStringPreferences(context,"last_password",password);
+                        if (token != null) {
+                            Common.WriteStringPreferences(context, "user_id", token.user_id);
+                            Common.WriteStringPreferences(context, "area_id", token.area_id);
+                            Common.WriteStringPreferences(context, "area_name", token.area_name);
+                            Common.WriteStringPreferences(context, "team_id", token.team_id);
+                            Common.WriteLongPreferences(context, "expires_in", token.expires_in);
+                            Common.WriteStringPreferences(context, "access_token", token.access_token);
+                            Common.WriteStringPreferences(context, "group_token", token.group_token);
+                            Common.WriteStringPreferences(context, "last_username", username);
+                            Common.WriteStringPreferences(context, "last_password", password);
+                            Common.WriteBooleanPreferences(context, "device_eligible", true);
+                            //Common.WriteBooleanPreferences(context,"restart_due_to_authentication_fail",false);
+                            Common.WriteBooleanPreferences(context, "login_status", true);
+                            CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
+                            Common.WriteBooleanPreferences(context, "keep_sign_in", chk.isChecked());
+                            Toast.makeText(getApplicationContext(), "Remote login successful..\n" + Globals.serverUrl, Toast.LENGTH_LONG).show();
 
+                            Globals.ServerConnected = true;
                             Handler handler = new Handler(Looper.getMainLooper());
                             handler.post(new Runnable() {
                                 public void run() {
@@ -303,101 +321,115 @@ public class LoginActivity extends AppCompatActivity  {
                                     LoginActivity.this.startActivity(myIntent);
                                 }
                             });
-                            Common.WriteBooleanPreferences(context,"restart_due_to_authentication_fail",false);
-                            Toast.makeText(getApplicationContext(),"Remote login successful.. \n"+Globals.serverUrl, Toast.LENGTH_LONG).show();
-                            CheckBox chk = (CheckBox) findViewById(R.id.chkKeepMeSignIn);
-                            Common.WriteBooleanPreferences(context,"login_status",true);
-                            Common.WriteBooleanPreferences(context,"keep_sign_in",chk.isChecked());
                             finish();
-                        }else{
-                            Log.d("GetAuthToken", "Fail" + response.errorBody());
-                            Log.d("GetAuthToken", "Fail" + response.message());
-                            Log.d("GetAuthToken", "Fail" + response);
-                            Toast.makeText(getApplicationContext(), "Network failure..\n" + response.errorBody(), Toast.LENGTH_LONG).show();
-                            ForceLocalLogin = true;
-                            performLogin(username,password);
-                        }
-                    } else  {
-                        if (response.code() == 403) {
-                            Log.d("Register", "Fail" + response.code());
-                            Toast.makeText(getApplicationContext(), "Login fail..\nUser not activated.", Toast.LENGTH_LONG).show();
-                        } else if (response.code() == 402) {
-                            Log.d("Register", "Fail" + response.code());
-                            Toast.makeText(getApplicationContext(), "Login fail..\nInvalid password. ", Toast.LENGTH_LONG).show();
-                        } else if (response.code() == 500) {
-                            Log.d("Register", "Fail" + response.code());
-                            Toast.makeText(getApplicationContext(), "Login fail..\nInvalid username. ", Toast.LENGTH_LONG).show();
                         } else {
                             Log.d("GetAuthToken", "Fail" + response.errorBody());
                             Log.d("GetAuthToken", "Fail" + response.message());
                             Log.d("GetAuthToken", "Fail" + response);
                             Toast.makeText(getApplicationContext(), "Network failure..\n" + response.errorBody(), Toast.LENGTH_LONG).show();
                             ForceLocalLogin = true;
-                            performLogin(username,password);
+                            Globals.ServerConnected = false;
+                            performLogin(username, password);
                         }
-                        Log.d("GetAuthToken","Fail"+response.errorBody());
-                       // Toast.makeText(getApplicationContext(),"Network failure..\nSwitch to local login"+response.errorBody(), Toast.LENGTH_LONG).show();
+                    } else {
+                        if (response.code() == 403) {
+                            Log.d("GetAuthToken", "Fail1" + response.code());
+                            ShowDialog("Login fail..","User not activated, Please contact Administrator.");
+                            // Toast.makeText(getApplicationContext(), "Login fail..\nUser not activated.", Toast.LENGTH_LONG).show();
+                        } else if (response.code() == 406) {
+                            ShowDialog("Login fail..","Device not eligible, Please contact Administrator.");
+                            Log.d("GetAuthToken", "Fail2" + response.code());
+                            // Toast.makeText(getApplicationContext(), "Login fail..\nDevice not eligible. ", Toast.LENGTH_LONG).show();
+                        } else if (response.code() == 408) {
+                            ShowUpdateDialog("Update available.!","Breakdown Assist+ must be updated to latest version to continue.\n" +
+                                    "Updates bring more stable and enhanced environment.");
+                            Log.d("GetAuthToken", "Fail5" + response.code());
+                            //OpenPlayStore();
+                            // Toast.makeText(getApplicationContext(), "Login fail..\nDevice not eligible. ", Toast.LENGTH_LONG).show();
+                        } else if (response.code() == 402) {
+                            ShowDialog("Login fail..","Invalid password");
+                            Log.d("GetAuthToken", "Fail3" + response.code());
+                            //Toast.makeText(getApplicationContext(), "Login fail..\nInvalid password. ", Toast.LENGTH_LONG).show();
+                        } else if (response.code() == 500) {
+                            ShowDialog("Login fail..","Invalid username");
+                            Log.d("GetAuthToken", "Fail4" + response.code());
+                            //Toast.makeText(getApplicationContext(), "Login fail..\nInvalid username. ", Toast.LENGTH_LONG).show();
+                        } else {
+                            Log.d("GetAuthToken", "Fail" + response.errorBody());
+                            Log.d("GetAuthToken", "Fail" + response.message());
+                            Log.d("GetAuthToken", "Fail" + response);
+                            Toast.makeText(getApplicationContext(), "Network failure..\n" + response.errorBody(), Toast.LENGTH_LONG).show();
+                            ForceLocalLogin = true;
+                            performLogin(username, password);
+                        }
+                        Log.d("GetAuthToken", "Fail" + response.errorBody());
+                        // Toast.makeText(getApplicationContext(),"Network failure..\nSwitch to local login"+response.errorBody(), Toast.LENGTH_LONG).show();
+                        Globals.ServerConnected = false;
                     }
                     syncAuthService.CloseAllConnections();
                 }
 
                 @Override
                 public void onFailure(Call<Token> call, Throwable t) {
-                    Log.e("Login","Remote login onFailure"+t.getMessage());//Remote login
+                    Log.e("GetAuthToken", "Remote login onFailure" + t.getMessage());//Remote login
                     showProgress(false);
                     ForceLocalLogin = true;
-                    performLogin(username,password);
+                    performLogin(username, password);
                     syncAuthService.CloseAllConnections();
                 }
             });
+
+
         }
     }
 
 
 
-    /*private void WriteLongPreferences(String key, long value){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prfs.edit();
-        editor.putLong(key,value).apply();
-    }
-    private void WriteStringPreferences(String key, String value){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prfs.edit();
-        editor.putString(key,value).apply();
-    }
-    private void WriteBooleanPreferences(String key, boolean value){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prfs.edit();
-        editor.putBoolean(key,value).apply();
-    }
-    private String ReadStringPreferences(String key, String defaultValue){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getString(key, defaultValue);
-    }
 
-    private long ReadLongPreferences(String key, long defaultValue){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getLong(key, defaultValue);
-    }
-    private boolean ReadBooleanPreferences2(String key, boolean defaultValue){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        //SharedPreferences prfs = getPreferences(Context.MODE_PRIVATE);
-        return prfs.getBoolean(key, defaultValue);
-    }
-    private boolean ReadBooleanPreferences(String key, boolean defaultValue){
-        SharedPreferences prfs = PreferenceManager.getDefaultSharedPreferences(this);
-        //SharedPreferences prfs = getPreferences(Context.MODE_PRIVATE);
-        return prfs.getBoolean(key, defaultValue);
-    }
-    private boolean ReadStringPreferences(String key, boolean defaultValue){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getBoolean(key, defaultValue);
-    }*/
-    private void ShowLastCredential(){
-        String lastUsername = Common.ReadStringPreferences(getApplication(),"last_username", "");
-        String lastPassword = Common.ReadStringPreferences(getApplication(),"last_password", "");
+    private void ShowLastCredential() {
+        String lastUsername = Common.ReadStringPreferences(getApplication(), "last_username", "");
+        String lastPassword = Common.ReadStringPreferences(getApplication(), "last_password", "");
         mUsernameView.setText(lastUsername);
         mPasswordView.setText(lastPassword);
+    }
+
+    private void OpenPlayStore() {
+        String url = "https://play.google.com/store/apps/details?id=" + this.getPackageName();
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        startActivity(intent);
+    }
+
+    private void ShowDialog(String title, String msg) {
+
+        new MaterialStyledDialog.Builder(this)
+                .setTitle(title)
+                .setDescription(msg)
+                .setCancelable(false)
+                .setIcon(R.drawable.ic_launcher).setPositiveText("OK")
+                /*.onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        OpenPlayStore();
+                    }
+                })*/
+                .show();
+    }
+
+    private void ShowUpdateDialog(String title, String msg) {
+
+        new MaterialStyledDialog.Builder(this)
+                .setTitle(title)
+                .setDescription(msg)
+                .setCancelable(false)
+                .setIcon(R.drawable.ic_launcher).setPositiveText("Update now")
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        OpenPlayStore();
+                    }
+                })
+                .show();
     }
 }
 

@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import lk.steps.breakdownassistpluss.Calendar.BasicActivity;
 import lk.steps.breakdownassistpluss.Fragments.DashboardFragment;
 import lk.steps.breakdownassistpluss.Fragments.JobListFragment;
 import lk.steps.breakdownassistpluss.Fragments.GmapFragment;
@@ -58,10 +60,11 @@ import lk.steps.breakdownassistpluss.ServiceManager.AlarmReceiver;
 import lk.steps.breakdownassistpluss.Sync.Network;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
 import lk.steps.breakdownassistpluss.Sync.SignalRService;
+import mehdi.sakout.fancybuttons.FancyButton;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener  {
 
     private FragmentManager fm;
     protected PowerManager.WakeLock mWakeLock;
@@ -113,7 +116,7 @@ public class MainActivity extends AppCompatActivity
         Intent signalRIntent = new Intent(getBaseContext(), SignalRService.class);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) signalRIntent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
         startService(signalRIntent);
-
+       // if(Globals.ServerConnected)Log.d("ServerConnected2", "ServerConnected" );
         trackLocation();
 
         fm = getFragmentManager();
@@ -220,6 +223,7 @@ public class MainActivity extends AppCompatActivity
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d("TEST","MainActivityBroadcastReceiver");
             String job_status_changed = intent.getStringExtra("job_status_changed");
             String new_breakdowns = intent.getStringExtra("new_breakdowns");
             String finish_app_req = intent.getStringExtra("finish_app_req");
@@ -228,8 +232,10 @@ public class MainActivity extends AppCompatActivity
             String online_status_changed = intent.getStringExtra("online_status_changed");
             String sms_received = intent.getStringExtra("sms_received");
             String breakdown_edited = intent.getStringExtra("breakdown_edited");
+            String map_direction_req = intent.getStringExtra("map_direction_req");
+            String breakdown_list_refresh_req = intent.getStringExtra("breakdown_list_refresh_req");
 
-            Log.d("TEST","MainActivityBroadcastReceiver");
+
             //Log.e("TEST","555");
             if (new_breakdowns != null) {
                 Log.d("TEST","MainActivityBroadcastReceiver1");
@@ -302,6 +308,22 @@ public class MainActivity extends AppCompatActivity
                 onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
                 if (JobListFragment.mAdapter != null)
                     JobListFragment.mAdapter.notifyDataSetChanged();
+            }else if(map_direction_req != null){
+                Log.d("TEST","MainActivityBroadcastReceiver9");
+                Intent i = new Intent();
+                i.setAction("lk.steps.breakdownassistpluss.MapBroadcastReceiver");
+                i.putExtra("map_direction_req", "map_direction_req");
+                intent.putExtra("lat",intent.getStringExtra("lat"));
+                intent.putExtra("lon",intent.getStringExtra("lon"));
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
+            }else if(breakdown_list_refresh_req != null){
+                Log.d("TEST","MainActivityBroadcastReceiver10");
+                Intent i = new Intent();
+                i.setAction("lk.steps.breakdownassistpluss.JobListBroadcastReceiver");
+                i.putExtra("map_direction_req", "map_direction_req");
+                intent.putExtra("lat",intent.getStringExtra("lat"));
+                intent.putExtra("lon",intent.getStringExtra("lon"));
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
             }
         }
     };
@@ -485,6 +507,9 @@ public class MainActivity extends AppCompatActivity
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
             MainActivity.this.finish();
+        }if (id == R.id.nav_interruptions) {
+            Intent intent = new Intent(this, BasicActivity.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -505,57 +530,35 @@ public class MainActivity extends AppCompatActivity
         onNavigationItemSelected(target);
     }
 
-    /*public static Context getAppContext() {
-        return MainActivity.context;
-    }*/
+    public void openTempCompletedJobFragment(View view) {
+        Fragment fragment = new JobListFragment();//Get Fragment Instance
+        Bundle data = new Bundle();//Use bundle to pass data
+        data.putInt("JOB_STATUS", Breakdown.JOB_TEMPORARY_COMPLETED);//put string, int, etc in bundle with a key value
+        fragment.setArguments(data);//Finally set argument bundle to fragment
+        fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
-    /*class MyTimerTask extends TimerTask {
-        @Override
-        public void run() {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Fragment currentFragment = fm.findFragmentByTag(MainActivity.MAP_FRAGMENT_TAG);
-                    if (currentFragment instanceof GmapFragment) {
-                        GmapFragment GmapFrag = (GmapFragment) currentFragment;
-                        GmapFrag.ApplyMapDayNightModeAccordingly();
-                    }
-                    if(ReLoginRequired){
-                        ReLoginRequired=false;
-                        WriteBooleanPreferences("restart_due_to_authentication_fail",true);
-                        Intent i = getBaseContext().getPackageManager()
-                                .getLaunchIntentForPackage( getBaseContext().getPackageName() );
-                        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(i);
-                        MainActivity.this.finish();
-                    }
-                }
-            });
-        }
-    }*/
-
-   /* private void WriteBooleanPreferences(String key, boolean value) {
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prfs.edit();
-        editor.putBoolean(key, value).apply();
-    }*/
-
-    /*private void CalculateAttainedTime() {
-        final Handler handler = new Handler();
-        final Runnable r = new Runnable() {
-            public void run() {
-                try {
-                    Globals.AverageTime = Globals.dbHandler.getAttendedTime();
-                    //handler.postDelayed(this, 1000*60*10);//Continue updating 10min
-                } catch (Exception e) {
-                    Log.e("CalAttainedTime",e.getMessage());
-                }
-            }
-        };
-        handler.postDelayed(r, 5000); //2Sec
-    }*/
-
-
+    }
+    public void openWithdrawnJobFragment(View view) {
+        Fragment fragment = new JobListFragment();//Get Fragment Instance
+        Bundle data = new Bundle();//Use bundle to pass data
+        data.putInt("JOB_STATUS", Breakdown.JOB_WITHDRAWN);//put string, int, etc in bundle with a key value
+        fragment.setArguments(data);//Finally set argument bundle to fragment
+        fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
+    }
+    public void openRejectJobFragment(View view) {
+        Fragment fragment = new JobListFragment();//Get Fragment Instance
+        Bundle data = new Bundle();//Use bundle to pass data
+        data.putInt("JOB_STATUS", Breakdown.JOB_REJECT);//put string, int, etc in bundle with a key value
+        fragment.setArguments(data);//Finally set argument bundle to fragment
+        fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
+    }
+    public void openReturnedJobFragment(View view) {
+        Fragment fragment = new JobListFragment();//Get Fragment Instance
+        Bundle data = new Bundle();//Use bundle to pass data
+        data.putInt("JOB_STATUS", Breakdown.JOB_RETURNED);//put string, int, etc in bundle with a key value
+        fragment.setArguments(data);//Finally set argument bundle to fragment
+        fm.beginTransaction().replace(R.id.content_frame, fragment).commit();
+    }
     //private Dialog newBreakdownDialog;
     private void NewBreakdownsDialog(final List<Breakdown> breakdowns) {
         if(breakdowns==null) return;
@@ -571,7 +574,7 @@ public class MainActivity extends AppCompatActivity
         }
         //dialog.setTitle("BreakdownAssist...");
         newBreakdownDialog.setCancelable(false);
-        Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
+        FancyButton dialogButton = (FancyButton) newBreakdownDialog.findViewById(R.id.btnOk);
         dialogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -585,6 +588,8 @@ public class MainActivity extends AppCompatActivity
         newBreakdownDialog.show();
         onNavigationItemSelected(navigationView.getMenu().getItem(2)); //Focus to job list fragment
     }
+
+
     private void EditedBreakdownDialog(final Breakdown breakdown) {
         if(breakdown==null) return;
         // final List<Breakdown> AllNotAckedBreakdowns = breakdowns;
@@ -596,7 +601,7 @@ public class MainActivity extends AppCompatActivity
 
         //dialog.setTitle("BreakdownAssist...");
         newBreakdownDialog.setCancelable(false);
-        Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
+        FancyButton dialogButton = (FancyButton) newBreakdownDialog.findViewById(R.id.btnOk);
         dialogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -643,7 +648,7 @@ public class MainActivity extends AppCompatActivity
         msg.setText("Breakdown \n( ID : " + jobChangeStatus.get(0).job_no + " ) status changed to " + statusWord);
         //dialog.setTitle("BreakdownAssist...");
         newBreakdownDialog.setCancelable(false);
-        Button dialogButton = (Button) newBreakdownDialog.findViewById(R.id.btnOk);
+        FancyButton dialogButton = (FancyButton) newBreakdownDialog.findViewById(R.id.btnOk);
         dialogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -762,4 +767,6 @@ public class MainActivity extends AppCompatActivity
         appUpdater.start();
 
     }
+
+
 }

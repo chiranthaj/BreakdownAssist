@@ -13,7 +13,7 @@ public class Strings {
        // int StatusId = Integer.parseInt(statusId);
         if(StatusId == Breakdown.JOB_DELIVERED) return "Unattained";
         else if(StatusId == Breakdown.JOB_ACKNOWLEDGED) return "Unattained";
-        else if(StatusId == Breakdown.JOB_VISITED) return "VisitedDialog";
+        else if(StatusId == Breakdown.JOB_VISITED) return "Visited";
         else if(StatusId == Breakdown.JOB_ATTENDING) return "Attending";
         else if(StatusId == Breakdown.JOB_TEMPORARY_COMPLETED) return "Temporary completed";
         else if(StatusId == Breakdown.JOB_COMPLETED) return "Completed";
@@ -42,7 +42,7 @@ public class Strings {
 
     public static String[][] NotAttendingComments = {
             {"-", "0", "-","Please select","කරුණාකර තෝරන්න"},
-            {"-", "1", "-","Another breakdown","වෙනත් බිඳවැටුමක්"},
+            {"-", "1", "-","Another breakdown","වෙනත් හදිසි බිඳවැටුමක්"},
             {"-", "2", "-","No required materials","අවශ්\u200Dය ද්\u200Dරව්\u200Dය නොමැත"},
             {"-", "3", "-","Time consuming","විශාල කාලයක් අවශ්\u200Dයයි"},
     };
@@ -82,7 +82,7 @@ public class Strings {
             {"-", "3", "-","Broken service wire","සවිස් වයරය කැඩී ඇත"},
             {"-", "4", "-", "Abnormal/ Low Voltage","අසාමන්\u200Dය / අඩු වෝල්ටීය තාවයක්"},
             {"-", "5", "-","Conductor Burning","වයර් පිළිස්සී ඇත"},
-            {"-", "6", "-","Flood","ග0වතුර"},
+            {"-", "6", "-","Flood","ගංවතුර"},
             {"-", "7", "-","Flashing Insulators","ඉන්සුලේටර් විනාශ වී ඇත"},
             {"-", "8", "-","High Voltage","අධි වෝල්ටීය තාවයක්"},
             {"-", "9", "-","Meter Burning","මීටර්ය පිළිස්සීමක්"},
@@ -242,7 +242,7 @@ public class Strings {
             {"00", "10", "3", "MV Fuse blown", "MV Fuse ආශ්‍රිත බිඳවැටුම්"},
             {"00", "11", "3", "MV Feeder open circuit", "MV ෆීඩර් විසන්ධි වීම්"},
             {"00", "12", "3", "CB/AR Tripping", "CB/AR ට්‍රිපින් "},
-            {"00", "13", "3", "MV feeder Strings", "MV ෆීඩර් ආශ්‍රිත බිඳවැටුම්"}};
+            {"00", "13", "3", "MV feeder Tripping", "MV ෆීඩර් ආශ්‍රිත බිඳවැටුම්"}};
 
 
     public static String[][] FailureCauseList00 = {
@@ -251,9 +251,9 @@ public class Strings {
             {"00", "1", "1", "Lightning",                   "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},
             {"00", "2", "1", "Broken Cable / Conductor - Due to Wayleaves", "ගස්අතු කැපීම නිසා සේවා රැහැන් කැඩීම"},
             {"00", "3", "1", "Broken Cable / Conductor - Due to Vehicle", "වාහන වැදීම නිසා සේවා රැහැන් කැඩීම"},
-            {"00", "4", "1", "Illegal tapping", "නීති විරෝධී ටැප් කිරීම්"},
-            {"00", "5", "1", "Tapping Point failure", "ටැපින් පොයින්ට් ආශ්‍රිත බිඳවැටුම්"},
-            {"00", "6", "1", "Other", "වෙනත් බිඳවැටුම්"},
+            {"00", "4", "1", "Illegal tapping",         "නීති විරෝධී ටැප් කිරීම්"},
+            {"00", "5", "1", "Tapping Point failure",   "ටැපින් පොයින්ට් ආශ්‍රිත බිඳවැටුම්"},
+            {"00", "6", "1", "Other",                   "වෙනත් බිඳවැටුම්"},
 
             {"00", "0", "2", "Please select", "කරුණාකර තෝරන්න"},
             {"00", "7", "2", "Lightning", "අකුණු සැර වැදීම නිසා ඇති වන බිඳවැටුම්"},

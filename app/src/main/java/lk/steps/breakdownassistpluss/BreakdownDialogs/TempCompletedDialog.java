@@ -28,6 +28,7 @@ import lk.steps.breakdownassistpluss.Models.JobChangeStatus;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.Strings;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
+import mehdi.sakout.fancybuttons.FancyButton;
 
 public class TempCompletedDialog extends AppCompatActivity {
     Breakdown breakdown;
@@ -85,7 +86,7 @@ public class TempCompletedDialog extends AppCompatActivity {
                 }
             });
 
-            ImageButton btnDone = (ImageButton) findViewById(R.id.btnDone);
+            FancyButton btnDone = (FancyButton) findViewById(R.id.btnDone);
             btnDone.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -107,7 +108,7 @@ public class TempCompletedDialog extends AppCompatActivity {
                     }
                 }
             });
-            ImageButton btnCancel = (ImageButton) findViewById(R.id.btnCancel);
+            FancyButton btnCancel = (FancyButton) findViewById(R.id.btnCancel);
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

@@ -33,6 +33,7 @@ import lk.steps.breakdownassistpluss.Models.JobCompletion;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.Strings;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
+import mehdi.sakout.fancybuttons.FancyButton;
 
 public class CompletedDialog extends AppCompatActivity {
     private static String[][] FailureTypeList;
@@ -69,6 +70,7 @@ public class CompletedDialog extends AppCompatActivity {
 
             final EditText sin = (EditText) findViewById(R.id.etSin);
             sin.setText(breakdown.get_SUB());
+           //sin.setEnabled(breakdown.get_Status() != Breakdown.JOB_COMPLETED );
 
             //Strings Type Spinner
             final Spinner spinnerType = (Spinner) findViewById(R.id.spinner_failure_type);
@@ -183,15 +185,19 @@ public class CompletedDialog extends AppCompatActivity {
                     // TODO Auto-generated method stub
                 }
             });
-            ImageButton btnCompleted = (ImageButton) findViewById(R.id.btnCompleted);
+            FancyButton btnCompleted = (FancyButton) findViewById(R.id.btnCompleted);
+           // btnCompleted.setEnabled(breakdown.get_Status() != Breakdown.JOB_COMPLETED );
             btnCompleted.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
+                    sin.setText(sin.getText().toString().toUpperCase());
+                   /* if (breakdown.get_Status() == Breakdown.JOB_COMPLETED) {
                        // JobMaterialDialog(fragment, breakdown, position);
                         finish();
-                    }else if(sin.getText().toString().length()<4 | sin.getText().toString().equals("")){
+                    }else */
+
+                  //  if(sin.getText().toString().length()<4 | sin.getText().toString().equals("")){
+                    if(!sin.getText().toString().matches("[A-Z][0-9][0-9][0-9]")){
                         // }else if(sin.getText().toString().length()<4 & !sin.getText().toString().equals("")){
                         Toast.makeText(getApplicationContext(),
                                 "Erroneous SIN", Toast.LENGTH_LONG).show();
@@ -226,7 +232,7 @@ public class CompletedDialog extends AppCompatActivity {
             });
 
 
-            ImageButton btnCancel = (ImageButton) findViewById(R.id.btnCancel);
+            FancyButton btnCancel = (FancyButton) findViewById(R.id.btnCancel);
             // if button is clicked, close the job_dialog dialog
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override

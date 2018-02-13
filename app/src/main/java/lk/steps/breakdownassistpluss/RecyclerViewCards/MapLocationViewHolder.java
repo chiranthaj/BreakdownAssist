@@ -59,7 +59,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
     public TextView acc_no,JOB_NO,received_date_time,completed_date_time,name,address,description, txtTripInfo, note;
     private Button button1,button2;
     public CheckBox checkBox1;
-    public ImageView imgMap;
+    //public ImageView imgMap;
     public ImageView imgSource;
     public ImageView imgPriority;
     public CardView cardView;
@@ -77,7 +77,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         completed_date_time = (TextView)itemLayoutView.findViewById(R.id.completed_date_time);
         name = (TextView) itemLayoutView.findViewById(R.id.name);
         address = (TextView) itemLayoutView.findViewById(R.id.address);
-        imgMap = (ImageView) itemLayoutView.findViewById(R.id.imgMap);
+        //imgMap = (ImageView) itemLayoutView.findViewById(R.id.imgMap);
         imgSource= (ImageView) itemLayoutView.findViewById(R.id.imgSource);
         imgPriority = (ImageView) itemLayoutView.findViewById(R.id.imgPriority);
         note = (TextView)itemLayoutView.findViewById(R.id.txtNote);
@@ -178,6 +178,12 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
             setDirections(Globals.LastLocation,mBreakdown.getLocation());
             mGoogleMap.addMarker(new MarkerOptions().position(mBreakdown.getLocation()).icon(icon));
             mGoogleMap.addMarker(new MarkerOptions().position(Globals.LastLocation).icon(iconBk));
+
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            builder.include(Globals.LastLocation);
+            builder.include(mBreakdown.getLocation());
+
+            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
         }
     }
 
@@ -191,7 +197,7 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
         if(routes.size()<1) return;
         LatLng bdLoc = mBreakdown.getLocation();
         if(bdLoc==null)return;
-        List<Polyline> polylinePaths = new ArrayList<>();
+       // List<Polyline> polylinePaths = new ArrayList<>();
 
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(JobListFragment.currentLocation);
@@ -204,7 +210,8 @@ public class MapLocationViewHolder extends RecyclerView.ViewHolder implements On
                 builder.include(route.points.get(i));
             }
         }
-        polylinePaths.add(mGoogleMap.addPolyline(polylineOptions));
+        mGoogleMap.addPolyline(polylineOptions);
+        //polylinePaths.add(mGoogleMap.addPolyline(polylineOptions));
         //txtTripInfo.setText("Distance : "+routes.get(0).distance.text + "\nTime : "+routes.get(0).duration.text);
        // txtTripInfo.setText(routes.get(0).duration.text + " ( "+routes.get(0).distance.text+" )");
         String text = "<font color='blue'>"+routes.get(0).duration.text + "</font><font color='gray'> ( "+routes.get(0).distance.text+" ) </font>";

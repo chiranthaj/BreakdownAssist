@@ -28,6 +28,7 @@ import lk.steps.breakdownassistpluss.Models.JobChangeStatus;
 import lk.steps.breakdownassistpluss.R;
 import lk.steps.breakdownassistpluss.Strings;
 import lk.steps.breakdownassistpluss.Sync.SyncService;
+import mehdi.sakout.fancybuttons.FancyButton;
 
 public class AttendingDialog extends AppCompatActivity {
     Breakdown breakdown;
@@ -71,7 +72,7 @@ public class AttendingDialog extends AppCompatActivity {
                     // TODO Auto-generated method stub
                 }
             });
-            ImageButton btnAttending = (ImageButton) findViewById(R.id.btnAttending);
+            FancyButton btnAttending = (FancyButton) findViewById(R.id.btnAttending);
             btnAttending.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -82,7 +83,7 @@ public class AttendingDialog extends AppCompatActivity {
                     finish();
                 }
             });
-            ImageButton btnCancel = (ImageButton) findViewById(R.id.btnCancel);
+            FancyButton btnCancel = (FancyButton) findViewById(R.id.btnCancel);
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

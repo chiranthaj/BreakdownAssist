@@ -4,11 +4,14 @@ package lk.steps.breakdownassistpluss.Fragments;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.DialogInterface;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -33,8 +36,6 @@ import lk.steps.breakdownassistpluss.Breakdown;
 import lk.steps.breakdownassistpluss.BreakdownDialogs.CompletedDialog;
 import lk.steps.breakdownassistpluss.BreakdownDialogs.DetailsDialog;
 import lk.steps.breakdownassistpluss.BreakdownDialogs.MaterialDialog;
-import lk.steps.breakdownassistpluss.BreakdownDialogs.TempCompletedDialog;
-import lk.steps.breakdownassistpluss.DBHandler;
 import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.MainActivity;
 import lk.steps.breakdownassistpluss.R;
@@ -46,7 +47,7 @@ import lk.steps.breakdownassistpluss.Sync.SyncService;
 public class JobListFragment extends Fragment {
 
     private static View mView;
-    private static int iJobs_to_Display = Breakdown.JOB_NOT_ATTENDED;
+    public static int iJobs_to_Display = Breakdown.JOB_NOT_ATTENDED;
     public static RecyclerView mRecyclerView;
     public static LatLng currentLocation;
     public static RecyclerView.Adapter mAdapter;
@@ -61,6 +62,7 @@ public class JobListFragment extends Fragment {
             iJobs_to_Display = bundle.getInt("JOB_STATUS", -1);
             Log.d("JOB_STATUS", "JOB_STATUS=" + iJobs_to_Display);
             currentLocation = getLastLocation();
+
         }
 
     }
@@ -74,10 +76,22 @@ public class JobListFragment extends Fragment {
         return mView;
     }
 
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.jobs_to_display_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
+
+        MenuItem item = menu.findItem(R.id.menu_jobs_unatended);
+        if(iJobs_to_Display == Breakdown.JOB_TEMPORARY_COMPLETED)
+            item = menu.findItem(R.id.menu_jobs_temporary);
+        else if(iJobs_to_Display == Breakdown.JOB_WITHDRAWN)
+            item = menu.findItem(R.id.menu_jobs_rejected);
+        else if(iJobs_to_Display == Breakdown.JOB_REJECT)
+            item = menu.findItem(R.id.menu_jobs_rejected);
+        else if(iJobs_to_Display == Breakdown.JOB_RETURNED)
+            item = menu.findItem(R.id.menu_jobs_returned);
+        item.setChecked(true);
     }
 
     @Override
@@ -157,24 +171,25 @@ public class JobListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-       // getActivity().unregisterReceiver(broadcastReceiver);
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(broadcastReceiver);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         CreateListView(JobListFragment.this);
-        //getActivity().registerReceiver(broadcastReceiver, new IntentFilter("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver"));
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(broadcastReceiver,
+                new IntentFilter("lk.steps.breakdownassistpluss.JobListBroadcastReceiver"));
     }
 
-   /* BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             //Add to list view
             CreateListView(JobListFragment.this);
-
+            Log.d("TEST","JobListBroadcastReceiver1");
         }
-    };*/
+    };
 
 
     public static void RestoreItem(Breakdown breakdown, int position){
@@ -221,7 +236,7 @@ public class JobListFragment extends Fragment {
             public void onCardViewTap(View view, final int position) {
                 if (BreakdownList.get(position).getLocation() == null) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
-                    Dialog dialog = DetailsDialog.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
+                    /*Dialog dialog = DetailsDialog.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
                     if (dialog != null)
                         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
@@ -230,8 +245,16 @@ public class JobListFragment extends Fragment {
                                 //mRecyclerView.ref.invalidate();
                                 //CreateListView(fragment);
                             }
-                        });
-                }else if (BreakdownList.get(position).getLatitude().equals("0")) {
+                        });*/
+
+                    String json = new Gson().toJson(BreakdownList.get(position), new TypeToken<Breakdown>() {
+                    }.getType());
+                    Intent i = new Intent(fragment.getActivity(), DetailsDialog.class);
+                    i.putExtra("breakdown", json);
+                    i.putExtra("position", position);
+                    fragment.startActivity(i);
+
+                }/*else if (BreakdownList.get(position).getLatitude().equals("0")) {
                     Toast.makeText(fragment.getActivity(), "No customer location data found ", Toast.LENGTH_LONG).show();
                     Dialog dialog = DetailsDialog.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
                     if (dialog != null)
@@ -243,7 +266,8 @@ public class JobListFragment extends Fragment {
                                 //CreateListView(fragment);
                             }
                         });
-                } else {
+                } */
+                else {
                     final FragmentManager fm;
                     fm = fragment.getFragmentManager();
                     fm.beginTransaction().replace(R.id.content_frame, new GmapFragment(), MainActivity.MAP_FRAGMENT_TAG).commit();
@@ -297,14 +321,7 @@ public class JobListFragment extends Fragment {
                             @Override
                             public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
-                                    //Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped left", Toast.LENGTH_SHORT).show();
-                                    //Dialog dialog = DetailsDialog.JobCompleteDialog(fragment, BreakdownList.get(position),position);
 
-                                    /*String json = new Gson().toJson(BreakdownList.get(position), new TypeToken<Breakdown>() {}.getType());
-                                    Intent i = new Intent(fragment.getActivity(), CompletedDialog.class);
-                                    i.putExtra("breakdown", json);
-                                    i.putExtra("position", position);
-                                    fragment.startActivity(i);*/
                                     Breakdown breakdown = BreakdownList.get(position);
                                     String json = new Gson().toJson(breakdown, new TypeToken<Breakdown>() {}.getType());
                                     if (breakdown.get_Status() == Breakdown.JOB_COMPLETED ) {
@@ -318,14 +335,6 @@ public class JobListFragment extends Fragment {
                                         fragment.startActivity(i);
                                     }
 
-                                    /*if (dialog != null)
-                                        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                            @Override
-                                            public void onDismiss(DialogInterface dialog) {
-                                                //CreateListView(fragment);
-                                                mAdapter.notifyDataSetChanged();
-                                            }
-                                        });*/
                                     BreakdownList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }
@@ -336,7 +345,7 @@ public class JobListFragment extends Fragment {
                             public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
                                 for (int position : reverseSortedPositions) {
                                     //Toast.makeText(fragment.getActivity(), BreakdownList.get(position).get_Job_No() + " swiped right", Toast.LENGTH_SHORT).show();
-                                    Dialog dialog = DetailsDialog.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
+                                    /*Dialog dialog = DetailsDialog.DialogInfo(fragment, BreakdownList.get(position), null, null,position);
                                     if (dialog != null)
                                         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                                             @Override
@@ -344,7 +353,15 @@ public class JobListFragment extends Fragment {
                                                 mAdapter.notifyDataSetChanged();
                                                 //CreateListView(fragment);
                                             }
-                                        });
+                                        });*/
+                                    String json = new Gson().toJson(BreakdownList.get(position), new TypeToken<Breakdown>() {
+                                    }.getType());
+                                    Intent i = new Intent(fragment.getActivity(), DetailsDialog.class);
+                                    i.putExtra("breakdown", json);
+                                    i.putExtra("position", position);
+                                    fragment.startActivity(i);
+
+
                                     BreakdownList.remove(position);
                                     mAdapter.notifyItemRemoved(position);
                                 }
@@ -393,7 +410,7 @@ public class JobListFragment extends Fragment {
         Button btnYes = (Button) dialog.findViewById(R.id.btnYes);
         Button btnNo = (Button) dialog.findViewById(R.id.btnNo);
         TextView tv = (TextView) dialog.findViewById(R.id.textDialog);
-        tv.setText("Do you want to ungroup ?");
+        tv.setText("Do you want to un-group all ?");
         btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

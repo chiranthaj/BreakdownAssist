@@ -28,7 +28,10 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.txusballesteros.widgets.FitChart;
 import com.txusballesteros.widgets.FitChartValue;
 
@@ -43,6 +46,7 @@ import java.util.List;
 import java.util.TimerTask;
 
 import lk.steps.breakdownassistpluss.Breakdown;
+import lk.steps.breakdownassistpluss.BreakdownDialogs.DetailsDialog;
 import lk.steps.breakdownassistpluss.Globals;
 import lk.steps.breakdownassistpluss.MapMarker;
 import lk.steps.breakdownassistpluss.Models.Statistics;
@@ -100,8 +104,6 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
             } else if (refresh_counts != null) {
                 refreshCounts();
             }
-
-            // now you can call all your fragments method here
         }
     };
 
@@ -114,7 +116,7 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap map) {
         googleMap = map;
         if(googleMap==null) return;
-        List<Breakdown> BreakdownList = new ArrayList<>(Globals.dbHandler.ReadBreakdowns(Breakdown.JOB_NOT_ATTENDED, true, false));
+        final List<Breakdown> BreakdownList = new ArrayList<>(Globals.dbHandler.ReadBreakdowns(Breakdown.JOB_NOT_ATTENDED, true, false));
 
         try {
             map.setMapStyle(
@@ -136,7 +138,7 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
                 if (loc != null) {
                     map.addMarker(new MarkerOptions()
                             .position(loc)
-                            .title(bd.get_Job_No())
+                            .snippet(bd.get_Job_No())
                             .icon(MapMarker.GetBitmap(bd)));
                     builder.include(loc);
                 }
@@ -148,6 +150,23 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
             }catch(Exception e){
 
             }
+            googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker) {
+
+                    for (Breakdown bd : BreakdownList) {
+                        if(marker.getSnippet().equals(bd.get_Job_No())){
+                            String json = new Gson().toJson(bd, new TypeToken<Breakdown>() {
+                            }.getType());
+                            Intent i = new Intent(DashboardFragment.this.getActivity(), DetailsDialog.class);
+                            i.putExtra("breakdown", json);
+                            i.putExtra("position", 0);
+                            DashboardFragment.this.startActivity(i);
+                        }
+                    }
+                    return false;
+                }
+            });
 
         } else {
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(7.8204307, 80.2189718), 8));
@@ -269,35 +288,6 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
-
-    /*private void MapTask(){
-        MapView mapView = (MapView) mView.findViewById(R.id.map_view);
-        mapView.getMapAsync(this);
-
-    }
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-        // Add a marker in Sydney, Australia, and move the camera.
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-    }*/
-
-    private class MyTimerTask extends TimerTask {
-
-        @Override
-        public void run() {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //UpdateOnlineStatus();
-                    // refreshCounts();
-                }
-            });
-        }
-    }
 
 
     public void UpdateOnlineStatus() {

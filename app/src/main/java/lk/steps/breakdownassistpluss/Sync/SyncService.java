@@ -236,7 +236,7 @@ public class SyncService extends Service {
                         }*/
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            Common.RemoteLoginWithLastCredentials(context);
+                            Common.RemoteLoginWithLastCredentials(context,5);
                         }else{
                             Toast.makeText(context, "PostBreakdowns\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -319,7 +319,7 @@ public class SyncService extends Service {
                         }*/
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            Common.RemoteLoginWithLastCredentials(context);
+                            Common.RemoteLoginWithLastCredentials(context,6);
                         }else{
                             Toast.makeText(context, "SyncStatusChange\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -396,7 +396,7 @@ public class SyncService extends Service {
                         }*/
                         if(response.code() == 401) { //Authentication fail
                             Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                            Common.RemoteLoginWithLastCredentials(context);
+                            Common.RemoteLoginWithLastCredentials(context,7);
                         }else{
                             Toast.makeText(context, "PostBreakdownCompletion\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                         }
@@ -445,7 +445,7 @@ public class SyncService extends Service {
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                        Common.RemoteLoginWithLastCredentials(context);
+                        Common.RemoteLoginWithLastCredentials(context,8);
                     }else{
                         Toast.makeText(context, "PostMaterials\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -494,7 +494,7 @@ public class SyncService extends Service {
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                        Common.RemoteLoginWithLastCredentials(context);
+                        Common.RemoteLoginWithLastCredentials(context,9);
                     }else{
                         Toast.makeText(context, "PostTrackingData\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -542,7 +542,7 @@ public class SyncService extends Service {
                     //dbHandler.UpdateSyncState_JobCompletionObj(obj, 0);//Not Uploaded due to no network
                     if(response.code() == 401) { //Authentication fail
                         Toast.makeText(context, "Authentication fail..", Toast.LENGTH_SHORT).show();
-                        Common.RemoteLoginWithLastCredentials(context);
+                        Common.RemoteLoginWithLastCredentials(context,10);
                     }else{
                         Toast.makeText(context, "PostGroups\nResponse code ="+response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -643,7 +643,7 @@ public class SyncService extends Service {
         }
     }
     private static void SendRestartRequest2(Context context){
-        Common.RemoteLoginWithLastCredentials(context);
+        Common.RemoteLoginWithLastCredentials(context,11);
         /*Intent intent = new Intent();
         intent.setAction("lk.steps.breakdownassistpluss.MainActivityBroadcastReceiver");
         intent.putExtra("re_login_required", "re_login_required");
@@ -692,59 +692,19 @@ public class SyncService extends Service {
             wl_cpu.acquire(10000);
         }
     }
-    /*private static String ReadStringPreferences(Context context, String key, String defaultValue){
-        SharedPreferences prfs = context.getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getString(key, defaultValue);
-    }*/
-
-    /*int i = 0;
-    private class MyTimerTask extends TimerTask {
-        @Override
-        public void run() {
-
-            if(Globals.mToken == null | !Globals.serverConnected){
-                RemoteLoginWithLastCredentials();
-                StartUpTasks.InitVariables(getApplicationContext());
-                return;
-            }
-
-            if(i==0){
-                i=1;
-                //Log.e("Sync","PostBreakdowns");
-                PostBreakdowns(getApplicationContext());
-            }else if(i==1){
-                i=2;
-                //Log.e("Sync","PostBreakdownCompletion");
-                PostBreakdownCompletion(getApplicationContext());
-            }else if(i==2){
-                i=3;
-                //Log.e("Sync","PostGroups");
-                PostGroups(getApplicationContext());
-            }else if(i==3){
-                i=4;
-                //Log.e("Sync","PostBreakdownStatusChange");
-                PostBreakdownStatusChange(getApplicationContext());
-            }else if(i==4){
-                i=5;
-                //Log.e("Sync","PostMaterials");
-                PostMaterials(getApplicationContext());
-            }else if(i==5){
-                i=0;
-                //Log.e("Sync","PostTrackingData");
-                PostTrackingData(getApplicationContext());
-            }
-            else if(i==6){
-                i=0;
-                Log.e("Sync","DownloadApk");
-                DownloadApk();
-            }
-        }
-    }*/
 
 
     private void StartSync(){
+        if (Globals.mToken == null) {
+            Log.e(TAG, "StartSync->mToken null");
+            return;
+        }
+        if (Globals.ServerConnected){
+            Log.e(TAG, "StartSync->Server not Connected");
+            return;
+        }
         if(Globals.mToken == null | ! Globals.ServerConnected){
-            Common.RemoteLoginWithLastCredentials(getApplicationContext());
+            Common.RemoteLoginWithLastCredentials(getApplicationContext(),12);
             StartUpTasks.InitVariables(getApplicationContext());
             return;
         }
@@ -756,46 +716,6 @@ public class SyncService extends Service {
         PostTrackingData(getApplicationContext());
     }
 
-    /*public void RemoteLoginWithLastCredentials(){
-        final String lastUsername = ReadStringPreferences("last_username", "");
-        final String lastPassword = ReadStringPreferences("last_password", "");
-        final SyncRESTService syncAuthService = new SyncRESTService(2);
-        Call<Token> call = syncAuthService.getService().GetJwt(lastUsername,lastPassword);
-        call.enqueue(new Callback<Token>() {
-            @Override
-            public void onResponse(Call<Token> call, Response<Token> response) {
-                if (response.isSuccessful()) {
-                    Log.e("GetAuthToken","Authorized");
-
-                    Token token = response.body();
-                    Log.e("area_name",token.area_name);
-                    //SaveToken(token);
-                    WriteStringPreferences("user_id",token.user_id);
-                    WriteStringPreferences("area_id",token.area_id);
-                    WriteStringPreferences("area_name",token.area_name);
-                    WriteStringPreferences("team_id",token.team_id);
-                    WriteLongPreferences("expires_in",token.expires_in);
-                    WriteStringPreferences("access_token",token.access_token);
-                    WriteStringPreferences("group_token",token.group_token);
-                    WriteStringPreferences("last_username",lastUsername);
-                    WriteStringPreferences("last_password",lastPassword);
-                    Globals.mToken = token;
-                    
-
-                } else if (response.errorBody() != null) {
-                    
-                }
-                syncAuthService.CloseAllConnections();
-            }
-
-            @Override
-            public void onFailure(Call<Token> call, Throwable t) {
-                Log.e("Login","Remote login onFailure"+t.getMessage());//Remote login
-                syncAuthService.CloseAllConnections();
-            }
-
-        });
-    }*/
 
     private static void PlayTone(Context context, int resourceId, boolean looping) {
         MediaPlayer mMediaPlayer = MediaPlayer.create(context, resourceId);
@@ -821,20 +741,4 @@ public class SyncService extends Service {
         //mMediaPlayer.start();
     }
 
-    /*private void WriteLongPreferences(String key, long value){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prfs.edit();
-        editor.putLong(key,value).apply();
-    }
-
-    private void WriteStringPreferences(String key, String value){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prfs.edit();
-        editor.putString(key,value).apply();
-    }
-
-    private String ReadStringPreferences(String key, String defaultValue){
-        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION", Context.MODE_PRIVATE);
-        return prfs.getString(key, defaultValue);
-    }*/
 }

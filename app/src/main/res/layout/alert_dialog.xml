@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
@@ -22,14 +23,18 @@
         android:textColor="@color/colorPrimaryDark"
         android:textSize="36sp" />
 
-    <Button
+
+    <mehdi.sakout.fancybuttons.FancyButton
         android:id="@+id/btnOk"
+        android:layout_below="@+id/textDialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
-        android:text=" Acknowledge"
-        android:layout_below="@+id/textDialog"
-        android:textAllCaps="false"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="30sp" />
+        android:padding="10dp"
+        fancy:fb_defaultColor="#55acee"
+        fancy:fb_focusColor="#313131"
+        fancy:fb_radius="64dp"
+        fancy:fb_text="Acknowledge"
+        fancy:fb_textColor="#FFFFFF"
+        fancy:fb_textSize="35sp" />
 </RelativeLayout >

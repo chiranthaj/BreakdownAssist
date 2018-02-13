@@ -4,7 +4,7 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_dashboard"
-            android:icon="@drawable/ic_media_route_on_22_light"
+            android:icon="@drawable/ic_navigation"
             android:title="Dashboard" />
         <item
             android:id="@+id/nav_map_view"
@@ -22,6 +22,10 @@
             android:id="@+id/nav_completed_jobs"
             android:icon="@drawable/ic_beenhere_black_24dp"
             android:title="Completed Jobs" />
+        <item
+            android:id="@+id/nav_interruptions"
+            android:icon="@drawable/ic_action_today"
+            android:title="Interruptions" />
     </group>
 
 
